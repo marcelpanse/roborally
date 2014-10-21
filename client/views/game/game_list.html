@@ -5,7 +5,9 @@
   {{else}}
 	{{#each games}}
 	<h1><a href="{{pathFor 'gamePage'}}">{{name}}</a> <span class="small">{{author}}</span></h1>
-	{{/each}}
+	{{else}}
+	No games at the moment, create one at the right.
+	{{/each}}	
   {{/unless}}
 </template>
 

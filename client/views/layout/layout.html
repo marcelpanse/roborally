@@ -3,31 +3,30 @@
    <title>RoboRally</title>
  </head>
  <body>
-  <div class="container">
-    <!-- Static navbar -->
-    <div class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">RoboRally!</a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="{{pathFor 'about'}}">About</a></li>
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li class="login">{{> loginButtons }}</li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div><!--/.container-fluid -->
-    </div>
-  </div> <!-- /container -->
-
+ 
+  <!-- Static navbar -->
+  <div class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">RoboRally!</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="{{pathFor 'about'}}">About</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li class="login">{{> loginButtons align="right"}}</li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div><!--/.container-fluid -->
+  </div>
+ 
   <div class="container">
     <div class="row">
       <div class="col-md-8">
@@ -41,6 +40,7 @@
 
   <div class="footer well well-sm">
   {{> usersPill}}
+  <span class="pull-right"><a href="https://github.com/marcelpanse/roborally">Fork me on GitHub!</a></span>
   </div>
 </body>
 </template>

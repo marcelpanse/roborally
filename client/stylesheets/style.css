@@ -4,6 +4,7 @@
 
 .footer {
 	margin-top: 25px;
+	min-height: 40px;
 }
 
 .users-pill {

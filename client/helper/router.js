@@ -6,7 +6,11 @@ Router.map(function() {
 		}
 	});
 
-	this.route('about');
+	this.route('about', {
+		yieldTemplates: {
+			"aboutSidePanel": {to: "rightPanel"}
+		}
+	});
 
 	this.route('gamePage', {
 	  // get parameter via this.params
