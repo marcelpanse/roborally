@@ -1,0 +1,7 @@
+<template name="usersPill">
+    {{#each usersOnline}}
+    <span class="users-pill label 
+    label-{{#if status.idle}}warning{{else}}success{{/if}}
+    ">{{emails.[0].address}} {{#if status.idle}}(idle){{/if}}</span>
+    {{/each}}
+</template>

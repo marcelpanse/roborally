@@ -1,0 +1,23 @@
+<template name="gamePage">
+	{{> gameItem}}
+</template>
+
+<template name="gameItem">
+	<div>
+		<div>
+			<h3>{{name}} <span class="small">({{author}})</span></h3>
+		</div>
+	</div>
+</template>
+
+<template name="gamePageActions">
+	<div>
+		<a href="#" class="btn btn-success action-button">Join game</a>
+	</div>
+
+	{{#if ownGame}}
+	<div>
+		<a href="#" class="btn btn-danger delete action-button">Cancel game</a>
+	</div>
+	{{/if}}
+</template>

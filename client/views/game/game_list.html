@@ -1,0 +1,34 @@
+<template name="gameList">
+  <h3>Games</h3>
+  {{#unless currentUser}}
+  {{> splash}}
+  {{else}}
+	{{#each games}}
+	<h1><a href="{{pathFor 'gamePage'}}">{{name}}</a> <span class="small">{{author}}</span></h1>
+	{{/each}}
+  {{/unless}}
+</template>
+
+<template name="gameItemPostForm">
+	{{#if gameCreated}}
+	{{#with gameCreated}}
+	You have already created a game with the name '
+	<a href="{{pathFor 'gamePage' }}">{{name}}</a>'.
+	{{/with}}
+	{{else}}
+	<form class="main">
+		<div class="control-group">
+			<label class="control-label" for="url">URL</label>
+			<div class="controls">
+			  <input name="name" type="text" value="" placeholder="Game name"/>
+			</div>
+		</div>
+		<br />
+		<div class="control-group">
+			<div class="controls">
+				<input type="submit" value="Submit" class="btn btn-primary"/>
+			</div>
+		</div>
+	</form>
+	{{/if}}
+</template>
