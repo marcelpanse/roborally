@@ -9,4 +9,5 @@ accounts-ui
 mizzao:bootstrap-3
 iron:router
 mizzao:user-status
+accounts-facebook
 
