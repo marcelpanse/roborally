@@ -14,3 +14,21 @@
 .action-button {
 	margin: 5px;
 }
+
+.chat{
+  position:relative;
+  margin:0 auto;
+  overflow:hidden;
+  margin-bottom: 10px;
+}
+.chat .messages{
+  width:100%;
+  height:300px;
+  overflow:hidden;
+}
+.chat .messages:hover{
+  overflow-y:scroll;
+}
+.chat .messages > div{
+  padding:5px;
+}

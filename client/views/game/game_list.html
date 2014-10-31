@@ -1,24 +1,24 @@
 <template name="gameList">
   <h3>Games</h3>
   {{#unless currentUser}}
-  {{> splash}}
+    {{> splash}}
   {{else}}
-	{{#each games}}
-	<h1><a href="{{pathFor 'gamePage'}}">{{name}}</a> <span class="small">{{author}}</span></h1>
-	{{else}}
-	No games at the moment, create one at the right.
-	{{/each}}	
+	 {{#each games}}
+	  <h1><a href="{{pathFor route='game.page'}}">{{name}}</a> <span class="small">{{author}}</span></h1>
+	 {{else}}
+	  No games at the moment, create one at the right.
+	 {{/each}}
   {{/unless}}
 </template>
 
 <template name="gameItemPostForm">
 	{{#if gameCreated}}
-	{{#with gameCreated}}
-	You have already created a game with the name '
-	<a href="{{pathFor 'gamePage' }}">{{name}}</a>'.
-	{{/with}}
+	 {{#with gameCreated}}
+	  You have already created a game with the name '
+	  <a href="{{pathFor route='game.page'}}">{{name}}</a>'.
+	 {{/with}}
 	{{else}}
-	<form class="main">
+	 <form class="main">
 		<div class="control-group">
 			<label class="control-label" for="url">URL</label>
 			<div class="controls">
@@ -31,6 +31,6 @@
 				<input type="submit" value="Submit" class="btn btn-primary"/>
 			</div>
 		</div>
-	</form>
+	 </form>
 	{{/if}}
 </template>

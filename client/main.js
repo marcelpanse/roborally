@@ -1,4 +1,3 @@
-Meteor.subscribe('games');
 Meteor.subscribe('onlineUsers');
 
 Meteor.setTimeout(function() {

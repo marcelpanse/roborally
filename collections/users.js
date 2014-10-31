@@ -4,6 +4,6 @@ Meteor.users.find({ "status.online": true }).observe({
   },
   removed: function(user) {
     console.log(user._id + 'went offline!');
-    Games.remove({userId: user._id});
+    //Games.remove({userId: user._id});
   }
 });
