@@ -12,13 +12,32 @@
 </template>
 
 <template name="gamePageActions">
-	<div>
-		<a href="#" class="btn btn-success action-button">Join game</a>
-	</div>
+	{{#unless gameReady}}
+		{{#unless inGame}}
+			<a href="#" class="btn btn-success join action-button">Join game</a>
+		{{/unless}}
+	{{/unless}}
+
+	{{#if gameReady}}
+		{{#if ownGame}}
+			<a href="#" class="btn btn-success start action-button">Start game</a>
+		{{else}}
+			Game full!
+		{{/if}}
+	{{/if}}
 
 	{{#if ownGame}}
-	<div>
-		<a href="#" class="btn btn-danger delete action-button">Cancel game</a>
-	</div>
+	<a href="#" class="btn btn-danger delete action-button">Cancel game</a>
 	{{/if}}
+
+	{{#if inGame}}
+	<a href="#" class="btn btn-danger leave action-button">Leave game</a>
+	{{/if}}
+
+	<h4>Players:</h4>
+	<ul>
+	{{#each players}}
+		<li>{{author}}</li>
+	{{/each}}
+	</ul>
 </template>

@@ -40,6 +40,11 @@ Router.route('/games/:_id', {
 				}
 			}
 		});
-		this.render('gamePageActions', {to: 'rightPanel'})
+		this.render('gamePageActions', {
+      to: 'rightPanel',
+      data: function() {
+        return Games.findOne(this.params._id);
+      }
+    });
 	}
 });

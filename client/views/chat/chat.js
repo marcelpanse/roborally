@@ -29,6 +29,6 @@ Template.gameChat.rendered = function() {
 		var $chat     = $('.chat'),
 				$printer  = $('.messages', $chat),
 				printerH  = $printer.innerHeight();
-		$printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 600);
+		$printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 100);
 	}});
 };
