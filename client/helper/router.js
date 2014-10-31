@@ -12,13 +12,13 @@ Router.route('/', {
 
 	action: function() {
 		this.render('gameList');
-		this.render('gameItemPostForm', {to: 'rightPanel'})
+		this.render('gameItemPostForm', {to: 'rightPanel'});
 	}
 });
 
 Router.route('/about', function() {
 	this.render('about');
-	this.render('aboutSidePanel', {to: 'rightPanel'})
+	this.render('aboutSidePanel', {to: 'rightPanel'});
 });
 
 Router.route('/games/:_id', {
@@ -47,4 +47,33 @@ Router.route('/games/:_id', {
       }
     });
 	}
+});
+
+Router.route('/board/:_id', {
+  name: 'board.page',
+  loadingTemplate: 'loading',
+  layoutTemplate: 'boardLayout',
+
+  waitOn: function() {
+    return [Meteor.subscribe('games'), Meteor.subscribe('chat')];
+  },
+
+  action: function() {
+    this.render('board', {
+      data: function() {
+        var game = Games.findOne(this.params._id);
+        if (game === undefined) {
+          Router.go('/');
+        } else {
+          return game;
+        }
+      }
+    });
+    this.render('gameChat', {
+      to: 'chat',
+      data: function() {
+        return Games.findOne(this.params._id);
+      }
+    });
+  }
 });

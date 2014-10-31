@@ -32,3 +32,10 @@
 .chat .messages > div{
   padding:5px;
 }
+
+#board {
+  height: 600px;
+  width: 600px;
+  background-image: url('/Blast_Furnace.board.png');
+  background-size: 100% 100%;
+}

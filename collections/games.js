@@ -31,7 +31,8 @@ Meteor.methods({
 			userId: user._id,
 			author: author,
 			submitted: new Date().getTime(),
-			players: []
+			players: [],
+			started: false
 		});
 		var gameId = Games.insert(game);
 		return gameId;
@@ -73,5 +74,13 @@ Meteor.methods({
 			return el.userId == user._id;
 		});
 		Games.update(postAttributes.gameId, {$set: {players: players}});
+	},
+
+	startGame: function(gameId) {
+		var game = Games.findOne(gameId);
+		if (game.players.length != 2) {
+			throw new Meteor.Error(401, "Need exactly 2 players to start the game");
+		}
+		Games.update(gameId, {$set: {started: true}});
 	}
 });
