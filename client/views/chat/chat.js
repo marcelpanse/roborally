@@ -1,9 +1,6 @@
 Template.gameChat.helpers({
 	messages: function() {
 		return Chat.find({gameId: this._id});
-	},
-	currentGameId: function() {
-		return Session.get('currentGameId');
 	}
 });
 
@@ -25,10 +22,12 @@ Template.gameChat.events({
 });
 
 Template.gameChat.rendered = function() {
-	Chat.find({gameId: Session.get('currentGameId')}).observe({added: function() {
+	Chat.find({gameId: this._id}).observe({added: function() {
 		var $chat     = $('.chat'),
 				$printer  = $('.messages', $chat),
 				printerH  = $printer.innerHeight();
-		$printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 100);
+		if ($printer && $printer[0]) {
+			$printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 100);
+		}
 	}});
 };

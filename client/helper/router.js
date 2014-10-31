@@ -3,6 +3,7 @@ Router.configure({
 });
 
 Router.route('/', {
+  name: 'gamelist.page',
 	loadingTemplate: 'loading',
 
 	waitOn: function() {
@@ -31,7 +32,6 @@ Router.route('/games/:_id', {
 	action: function() {
 		this.render('gamePage', {
 			data: function() {
-				Session.set('currentGameId', this.params._id);
 				var game = Games.findOne(this.params._id);
 				if (game === undefined) {
 					Router.go('/');

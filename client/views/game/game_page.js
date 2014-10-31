@@ -3,13 +3,11 @@ Template.gamePageActions.helpers({
 		return this.userId == Meteor.userId();
 	},
 	inGame: function() {
-		var currentGameId = Session.get('currentGameId');
-		var players = Games.findOne(currentGameId).players;
-		return _.findWhere(players, {userId: Meteor.userId()});
+		var players = Games.findOne(this._id).players;
+		return players && _.findWhere(players, {userId: Meteor.userId()});
 	},
 	gameReady: function() {
-		var currentGameId = Session.get('currentGameId');
-		var players = Games.findOne(currentGameId).players;
+		var players = Games.findOne(this._id).players;
 		return players && players.length >= 2;
 	}
 });
@@ -18,15 +16,14 @@ Template.gamePageActions.events({
 	'click .delete': function(e) {
 		e.preventDefault();
 		if (confirm("Remove this game?")) {
-			var currentGameId = Session.get('currentGameId');
-			Games.remove(currentGameId);
+			Games.remove(this._id);
 			Router.go('gameList');
 		}
 	},
 	'click .join': function(e) {
 		e.preventDefault();
 
-		Meteor.call('joinGame', Session.get('currentGameId'), function(error) {
+		Meteor.call('joinGame', this._id, function(error) {
 			if (error)
 				return alert(error.reason);
 		});
@@ -34,7 +31,7 @@ Template.gamePageActions.events({
 	'click .leave': function(e) {
 		e.preventDefault();
 
-		Meteor.call('leaveGame', {gameId: Session.get('currentGameId')}, function(error) {
+		Meteor.call('leaveGame', {gameId: this._id}, function(error) {
 			if (error)
 				return alert(error.reason);
 		});
