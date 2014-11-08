@@ -10,4 +10,6 @@ mizzao:bootstrap-3
 iron:router
 mizzao:user-status
 accounts-facebook
+meteorhacks:kadira
+meteorhacks:zones
 

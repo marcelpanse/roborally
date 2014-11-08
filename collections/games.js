@@ -7,6 +7,9 @@ Games.allow({
 	},
 	remove: function(userId, doc) {
 		return ownsDocument(userId, doc);
+	},
+	update: function(userId, doc) {
+		return true;
 	}
 });
 
@@ -22,7 +25,7 @@ Meteor.methods({
 		if (postAttributes.name && gameWithSameName) {
 			throw new Meteor.Error(302,	gameWithSameName._id);
 		}
-		if (!postAttributes.name || postAttributes.name == '') {
+		if (!postAttributes.name || postAttributes.name === '') {
 			throw new Meteor.Error(303, 'Name cannot be empty.');
 		}
 		var author = (user.profile) ? user.profile.name : user.emails[0].address;
@@ -82,5 +85,10 @@ Meteor.methods({
 			throw new Meteor.Error(401, "Need exactly 2 players to start the game");
 		}
 		Games.update(gameId, {$set: {started: true}});
+
+		for (var i in game.players) {
+			GameLogic.updatePosition(gameId, i);
+			GameLogic.drawCards(gameId, i);
+		}
 	}
 });

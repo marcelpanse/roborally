@@ -15,7 +15,7 @@ Template.gameItemPostForm.events({
 		event.preventDefault();
 		var game = {
 			name: $(event.target).find('[name=name]').val()
-		}
+		};
 
 		Meteor.call('createGame', game, function(error, id) {
 			if (error)
