@@ -58,6 +58,7 @@ mizzao:user-status@0.6.3
 mobile-status-bar@1.0.1
 mongo-livedata@1.0.6
 mongo@1.0.8
+mquandalle:jade@0.2.9
 npm-bcrypt@0.7.7
 oauth2@1.1.1
 oauth@1.1.2

@@ -1,0 +1,10 @@
+template(name="boardLayout")
+	head
+		title RoboRally
+	body
+		div.container
+			div.row
+				div.col-md-8
+					+yield
+				div.col-md-4
+					+yield("chat")

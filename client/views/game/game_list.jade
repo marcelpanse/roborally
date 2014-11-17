@@ -1,0 +1,27 @@
+template(name="gameList")
+  h3 Games
+  unless currentUser
+    +splash
+  else
+    each games
+      h1
+        a(href="{{pathFor route='game.page'}}") #{name}
+        span.small #{author}
+    else
+      No games at the moment, create one at the right.
+
+template(name="gameItemPostForm")
+  if gameCreated
+    with gameCreated
+      You have already created a game with the name '
+      <a href="{{pathFor route='game.page'}}">#{name}</a>'.
+  else
+    form.main
+      div.control-group
+        label.control-label(for="name") URL
+        div.controls
+          input(name="name", type="text", value="", placeholder="Game name")
+      br
+      div.control-group
+        div.controls
+          input.btn.btn-primary(type="submit", value="Submit")
