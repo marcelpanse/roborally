@@ -1,0 +1,88 @@
+template(name='home')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    title RoboRally
+    // Custom Fonts
+    link(href='http://fonts.googleapis.com/css?family=Montserrat:400,700', rel='stylesheet', type='text/css')
+    link(href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic', rel='stylesheet', type='text/css')
+    // HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
+    // WARNING: Respond.js doesn't work if you view the page via file://
+    //if lt IE 9
+      script(src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js')
+      script(src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js')
+  body#page-top.index
+    // Navigation
+    nav.navbar.navbar-default.navbar-fixed-top
+      .container
+        // Brand and toggle get grouped for better mobile display
+        .navbar-header.page-scroll
+          button.navbar-toggle(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href='#page-top') RoboRally
+        // Collect the nav links, forms, and other content for toggling
+        #bs-example-navbar-collapse-1.collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li.hidden
+              a(href='#page-top')
+            li.page-scroll
+              a(href='#images') Images
+            li.page-scroll
+              a(href='#about') About
+    // Header
+    header
+      .container
+        .row
+          .col-lg-12
+            .intro-text
+              span.name RoboRally
+              hr.star-light
+              span.skills You are brilliant. You are powerful. You are sophisticated. You are BORED.
+    // Portfolio Grid Section
+    section#images
+      img.img-responsive.home(src="/img/roborally-photo.jpg")
+    // About Section
+    section#about.success
+      .container
+        .row
+          .col-lg-12.text-center
+            h2 About
+            hr.star-light
+        .row
+          .col-lg-4.col-lg-offset-2
+            p
+              | Imagine that you're a supercomputer. Now imagine that you're bored. So you dream up a little contest for you and a couple of your buddies. Your task is to move one of the stupid little robots out on the factory floor through a series of checkpoints. The wrinkle, however, is that the factory floor is filled with all kinds of inconvenient (if not down-right deadly) obstacles located in various locations. But the real fun comes when the robots cross each other's path, and suddenly your perfect route is something less than that..
+          .col-lg-4
+            p
+              | In RoboRally players each control a different robot in a race through a dangerous factory floor. Several goals will be placed on the board and you must navigate your robot to them in a specific order. The boards can be combined in several different ways to accommodate different player counts and races can be as long or as short as player's desire.
+    // Footer
+    footer.text-center
+      .footer-above
+        .container
+          .row
+            .footer-col.col-md-6
+              h3 Board Game
+              p
+                | You can buy the offical board game at
+                a(href='http://www.amazon.com/Robo-Rally-Wizards-Coast/dp/0786938935') Amazon.com
+            .footer-col.col-md-6
+              h3 About RoboRally.com
+              p
+                | This is an unofficial, open source, fansite created by
+                a(href='https://www.linkedin.com/in/marcelpanse') Marcel Panse
+                |.
+      .footer-below
+        .container
+          .row
+            .col-lg-12
+              | Copyright © RoboRally.com 2014
+    // Scroll to Top Button (Only visible on small and extra-small screen sizes)
+    .scroll-top.page-scroll.visible-xs.visble-sm
+      a.btn.btn-primary(href='#page-top')
+        i.fa.fa-chevron-up

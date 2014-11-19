@@ -3,6 +3,11 @@ Router.configure({
 });
 
 Router.route('/', {
+  name: 'home.page',
+  layoutTemplate: 'home'
+});
+
+Router.route('/game', {
   name: 'gamelist.page',
   loadingTemplate: 'loading',
 

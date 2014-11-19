@@ -1,13 +1,6 @@
 template(name="usersPill")
   each usersOnline
     if profile
-      if status.idle
-        span.users-pill.label.label-warning #{profile.name}
-      else
-        span.users-pill.label.label-success #{profile.name}
+      span($dyn=userPillClass) #{profile.name}
     else
-      each emails
-        if status.idle
-          span.users-pill.label.label-warning #{address}
-        else
-          span.users-pill.label.label-success #{address}
+      span($dyn=userPillClass) {{emails.[0].address}}
