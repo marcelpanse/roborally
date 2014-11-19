@@ -1,26 +1,26 @@
 Template.gameList.helpers({
-	games: function() {
-		return Games.find({}, {sort: {submitted: -1}});
-	}
+  games: function() {
+    return Games.find({}, {sort: {submitted: -1}});
+  }
 });
 
 Template.gameItemPostForm.helpers({
-	gameCreated: function() {
-		return Games.findOne({userId: Meteor.userId()});
-	}
+  gameCreated: function() {
+    return Games.findOne({userId: Meteor.userId()});
+  }
 });
 
 Template.gameItemPostForm.events({
-	'submit form': function(event) {
-		event.preventDefault();
-		var game = {
-			name: $(event.target).find('[name=name]').val()
-		};
+  'submit form': function(event) {
+    event.preventDefault();
+    var game = {
+      name: $(event.target).find('[name=name]').val()
+    };
 
-		Meteor.call('createGame', game, function(error, id) {
-			if (error)
-				return alert(error.reason);
-			Router.go('game.page', {_id: id});
-		});
-	}
+    Meteor.call('createGame', game, function(error, id) {
+      if (error)
+        return alert(error.reason);
+      Router.go('game.page', {_id: id});
+    });
+  }
 });

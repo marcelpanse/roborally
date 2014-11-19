@@ -2,5 +2,5 @@ template(name="board")
   p Game: #{name}
 
   #board
-    span.glyphicon.glyphicon-arrow-up(style="color: blue; #{positionBlue}")
-    span.glyphicon.glyphicon-arrow-up(style="color: red; #{positionRed}")
+    span(style="color: blue; #{positionBlue}", class="glyphicon glyphicon-arrow-#{directionBlue}")
+    span(style="color: red; #{positionRed}", class="glyphicon glyphicon-arrow-#{directionRed}")

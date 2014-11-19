@@ -1,9 +1,9 @@
 Meteor.publish('games', function() {
-	return Games.find();
+  return Games.find();
 });
 
 Meteor.publish('chat', function() {
-	return Chat.find();
+  return Chat.find();
 });
 
 Meteor.publish("onlineUsers", function() {

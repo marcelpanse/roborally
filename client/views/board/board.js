@@ -10,8 +10,27 @@ Template.board.helpers({
     var y = this.players[1].position.y;
 
     return calcPosition(x,y);
+  },
+  directionRed: function() {
+    return getDirection(this.players[0].direction);
+  },
+  directionBlue: function() {
+    return getDirection(this.players[1].direction);
   }
 });
+
+var getDirection = function (direction) {
+    switch(direction) {
+      case GameLogic.UP:
+        return "up";
+      case GameLogic.RIGHT:
+        return "right";
+      case GameLogic.DOWN:
+        return "down";
+      case GameLogic.LEFT:
+        return "left";
+    }
+};
 
 var calcPosition = function(x, y) {
   var tileWidth = 50;//$("#board").width()/12;
