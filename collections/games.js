@@ -38,6 +38,13 @@ Meteor.methods({
       started: false
     });
     var gameId = Games.insert(game);
+
+    // analytics.track(user._id, 'Game created', {
+    //   id: gameId,
+    //   name: game.name,
+    //   user: author
+    // });
+
     return gameId;
   },
 
@@ -56,6 +63,12 @@ Meteor.methods({
     var players = game.players;
     players.push({userId: user._id, author: author});
     Games.update(gameId, {$set: {players: players}});
+
+    // analytics.track('Game joined', {
+    //   id: gameId,
+    //   name: game.name,
+    //   user: author
+    // });
   },
 
   leaveGame: function(postAttributes) {
@@ -77,6 +90,11 @@ Meteor.methods({
       return el.userId == user._id;
     });
     Games.update(postAttributes.gameId, {$set: {players: players}});
+
+    // analytics.track('Left game', {
+    //   id: postAttributes.gameId,
+    //   user: author
+    // });
   },
 
   startGame: function(gameId) {
@@ -90,5 +108,10 @@ Meteor.methods({
       GameLogic.updatePosition(gameId, i, GameLogic.DEFAULT_X, GameLogic.DEFAULT_Y, GameLogic.DEFAULT_DIRECTION);
       GameLogic.drawCards(gameId, i);
     }
+
+    // analytics.track('Game started', {
+    //   id: gameId,
+    //   name: game.name
+    // });
   }
 });

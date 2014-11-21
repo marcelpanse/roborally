@@ -3,8 +3,8 @@ template(name='home')
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(name='viewport', content='width=device-width, initial-scale=1')
-    meta(name='description', content='')
-    meta(name='author', content='')
+    meta(name='description', content='You are brilliant. You are powerful. You are sophisticated. You are BORED. The ultimate unofficial RoboRally board game fan site.')
+    meta(name='author', content='Marcel Panse')
     title RoboRally
     // Custom Fonts
     link(href='http://fonts.googleapis.com/css?family=Montserrat:400,700', rel='stylesheet', type='text/css')
@@ -14,7 +14,7 @@ template(name='home')
     //if lt IE 9
       script(src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js')
       script(src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js')
-  body#page-top.index
+  body
     // Navigation
     nav.navbar.navbar-default.navbar-fixed-top
       .container
@@ -46,7 +46,7 @@ template(name='home')
               span.skills You are brilliant. You are powerful. You are sophisticated. You are BORED.
     // Portfolio Grid Section
     section#images
-      img.img-responsive.home(src="/img/roborally-photo.jpg")
+      img.img-responsive.home(src='/roborally-photo.jpg')
     // About Section
     section#about.success
       .container
@@ -69,14 +69,14 @@ template(name='home')
             .footer-col.col-md-6
               h3 Board Game
               p
-                | You can buy the offical board game at
-                a(href='http://www.amazon.com/Robo-Rally-Wizards-Coast/dp/0786938935') Amazon.com
+                | You can buy the official board game at
+                a(href='http://www.amazon.com/gp/product/B0009HLSP0/ref=as_li_tl?ie=UTF8&camp=1789&creative=9325&creativeASIN=B0009HLSP0&linkCode=as2&tag=robo05-20&linkId=76DVIH2ULESBX477') Amazon.com
+                img(src='http://ir-na.amazon-adsystem.com/e/ir?t=robo05-20&l=as2&o=1&a=B0009HLSP0' width='1' height='1' border='0' alt='' style='border:none !important; margin:0px !important;')
             .footer-col.col-md-6
               h3 About RoboRally.com
               p
-                | This is an unofficial, open source, fansite created by
+                | This is an unofficial fansite created by
                 a(href='https://www.linkedin.com/in/marcelpanse') Marcel Panse
-                |.
       .footer-below
         .container
           .row

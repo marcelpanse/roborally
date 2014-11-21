@@ -1,13 +1,12 @@
 template(name="gameChat")
   div
-    div
-      h3 Chat
-      div.chat.well
-        div.messages
-          each messages
-            div #{author}: #{message}
+    h3 Chat
+    div.chat.well
+      div.messages
+        each messages
+          div #{author}: #{message}
 
-      form.main
-        input(type="hidden", name="gameId", value="#{_id}")
-        input(name="message", type="text", value="", placeholder="Message", size="30")
-        input.btn.btn-primary(type="submit", value="Send")
+    form.main
+      input(type="hidden", name="gameId", value="#{_id}")
+      input(name="message", type="text", value="", placeholder="Message", size="30")
+      input.btn.btn-primary(type="submit", value="Send")

@@ -1,6 +1,9 @@
 template(name="board")
-  p Game: #{name}
+  h3
+    | Game: #{name}
 
   #board
-    span(style="color: blue; #{positionBlue}", class="glyphicon glyphicon-arrow-#{directionBlue}")
-    span(style="color: red; #{positionRed}", class="glyphicon glyphicon-arrow-#{directionRed}")
+    span(style="#{positionBlue}")
+      img#r1(src='/robot_1_500.png', style='#{directionBlue}')
+    span(style="#{positionRed}")
+      img#r2(src='/robot_2_500.png', style='#{directionRed}')

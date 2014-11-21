@@ -1,10 +1,14 @@
 Router.configure({
-  layoutTemplate: 'applicationLayout'
+  layoutTemplate: 'applicationLayout',
+  trackPageView: true
 });
 
 Router.route('/', {
   name: 'home.page',
-  layoutTemplate: 'home'
+  layoutTemplate: 'home',
+  action: function() {
+    analytics.page("home");
+  }
 });
 
 Router.route('/game', {

@@ -22,13 +22,13 @@ Template.board.helpers({
 var getDirection = function (direction) {
     switch(direction) {
       case GameLogic.UP:
-        return "up";
+        return '-webkit-transform: rotate(0deg);';
       case GameLogic.RIGHT:
-        return "right";
+        return '-webkit-transform: rotate(90deg);';
       case GameLogic.DOWN:
-        return "down";
+        return '-webkit-transform: rotate(180deg);';
       case GameLogic.LEFT:
-        return "left";
+        return '-webkit-transform: rotate(270deg);';
     }
 };
 
@@ -36,8 +36,8 @@ var calcPosition = function(x, y) {
   var tileWidth = 50;//$("#board").width()/12;
   var tileHeight = 50;//$("#board").height()/12;
 
-  x = (tileWidth*x) + (tileWidth/2) - (8);
-  y = (tileHeight*y) + (tileHeight/2) - (8);
+  x = (tileWidth*x);
+  y = (tileHeight*y);
 
   return "left: " + x + "px; top: " + y + "px;";
 };
