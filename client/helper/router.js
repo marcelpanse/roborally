@@ -11,7 +11,7 @@ Router.route('/', {
   }
 });
 
-Router.route('/game', {
+Router.route('/online', {
   name: 'gamelist.page',
   loadingTemplate: 'loading',
 
@@ -23,11 +23,6 @@ Router.route('/game', {
     this.render('gameList');
     this.render('gameItemPostForm', {to: 'rightPanel'});
   }
-});
-
-Router.route('/about', function() {
-  this.render('about');
-  this.render('aboutSidePanel', {to: 'rightPanel'});
 });
 
 Router.route('/games/:_id', {
@@ -43,7 +38,10 @@ Router.route('/games/:_id', {
       data: function() {
         var game = Games.findOne(this.params._id);
         if (game === undefined) {
-          Router.go('/');
+          Router.go('gamelist.page');
+        } else if (game.started) {
+          console.log('game started, routing to board');
+          Router.go('board.page', {_id: this.params._id});
         } else {
           return game;
         }
@@ -80,6 +78,12 @@ Router.route('/board/:_id', {
     });
     this.render('gameChat', {
       to: 'chat',
+      data: function() {
+        return Games.findOne(this.params._id);
+      }
+    });
+    this.render('cards', {
+      to: 'cards',
       data: function() {
         return Games.findOne(this.params._id);
       }

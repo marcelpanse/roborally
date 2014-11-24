@@ -2,9 +2,12 @@ template(name="boardLayout")
   head
     title RoboRally
   body
-    div.container
-      div.row
-        div.col-md-8
+    .container
+      .row
+        .col-md-8
           +yield
-        div.col-md-4
+        .col-md-4
           +yield("chat")
+      .row
+        .col-md-8
+          +yield("cards")
