@@ -70,7 +70,7 @@ Router.route('/board/:_id', {
       data: function() {
         var game = Games.findOne(this.params._id);
         if (game === undefined) {
-          Router.go('/');
+          Router.go('gamelist.page');
         } else {
           return game;
         }

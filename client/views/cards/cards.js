@@ -25,7 +25,7 @@ Template.cards.helpers({
               cards.push("<i class='fa fa-long-arrow-up' data-card='5' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/>");
               break;
             case 6:
-              cards.push("<i class='fa fa-level-down' data-card='6' data-toggle='tooltip' title='U-turn'/>");
+              cards.push("<i class='fa fa-arrows-v' data-card='6' data-toggle='tooltip' title='U-turn'/>");
               break;
           }
         }

@@ -8,7 +8,7 @@ template(name="gameList")
         a(href="{{pathFor route='game.page'}}") #{name}
         span.small #{author}
     else
-      No games at the moment, create one at the right.
+      | No games at the moment, create one at the right.
 
 template(name="gameItemPostForm")
   if gameCreated

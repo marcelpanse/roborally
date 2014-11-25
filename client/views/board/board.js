@@ -1,4 +1,8 @@
 Template.board.helpers({
+  ownGame: function() {
+    return this.userId == Meteor.userId();
+  },
+
   positionRed: function() {
     var x = this.players[0].position.x;
     var y = this.players[0].position.y;
@@ -16,6 +20,10 @@ Template.board.helpers({
   },
   directionBlue: function() {
     return getDirection(this.players[1].direction);
+  },
+
+  tiles: function() {
+    return Tiles.getBoardTiles();
   }
 });
 
@@ -41,3 +49,12 @@ var calcPosition = function(x, y) {
 
   return "left: " + x + "px; top: " + y + "px;";
 };
+
+Template.board.events({
+  'click .cancel': function() {
+    if (confirm("Remove this game?")) {
+      Games.remove(this._id);
+      Router.go('gamelist.page');
+    }
+  }
+});

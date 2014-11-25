@@ -1,8 +1,14 @@
 template(name="board")
   h3
-    | Game: #{name}
+    | Game: #{name} 
+    if ownGame
+      a.btn.btn-danger.cancel cancel game
 
   #board
+    each tiles
+      each this
+        img.tile(src=this)
+    br
     span(style="#{positionBlue}")
       img#r1(src='/robot_1_500.png', style='#{directionBlue}')
     span(style="#{positionRed}")

@@ -34,9 +34,11 @@ $board-size: 12 * $tile-size
 #board
   height: $board-size
   width: $board-size
-  background-image: url('/Blast_Furnace.board.png')
-  background-size: 100% 100%
   position: relative
+
+  img.tile
+    width: $tile-size
+    height: $tile-size
 
   span
     position: absolute
