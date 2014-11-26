@@ -1,11 +1,13 @@
 Meteor.subscribe('onlineUsers');
 
-Meteor.setTimeout(function() {
-  UserStatus.startMonitor({threshold: 10000, interval: 1000, idleOnBlur: false});
-}, 5 * 1000);
-
 Meteor.startup(function() {
   analytics.load("fqB9zzTwPC");
+
+  Deps.autorun(function(c) {
+    try {
+      UserStatus.startMonitor({threshold: 10000, interval: 1000, idleOnBlur: false});
+    } catch (e) { }
+  });
 
   Deps.autorun(function(c) {
     // waiting for user subscription to load

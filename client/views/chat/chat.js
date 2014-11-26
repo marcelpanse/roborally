@@ -1,10 +1,4 @@
-Template.gameChat.helpers({
-  messages: function() {
-    return Chat.find({gameId: this._id});
-  }
-});
-
-Template.gameChat.events({
+Template.chat.events({
   'submit form': function(event) {
     event.preventDefault();
     var message = {
@@ -21,8 +15,8 @@ Template.gameChat.events({
   }
 });
 
-Template.gameChat.rendered = function() {
-  Chat.find({gameId: this._id}).observe({added: function() {
+Template.chat.rendered = function() {
+  Chat.find({gameId: this.gameId}).observe({added: function() {
     var $chat     = $('.chat'),
         $printer  = $('.messages', $chat),
         printerH  = $printer.innerHeight();

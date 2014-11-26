@@ -19,7 +19,6 @@ Meteor.methods({
       userId: user._id,
       author: author,
       submitted: new Date().getTime(),
-      players: [],
       started: false
     });
     var gameId = Games.insert(game);
@@ -43,11 +42,11 @@ Meteor.methods({
       throw new Meteor.Error(401, "Game id not found!");
 
     var author = (user.profile) ? user.profile.name : user.emails[0].address;
-    console.log('User ' + author + ' joining game ' + gameId);
 
-    var players = game.players;
-    players.push({userId: user._id, author: author});
-    Games.update(gameId, {$set: {players: players}});
+    if (!Players.findOne({gameId: gameId, userId: user._id})) {
+      console.log('User ' + author + ' joining game ' + gameId);
+      Players.insert({gameId: gameId, userId: user._id, name: author});
+    }
 
     // analytics.track('Game joined', {
     //   id: gameId,
@@ -71,10 +70,7 @@ Meteor.methods({
     var author = (user.profile) ? user.profile.name : user.emails[0].address;
     console.log('User ' + author + ' leaving game ' + postAttributes.gameId);
 
-    var players = _.reject(game.players, function(el) {
-      return el.userId == user._id;
-    });
-    Games.update(postAttributes.gameId, {$set: {players: players}});
+    Players.remove({gameId: game._id, userId: user._id});
 
     // analytics.track('Left game', {
     //   id: postAttributes.gameId,
@@ -83,16 +79,18 @@ Meteor.methods({
   },
 
   startGame: function(gameId) {
-    var game = Games.findOne(gameId);
-    if (game.players.length != 2) {
+    var players = Players.find({gameId: gameId}).fetch();
+    if (players.length != 2) {
       throw new Meteor.Error(401, "Need exactly 2 players to start the game");
     }
-    Games.update(gameId, {$set: {started: true}});
 
-    for (var i in game.players) {
-      GameLogic.updatePosition(gameId, i, GameLogic.DEFAULT_X, GameLogic.DEFAULT_Y, GameLogic.DEFAULT_DIRECTION);
-      GameLogic.drawCards(gameId, i);
+    for (var i in players) {
+      GameLogic.updatePosition(players[i], GameLogic.DEFAULT_X, GameLogic.DEFAULT_Y, GameLogic.DEFAULT_DIRECTION);
+      GameLogic.drawCards(players[i]);
     }
+
+    console.log('set game started');
+    Games.update(gameId, {$set: {started: true}});
 
     // analytics.track('Game started', {
     //   id: gameId,
@@ -101,14 +99,27 @@ Meteor.methods({
   },
 
   playCards: function(attributes) {
-    var game = Games.findOne(attributes.gameId);
-    if (!game)
-      throw new Meteor.Error(401, 'Game not found! ' + attributes.gameId);
-    for (var i in game.players) {
-      if (game.players[i].userId == Meteor.userId()) {
-        GameLogic.playCards(attributes.gameId, i, attributes.cards);
-        break;
-      }
-    }
+    var player = Players.findOne({gameId: attributes.gameId, userId: Meteor.userId()});
+    if (!player)
+      throw new Meteor.Error(401, 'Game/Player not found! ' + attributes.gameId);
+    GameLogic.playCards(player, attributes.cards);
+  },
+
+  addMessage: function(postAttributes) {
+    var user = Meteor.user();
+
+    // ensure the user is logged in
+    if (!user)
+      throw new Meteor.Error(401, "You need to login to post new stories");
+
+    var author = (user.profile) ? user.profile.name : user.emails[0].address;
+    // pick out the whitelisted keys
+    var message = _.extend(_.pick(postAttributes, 'message', 'gameId'), {
+      userId: user._id,
+      author: author,
+      submitted: new Date().getTime()
+    });
+    var messageId = Chat.insert(message);
+    return messageId;
   }
 });

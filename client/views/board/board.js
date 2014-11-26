@@ -1,6 +1,6 @@
 Template.board.helpers({
   ownGame: function() {
-    return this.userId == Meteor.userId();
+    return this.game.userId == Meteor.userId();
   },
 
   positionRed: function() {
@@ -53,8 +53,8 @@ var calcPosition = function(x, y) {
 Template.board.events({
   'click .cancel': function() {
     if (confirm("Remove this game?")) {
-      Games.remove(this._id);
       Router.go('gamelist.page');
+      Games.remove(this.game._id);
     }
   }
 });

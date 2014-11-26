@@ -1,15 +1,8 @@
-template(name="gamePage")
-  +gameItem
-  +gameChat
-
-template(name="gameItem")
-  div
-    div
-      h3
-        #{name}
-        span.small (#{author})
-
 template(name="gamePageActions")
+  h3
+    #{name}
+    span.small (#{author})
+    
   unless gameReady
     unless inGame
       a.btn.btn-success.join.action-button(href="#") Join game
@@ -26,7 +19,9 @@ template(name="gamePageActions")
   if ownGame
     a.btn.btn-danger.delete.action-button(href="#") Cancel game
 
+
+template(name="players")
   h4 Players:
   ul
-    each players
-      li #{author}
+  each this
+    li #{name}

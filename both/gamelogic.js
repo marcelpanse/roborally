@@ -21,40 +21,43 @@ GameLogic = {
     6: {direction: 2, position: 0, name: "U_TURN"}
   };
 
-  scope.drawCards = function(gameId, playerIndex) {
-    var player = Games.findOne({_id: gameId}).players[playerIndex];
-    if (player.cards === undefined) {
-      player.cards = [];
+  scope.drawCards = function(player) {
+    var cardObj = Cards.findOne({playerId: player._id});
+    var id;
+    if (!cardObj) {
+      cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
+      id = Cards.insert(cardObj);
+    } else {
+      id = cardObj._id;
     }
-    var nrOfNewCards = _MAX_NUMBER_OF_CARDS - player.cards.length;
+    var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cardObj.cards.length;
+    var cards = cardObj.cards || [];
 
-    var cards = player.cards;
     for (var j =0; j < nrOfNewCards; j++) {
       cards.push(_.random(Object.keys(_cardTypes).length-1));
     }
 
-    var updatedPlayer = {};
-    updatedPlayer['players.' + playerIndex + '.cards'] = cards;
-
     console.log('new cards', cards);
-
-    Games.update(gameId, {$set: updatedPlayer});
+    Cards.update(id, {$set: {cards: cards}});
   };
 
-  scope.updatePosition = function(gameId, playerIndex, newX, newY, direction) {
-    var player = {};
-    player['players.' + playerIndex + '.position.x'] = newX;
-    player['players.' + playerIndex + '.position.y'] = newY;
-    player['players.' + playerIndex + '.direction'] = direction;
+  scope.updatePosition = function(player, newX, newY, direction) {
+    var attrs = {
+      position: {
+        x: newX,
+        y: newY
+      },
+      direction: direction
+    };
 
-    Games.update(gameId, {$set: player});
+    Players.update(player._id, {$set: attrs});
   };
 
-  scope.playCard = function(gameId, player, playerIndex, card, delay) {
+  scope.playCard = function(player, card, delay) {
     Meteor.setTimeout(function() {
       console.log('playing card', _cardTypes[card]);
       player.direction += _cardTypes[card].direction;
-      player.direction = ((player.direction%4)+4)%4; //convert everything between 0-3
+      player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
       switch (player.direction) {
         case GameLogic.UP:
           player.position.y -= _cardTypes[card].position;
@@ -69,30 +72,26 @@ GameLogic = {
           player.position.x -= _cardTypes[card].position;
           break;
       }
-      GameLogic.updatePosition(gameId, playerIndex, player.position.x, player.position.y, player.direction);
+      GameLogic.updatePosition(player, player.position.x, player.position.y, player.direction);
     }, delay || 0);
   };
 
-  scope.playCards = function(gameId, playerIndex, cards) {
+  scope.playCards = function(player, cards) {
     console.log('playing cards', cards);
 
-    var game = Games.findOne({_id: gameId});
-    var player = game.players[playerIndex];
-    var playerCards = player.cards;
+    var cardObj = Cards.findOne({playerId: player._id});
+    var playerCards = cardObj.cards;
 
     for (var i in cards) {
       var card = cards[i];
       var index = playerCards.indexOf(card);
       if (index > -1) {
-        GameLogic.playCard(gameId, player, playerIndex, card, i*1000);
+        GameLogic.playCard(player, card, i*1000);
         playerCards.splice(index, 1);
       }
     }
 
-    var updatedPlayer = {};
-    updatedPlayer['players.' + playerIndex + '.cards'] = playerCards;
-    Games.update(gameId, {$set: updatedPlayer});
-
-    GameLogic.drawCards(gameId, playerIndex);
+    Cards.update(cardObj._id, {$set: {cards: cards}});
+    GameLogic.drawCards(player);
   };
 })(GameLogic);

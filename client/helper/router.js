@@ -30,11 +30,13 @@ Router.route('/games/:_id', {
   loadingTemplate: 'loading',
 
   waitOn: function() {
-    return [Meteor.subscribe('games'), Meteor.subscribe('chat')];
+    return [Meteor.subscribe('games'),
+      Meteor.subscribe('players', this.params._id),
+      Meteor.subscribe('chat', this.params._id)];
   },
 
   action: function() {
-    this.render('gamePage', {
+    this.render('chat', {
       data: function() {
         var game = Games.findOne(this.params._id);
         if (game === undefined) {
@@ -43,7 +45,7 @@ Router.route('/games/:_id', {
           console.log('game started, routing to board');
           Router.go('board.page', {_id: this.params._id});
         } else {
-          return game;
+          return {messages: Chat.find(), gameId: this.params._id};
         }
       }
     });
@@ -51,6 +53,12 @@ Router.route('/games/:_id', {
       to: 'rightPanel',
       data: function() {
         return Games.findOne(this.params._id);
+      }
+    });
+    this.render('players', {
+      to: 'rightPanel2',
+      data: function() {
+        return Players.find();
       }
     });
   }
@@ -62,7 +70,12 @@ Router.route('/board/:_id', {
   layoutTemplate: 'boardLayout',
 
   waitOn: function() {
-    return [Meteor.subscribe('games'), Meteor.subscribe('chat')];
+    return [
+      Meteor.subscribe('games'),
+      Meteor.subscribe('players', this.params._id),
+      Meteor.subscribe('chat', this.params._id),
+      Meteor.subscribe('cards', this.params._id)
+    ];
   },
 
   action: function() {
@@ -72,20 +85,21 @@ Router.route('/board/:_id', {
         if (game === undefined) {
           Router.go('gamelist.page');
         } else {
-          return game;
+          return {game: game, players: Players.find().fetch()};
         }
       }
     });
-    this.render('gameChat', {
+    this.render('chat', {
       to: 'chat',
       data: function() {
-        return Games.findOne(this.params._id);
+        return {messages: Chat.find(), gameId: this.params._id};
       }
     });
     this.render('cards', {
       to: 'cards',
       data: function() {
-        return Games.findOne(this.params._id);
+        var c = Cards.findOne();
+        return {cards: c ? c.cards : [], gameId: this.params._id};
       }
     });
   }

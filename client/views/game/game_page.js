@@ -3,12 +3,10 @@ Template.gamePageActions.helpers({
     return this.userId == Meteor.userId();
   },
   inGame: function() {
-    var players = Games.findOne(this._id).players;
-    return players && _.findWhere(players, {userId: Meteor.userId()});
+    return Players.findOne({gameId: this._id, userId: Meteor.userId()});
   },
   gameReady: function() {
-    var players = Games.findOne(this._id).players;
-    return players && players.length >= 2;
+    return Players.find().fetch().length >= 2;
   }
 });
 
@@ -46,12 +44,3 @@ Template.gamePageActions.events({
     });
   }
 });
-
-Template.gamePage.rendered = function() {
-  Games.find().observe({changed: function(game) {
-    if (game.started && _.findWhere(game.players, {userId: Meteor.userId()})) {
-      console.log('game started');
-      Router.go('board.page', {_id: game._id});
-    }
-  }});
-};
