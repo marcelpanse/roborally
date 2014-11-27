@@ -1,7 +1,4 @@
 GameLogic = {
-  DEFAULT_DIRECTION: 2,
-  DEFAULT_X: 0,
-  DEFAULT_Y: 7,
   UP: 0,
   RIGHT: 1,
   DOWN: 2,
@@ -49,7 +46,6 @@ GameLogic = {
       },
       direction: direction
     };
-
     Players.update(player._id, {$set: attrs});
   };
 
@@ -72,7 +68,18 @@ GameLogic = {
           player.position.x -= _cardTypes[card].position;
           break;
       }
+
+      if (player.position.x < 0 || player.position.y < 0 ||
+          player.position.x >= Tiles.BOARD_WIDTH || player.position.y >= Tiles.BOARD_HEIGHT) {
+        //off the board, reset.
+        var start = Tiles.getStartPosition(Players.find({gameId: player.gameId}).fetch());
+        player.position.x = start.x;
+        player.position.y = start.y;
+        player.direction = start.direction;
+      }
+
       GameLogic.updatePosition(player, player.position.x, player.position.y, player.direction);
+      console.log('new position', player.position);
     }, delay || 0);
   };
 

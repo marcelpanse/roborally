@@ -3,17 +3,47 @@ Tiles = {
   VOID: "void",
   WALL: "wall",
   CORNER: "corner",
-  ROLLER: "roller"
+  ROLLER: "roller",
+  BOARD_WIDTH: 12,
+  BOARD_HEIGHT: 12
 };
 
 (function (scope) {
+  var _boardCache = null;
+
+  scope.getStartPosition = function(players) {
+    var rows = Tiles.getBoardTiles();
+    for (var i in rows) {
+      var cols = rows[i];
+      for (var j in cols) {
+        var tile = cols[j];
+        if (tile.start) {
+          //check if no player is already there
+          var tileIsEmpty = true;
+          for (var p in players) {
+            if (players[p].position.x == j && players[p].position.y == i) {
+              tileIsEmpty = false;
+            }
+          }
+          if (tileIsEmpty) {
+            return {x: Number(j), y: Number(i), direction: rows[i][j].direction};
+          }
+        }
+      }
+    }
+    return {x: 0, y: 0, direction: 0};
+  };
+
   scope.getBoardTiles = function() {
+    if (_boardCache !== null) { //cache the tiles.
+      return _boardCache;
+    }
     var b = create2DArray(12);
 
     // row 1
     b[0][0] = getTile(Tiles.EMPTY, "1");
     b[0][1] = getTile(Tiles.ROLLER, "down");
-    b[0][2] = getTile(Tiles.WALL, "up");
+    b[0][2] = getTile(Tiles.WALL, "up"); b[0][2].start = true; b[0][2].direction = GameLogic.DOWN;
     b[0][3] = getTile(Tiles.EMPTY, "2");
     b[0][4] = getTile(Tiles.WALL, "up");
     b[0][5] = getTile(Tiles.ROLLER, "down");
@@ -39,7 +69,7 @@ Tiles = {
     b[1][11] = getTile(Tiles.ROLLER, "left");
 
     // row 3
-    b[2][0] = getTile(Tiles.WALL, "left");
+    b[2][0] = getTile(Tiles.WALL, "left"); b[2][0].start = true; b[2][0].direction = GameLogic.RIGHT;
     b[2][1] = getTile(Tiles.EMPTY, "2");
     b[2][2] = getTile(Tiles.EMPTY, "1");
     b[2][3] = getTile(Tiles.EMPTY, "1");
@@ -116,7 +146,7 @@ Tiles = {
     b[7][4] = getTile(Tiles.ROLLER, "right");
     b[7][5] = getTile(Tiles.ROLLER, "down");
     b[7][6] = getTile(Tiles.ROLLER, "up");
-    b[7][7] = getTile(Tiles.WALL, "left-up");
+    b[7][7] = getTile(Tiles.WALL, "left-up"); b[7][7].finish = true;
     b[7][8] = getTile(Tiles.EMPTY, "1");
     b[7][9] = getTile(Tiles.EMPTY, "1");
     b[7][10] = getTile(Tiles.WALL, "down");
@@ -178,6 +208,7 @@ Tiles = {
     b[11][10] = getTile(Tiles.ROLLER, "up");
     b[11][11] = getTile(Tiles.EMPTY, "1");
 
+    _boardCache = b;
     return b;
   };
 
@@ -190,7 +221,7 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    return "/tiles/" + tileType + "-" + direction + ".jpg";
+    return { path: "/tiles/" + tileType + "-" + direction + ".jpg" };
   }
 
 })(Tiles);

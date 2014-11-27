@@ -45,7 +45,7 @@ Meteor.methods({
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
-      Players.insert({gameId: gameId, userId: user._id, name: author});
+      Players.insert({gameId: gameId, userId: user._id, name: author, position: {x: -1, y: -1}});
     }
 
     // analytics.track('Game joined', {
@@ -85,7 +85,8 @@ Meteor.methods({
     }
 
     for (var i in players) {
-      GameLogic.updatePosition(players[i], GameLogic.DEFAULT_X, GameLogic.DEFAULT_Y, GameLogic.DEFAULT_DIRECTION);
+      var start = Tiles.getStartPosition(players);
+      GameLogic.updatePosition(players[i], start.x, start.y, start.direction);
       GameLogic.drawCards(players[i]);
     }
 

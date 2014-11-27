@@ -9,14 +9,20 @@ Template.cards.helpers({
     return cards;
   },
   availableCards: function() {
-    console.log('re-rendering cards');
     Session.set("availableCards", this.cards);
+    $(".available").show();
 
     var cards = [];
     for (var j in this.cards) {
       var card = this.cards[j];
       cards.push(getCardHtml(card, 'available', j));
     }
+
+    //Can't find a better way to do this. Template.rendered is only called once, not every update..
+    Meteor.setTimeout(function() {
+      $('[data-toggle="tooltip"]').tooltip();
+    }, 100);
+
     return cards;
   }
 });
@@ -24,19 +30,19 @@ Template.cards.helpers({
 function getCardHtml(card, type, index) {
   switch (card) {
     case 0:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='1 step forward' /></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='1 step forward'><i class='fa fa-long-arrow-up' /></span>";
     case 1:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-down' data-toggle='tooltip' title='Backup'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Backup'><i class='fa fa-long-arrow-down' /></span>";
     case 2:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-rotate-left' data-toggle='tooltip' title='Rotate counter-clockwise'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate counter-clockwise'><i class='fa fa-rotate-left' /></span>";
     case 3:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-rotate-right' data-toggle='tooltip' title='Rotate clockwise'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate clockwise'><i class='fa fa-rotate-right' /></span>";
     case 4:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='2 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='2 steps forward'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='2 steps forward'><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /></span>";
     case 5:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='3 steps forward'><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /></span>";
     case 6:
-      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-arrows-v' data-toggle='tooltip' title='U-turn'/></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='U-turn'><i class='fa fa-arrows-v' /></span>";
   }
   return "";
 }
@@ -82,7 +88,3 @@ Template.cards.events({
     }
   }
 });
-
-Template.cards.rendered = function() {
-  $('[data-toggle="tooltip"]').tooltip();
-};

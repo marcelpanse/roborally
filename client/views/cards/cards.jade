@@ -4,11 +4,12 @@ template(name="cards")
   h5
     | play
     each playedCards
-      !{this}
+      != this
+  br
   h5
     | available
     each availableCards
-      !{this}
+      != this
   a.btn.btn-primary.playBtn.disabled play cards
   br
   br

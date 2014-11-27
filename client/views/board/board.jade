@@ -7,9 +7,13 @@ template(name="board")
   #board
     each tiles
       each this
-        img.tile(src=this)
+        span.tile(style="background-image: url('#{this.path}')")
+          if this.finish
+            img.finish(src='/finish.png')
+          if this.start
+            img.finish(src='/start.png')
     br
-    span(style="#{positionBlue}")
-      img#r1(src='/robot_1_500.png', style='#{directionBlue}')
-    span(style="#{positionRed}")
-      img#r2(src='/robot_2_500.png', style='#{directionRed}')
+    div(style= positionBlue)
+      img#r1(src='/robot_1_500.png', style= directionBlue)
+    div(style="#{positionRed}")
+      img#r2(src='/robot_2_500.png', style= directionRed)
