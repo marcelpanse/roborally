@@ -1,9 +1,14 @@
 template(name="cards")
   h3 
     | cards
-  each availableCards
-    span.card
-      | !{this}
+  h5
+    | play
+    each playedCards
+      !{this}
+  h5
+    | available
+    each availableCards
+      !{this}
   a.btn.btn-primary.playBtn.disabled play cards
   br
   br

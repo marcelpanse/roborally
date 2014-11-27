@@ -1,60 +1,83 @@
 Template.cards.helpers({
+  playedCards: function() {
+    var sessionCards = Session.get("playedCards") || [];
+    var cards = [];
+    for (var j in sessionCards) {
+      var card = sessionCards[j];
+      cards.push(getCardHtml(card, 'played', j));
+    }
+    return cards;
+  },
   availableCards: function() {
     console.log('re-rendering cards');
+    Session.set("availableCards", this.cards);
+
     var cards = [];
     for (var j in this.cards) {
       var card = this.cards[j];
-      switch (card) {
-        case 0:
-          cards.push("<i class='fa fa-long-arrow-up' data-card='0' data-toggle='tooltip' title='1 step forward' />");
-          break;
-        case 1:
-          cards.push("<i class='fa fa-long-arrow-down' data-card='1' data-toggle='tooltip' title='Backup'/>");
-          break;
-        case 2:
-          cards.push("<i class='fa fa-rotate-left' data-card='2' data-toggle='tooltip' title='Rotate counter-clockwise'/>");
-          break;
-        case 3:
-          cards.push("<i class='fa fa-rotate-right' data-card='3' data-toggle='tooltip' title='Rotate clockwise'/>");
-          break;
-        case 4:
-          cards.push("<i class='fa fa-long-arrow-up' data-card='4' data-toggle='tooltip' title='2 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='2 steps forward'/>");
-          break;
-        case 5:
-          cards.push("<i class='fa fa-long-arrow-up' data-card='5' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/>");
-          break;
-        case 6:
-          cards.push("<i class='fa fa-arrows-v' data-card='6' data-toggle='tooltip' title='U-turn'/>");
-          break;
-      }
+      cards.push(getCardHtml(card, 'available', j));
     }
     return cards;
   }
 });
 
-Template.cards.events({
-  'click .card': function(e) {
-    if ($(".card.selected").length < 3) {
-      $(e.currentTarget).toggleClass('selected');
-    } else {
-      $(e.currentTarget).removeClass('selected');
-    }
+function getCardHtml(card, type, index) {
+  switch (card) {
+    case 0:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='1 step forward' /></span>";
+    case 1:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-down' data-toggle='tooltip' title='Backup'/></span>";
+    case 2:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-rotate-left' data-toggle='tooltip' title='Rotate counter-clockwise'/></span>";
+    case 3:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-rotate-right' data-toggle='tooltip' title='Rotate clockwise'/></span>";
+    case 4:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='2 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='2 steps forward'/></span>";
+    case 5:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/><i class='fa fa-long-arrow-up' data-toggle='tooltip' title='3 steps forward'/></span>";
+    case 6:
+      return "<span class='card "+ type +"' data-card='"+ index +"'><i class='fa fa-arrows-v' data-toggle='tooltip' title='U-turn'/></span>";
+  }
+  return "";
+}
 
-    $(".playBtn").toggleClass("disabled", $(".card.selected").length != 3);
+Template.cards.events({
+  'click .available': function(e) {
+    var card = $(e.currentTarget).data("card");
+    var playedCards = Session.get("playedCards") || [];
+    var availableCards = Session.get("availableCards") || [];
+    if (playedCards.length < 5) {
+      playedCards.push(availableCards[card]);
+      $(e.currentTarget).hide();
+    }
+    Session.set("playedCards", playedCards);
+    $(".playBtn").toggleClass("disabled", playedCards.length != 5);
+  },
+  'click .played': function(e) {
+    var card = $(e.currentTarget).data("card");
+    var playedCards = Session.get("playedCards") || [];
+    var availableCards = Session.get("availableCards") || [];
+
+    for (var i in availableCards) {
+      if (availableCards[i] == playedCards[card]) {
+        var a = $($('.available')[i]);
+        if (!a.is(":visible")) {
+          a.show();
+          break;
+        }
+      }
+    }
+    playedCards.splice(card, 1);
+    Session.set("playedCards", playedCards);
+    $(".playBtn").toggleClass("disabled", playedCards.length != 5);
   },
   'click .playBtn': function(e) {
-    if ($(".card.selected").length == 3) {
-      var selectedCards = [];
-      $(".card.selected i").each(function() {
-        if ($(this).data('card')) {
-          selectedCards.push(Number($(this).data('card')));
-        }
-      });
-
-      Meteor.call('playCards', {gameId: this.gameId, cards: selectedCards}, function(error) {
+    var playedCards = Session.get("playedCards") || [];
+    if (playedCards.length == 5) {
+      Meteor.call('playCards', {gameId: this.gameId, cards: playedCards}, function(error) {
         if (error)
           return alert(error.reason);
-        $(".card.selected").removeClass('selected');
+        Session.set("playedCards", []);
       });
     }
   }

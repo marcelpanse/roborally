@@ -9,7 +9,7 @@ GameLogic = {
 };
 
 (function (scope) {
-  var _MAX_NUMBER_OF_CARDS = 6;
+  var _MAX_NUMBER_OF_CARDS = 9;
 
   var _cardTypes = {
     0: {direction: 0, position: 1, name: "STEP_FORWARD"},
@@ -85,7 +85,7 @@ GameLogic = {
     for (var i in cards) {
       var card = cards[i];
       var index = playerCards.indexOf(card);
-      if (index > -1) {
+      if (index > -1 && i < 5) {
         GameLogic.playCard(player, card, i*1000);
         playerCards.splice(index, 1);
       }
