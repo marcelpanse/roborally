@@ -6,7 +6,7 @@ Template.chat.events({
       message: $(event.target).find('[name=message]').val()
     };
 
-    Meteor.call('addMessage', message, function(error, id) {
+    Meteor.call('addMessage', message, function(error) {
       if (error)
         return alert(error.reason);
 

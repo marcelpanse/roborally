@@ -27,7 +27,8 @@ Template.cards.helpers({
     return cards;
   },
   showCards: function() {
-    return this.game.gamePhase == GameState.PHASE.PROGRAM;
+    var cards = this.cards || [];
+    return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0;
   },
   showPlayButton: function() {
     return !Session.get("cardsSubmitted");

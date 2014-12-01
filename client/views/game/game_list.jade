@@ -1,14 +1,24 @@
 template(name="gameList")
-  h3 Games
   unless currentUser
     +splash
   else
-    each games
+    h3 Open games
+    each openGames
       h1
         a(href="{{pathFor route='game.page'}}") #{name}
-        span.small #{author}
     else
-      | No games at the moment, create one at the right.
+      | No open games at the moment, create one at the right.
+    h3 Active games
+    each activeGames
+      h1
+        a(href="{{pathFor route='game.page'}}") #{name}
+    else
+      | No active games at the moment
+    h3 Finished games
+    each endedGames  
+      h4
+        | #{name}
+        span.small won by #{author}
 
 template(name="gameItemPostForm")
   if gameCreated

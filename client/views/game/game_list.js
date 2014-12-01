@@ -1,12 +1,18 @@
 Template.gameList.helpers({
-  games: function() {
-    return Games.find({}, {sort: {submitted: -1}});
+  openGames: function() {
+    return Games.find({winner: null, started: false}, {sort: {submitted: -1}});
+  },
+  activeGames: function() {
+    return Games.find({winner: null, started: true}, {sort: {submitted: -1}});
+  },
+  endedGames: function() {
+    return Games.find({winner: {$exists: true}}, {sort: {submitted: -1}});
   }
 });
 
 Template.gameItemPostForm.helpers({
   gameCreated: function() {
-    return Games.findOne({userId: Meteor.userId()});
+    return Games.findOne({userId: Meteor.userId(), winner: null});
   }
 });
 

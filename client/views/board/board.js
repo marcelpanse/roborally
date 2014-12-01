@@ -1,24 +1,31 @@
 Template.board.helpers({
-  ownGame: function() {
-    return this.game.userId == Meteor.userId();
+  inGame: function() {
+    for (var i in this.players) {
+      if (this.players[i].userId == Meteor.userId()) {
+        return true;
+      }
+    }
+    return false;
   },
-
-  positionRed: function() {
+  getRobotId: function() {
+    return this.players[0].userId == Meteor.userId() ? 1 : 2;
+  },
+  positionBlue: function() {
     var x = this.players[0].position.x;
     var y = this.players[0].position.y;
 
     return calcPosition(x,y);
   },
-  positionBlue: function() {
+  positionYellow: function() {
     var x = this.players[1].position.x;
     var y = this.players[1].position.y;
 
     return calcPosition(x,y);
   },
-  directionRed: function() {
+  directionBlue: function() {
     return getDirection(this.players[0].direction);
   },
-  directionBlue: function() {
+  directionYellow: function() {
     return getDirection(this.players[1].direction);
   },
   tiles: function() {
@@ -54,9 +61,16 @@ var calcPosition = function(x, y) {
 
 Template.board.events({
   'click .cancel': function() {
-    if (confirm("Remove this game?")) {
+    if (this.game.gamePhase != GameState.PHASE.ENDED) {
+      if (confirm("If you leave, you will forfeit the game, are you sure you want to give up?")) {
+        Meteor.call('leaveGame', this.game._id, function(error) {
+          if (error)
+            alert(error.reason);
+          Router.go('gamelist.page');
+        });
+      }
+    } else {
       Router.go('gamelist.page');
-      Games.remove(this.game._id);
     }
   }
 });

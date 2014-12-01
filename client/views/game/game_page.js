@@ -29,7 +29,7 @@ Template.gamePageActions.events({
   'click .leave': function(e) {
     e.preventDefault();
 
-    Meteor.call('leaveGame', {gameId: this._id}, function(error) {
+    Meteor.call('leaveGame', this._id, function(error) {
       if (error)
         return alert(error.reason);
     });

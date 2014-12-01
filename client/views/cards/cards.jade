@@ -1,17 +1,17 @@
 template(name="cards")
-  h3 
-    | cards
-  h5
-    | play
-    each playedCards
-      != this
-  br
-  h5
-    | available
-    if showCards
+  if showCards
+    h3 
+      | cards
+    h5
+      | play
+      each playedCards
+        != this
+    br
+    h5
+      | available
       each availableCards
         != this
-  if showPlayButton
-    a.btn.btn-primary.playBtn.disabled play cards
+    if showPlayButton
+      a.btn.btn-primary.playBtn.disabled play cards
   br
   br

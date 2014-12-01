@@ -12,15 +12,15 @@ Tiles = {
   var _boardCache = null;
 
   scope.getStartPosition = function(players) {
-    var rows = Tiles.getBoardTiles();
-    for (var i in rows) {
-      var cols = rows[i];
-      for (var j in cols) {
-        var tile = cols[j];
+    var board = Tiles.getBoardTiles();
+    for (var y in board) { //rows
+      var cols = board[y];
+      for (var x in cols) { //cols
+        var tile = cols[x];
         if (tile.start) {
           //check if no player is already there
-          if (!isPlayerOnTile(players, j, i)) {
-            return {x: Number(j), y: Number(i), direction: rows[i][j].direction};
+          if (!isPlayerOnTile(players, x, y)) {
+            return {x: Number(x), y: Number(y), direction: board[y][x].direction};
           }
         }
       }
@@ -29,17 +29,17 @@ Tiles = {
   };
 
   scope.isPlayerOnFinish = function(player) {
-    return Tiles.getBoardTiles()[player.position.x][player.position.y].finish;
+    return Tiles.getBoardTiles()[player.position.y][player.position.x].finish;
   };
 
   function isPlayerOnTile(players, x, y) {
-    var tileIsEmpty = true;
+    var playerOnTile = false;
     for (var p in players) {
       if (players[p].position.x == x && players[p].position.y == y) {
-        tileIsEmpty = false;
+        playerOnTile = true;
       }
     }
-    return tileIsEmpty;
+    return playerOnTile;
   }
 
   scope.getBoardTiles = function() {
@@ -222,7 +222,7 @@ Tiles = {
 
   function create2DArray(rows) {
     var arr = [];
-    for (var i=0;i<rows;i++) {
+    for (var i = 0; i < rows; i++) {
       arr[i] = [];
     }
     return arr;

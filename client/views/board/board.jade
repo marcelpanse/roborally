@@ -1,11 +1,14 @@
 template(name="board")
   h3
     | Game: #{game.name} 
-    if ownGame
-      a.btn.btn-danger.cancel cancel game
+    if inGame
+      a.btn.btn-danger.cancel Leave game
+      img#robot(src='/robot_#{getRobotId}_500.png') 
+      i.fa.fa-arrow-left  this is your robot
 
   if gameEnded
-    | Game ended! #{game.winner} won the game!
+    .alert.alert-info.end-message
+      | Game ended! #{game.winner} has won the game!
   else
     #board
       each tiles
@@ -17,6 +20,6 @@ template(name="board")
               img.board-item(src='/start.png')
       br
       div(style= positionBlue)
-        img#r1(src='/robot_1_500.png', style= directionBlue)
-      div(style="#{positionRed}")
-        img#r2(src='/robot_2_500.png', style= directionRed)
+        img(src='/robot_1_500.png', style= directionBlue)
+      div(style="#{positionYellow}")
+        img(src='/robot_2_500.png', style= directionYellow)

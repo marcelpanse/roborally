@@ -26,22 +26,22 @@ GameState = {
       switch (game.gamePhase) {
         case GameState.PHASE.IDLE:
           Games.update(game._id, {$set: {started: true, gamePhase: GameState.PHASE.DEAL}});
-          playDeal(game);
+          playDealPhase(game);
           break;
         case GameState.PHASE.DEAL:
-          playDeal(game);
+          playDealPhase(game);
           break;
         case GameState.PHASE.PROGRAM:
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
-          playCheckGameEnded(game);
+          checkIfWeHaveAWinner(game);
           break;
       }
     }, 1000);
   };
 
-  function playDeal(game) {
+  function playDealPhase(game) {
     var players = Players.find({gameId: game._id}).fetch();
     for (var i in players) {
       GameLogic.drawCards(players[i]);
@@ -54,7 +54,7 @@ GameState = {
     GameState.nextPlayPhase(game._id);
   }
 
-  function playCheckGameEnded(game) {
+  function checkIfWeHaveAWinner(game) {
     var players = Players.find({gameId: game._id}).fetch();
     var ended = false;
     for (var i in players) {

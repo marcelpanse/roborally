@@ -46,22 +46,23 @@ Meteor.methods({
     }
   },
 
-  leaveGame: function(postAttributes) {
+  leaveGame: function(gameId) {
     var user = Meteor.user();
-    if (postAttributes.user) {
-      user = postAttributes.user;
-    }
-
     if (!user)
       throw new Meteor.Error(401, "You need to login to leave a game");
-    var game = Games.findOne(postAttributes.gameId);
+    var game = Games.findOne(gameId);
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
     var author = (user.profile) ? user.profile.name : user.emails[0].address;
-    console.log('User ' + author + ' leaving game ' + postAttributes.gameId);
+    console.log('User ' + author + ' leaving game ' + gameId);
 
-    Players.remove({gameId: game._id, userId: user._id});
+    if (game.started) {
+      var player = Players.findOne({gameId: game._id, userId: { $ne: Meteor.userId() }});
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
+    } else {
+      Players.remove({gameId: game._id, userId: user._id});
+    }
   },
 
   startGame: function(gameId) {
@@ -72,7 +73,11 @@ Meteor.methods({
 
     for (var i in players) {
       var start = Tiles.getStartPosition(players);
-      GameLogic.updatePosition(players[i], start.x, start.y, start.direction);
+      var player = players[i];
+      player.position.x = start.x;
+      player.position.y = start.y;
+      player.direction = start.direction;
+      Players.update(player._id, player);
     }
 
     console.log('set game started');
@@ -101,7 +106,6 @@ Meteor.methods({
       author: author,
       submitted: new Date().getTime()
     });
-    var messageId = Chat.insert(message);
-    return messageId;
+    Chat.insert(message);
   }
 });

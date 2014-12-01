@@ -30,23 +30,12 @@ GameLogic = {
     var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cardObj.cards.length;
     var cards = cardObj.cards || [];
 
-    for (var j =0; j < nrOfNewCards; j++) {
+    for (var j = 0; j < nrOfNewCards; j++) {
       cards.push(_.random(Object.keys(_cardTypes).length-1));
     }
 
     console.log('new cards', cards);
     Cards.update(id, {$set: {cards: cards}});
-  };
-
-  scope.updatePosition = function(player, newX, newY, direction) {
-    var attrs = {
-      position: {
-        x: newX,
-        y: newY
-      },
-      direction: direction
-    };
-    Players.update(player._id, {$set: attrs});
   };
 
   scope.playCard = function(player, card) {
@@ -77,8 +66,8 @@ GameLogic = {
       player.direction = start.direction;
     }
 
-    GameLogic.updatePosition(player, player.position.x, player.position.y, player.direction);
-    console.log('new position', player.position);
+    Players.update(player._id, player);
+    console.log('new position/direction', player.position, player.direction);
   };
 
   scope.submitCards = function(player, cards) {
