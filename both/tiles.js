@@ -19,13 +19,7 @@ Tiles = {
         var tile = cols[j];
         if (tile.start) {
           //check if no player is already there
-          var tileIsEmpty = true;
-          for (var p in players) {
-            if (players[p].position.x == j && players[p].position.y == i) {
-              tileIsEmpty = false;
-            }
-          }
-          if (tileIsEmpty) {
+          if (!isPlayerOnTile(players, j, i)) {
             return {x: Number(j), y: Number(i), direction: rows[i][j].direction};
           }
         }
@@ -33,6 +27,20 @@ Tiles = {
     }
     return {x: 0, y: 0, direction: 0};
   };
+
+  scope.isPlayerOnFinish = function(player) {
+    return Tiles.getBoardTiles()[player.position.x][player.position.y].finish;
+  };
+
+  function isPlayerOnTile(players, x, y) {
+    var tileIsEmpty = true;
+    for (var p in players) {
+      if (players[p].position.x == x && players[p].position.y == y) {
+        tileIsEmpty = false;
+      }
+    }
+    return tileIsEmpty;
+  }
 
   scope.getBoardTiles = function() {
     if (_boardCache !== null) { //cache the tiles.

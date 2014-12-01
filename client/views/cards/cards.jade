@@ -8,8 +8,10 @@ template(name="cards")
   br
   h5
     | available
-    each availableCards
-      != this
-  a.btn.btn-primary.playBtn.disabled play cards
+    if showCards
+      each availableCards
+        != this
+  if showPlayButton
+    a.btn.btn-primary.playBtn.disabled play cards
   br
   br

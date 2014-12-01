@@ -49,56 +49,45 @@ GameLogic = {
     Players.update(player._id, {$set: attrs});
   };
 
-  scope.playCard = function(player, card, delay) {
-    Meteor.setTimeout(function() {
-      console.log('playing card', _cardTypes[card]);
-      player.direction += _cardTypes[card].direction;
-      player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
-      switch (player.direction) {
-        case GameLogic.UP:
-          player.position.y -= _cardTypes[card].position;
-          break;
-        case GameLogic.RIGHT:
-          player.position.x += _cardTypes[card].position;
-          break;
-        case GameLogic.DOWN:
-          player.position.y += _cardTypes[card].position;
-          break;
-        case GameLogic.LEFT:
-          player.position.x -= _cardTypes[card].position;
-          break;
-      }
-
-      if (player.position.x < 0 || player.position.y < 0 ||
-          player.position.x >= Tiles.BOARD_WIDTH || player.position.y >= Tiles.BOARD_HEIGHT) {
-        //off the board, reset.
-        var start = Tiles.getStartPosition(Players.find({gameId: player.gameId}).fetch());
-        player.position.x = start.x;
-        player.position.y = start.y;
-        player.direction = start.direction;
-      }
-
-      GameLogic.updatePosition(player, player.position.x, player.position.y, player.direction);
-      console.log('new position', player.position);
-    }, delay || 0);
-  };
-
-  scope.playCards = function(player, cards) {
-    console.log('playing cards', cards);
-
-    var cardObj = Cards.findOne({playerId: player._id});
-    var playerCards = cardObj.cards;
-
-    for (var i in cards) {
-      var card = cards[i];
-      var index = playerCards.indexOf(card);
-      if (index > -1 && i < 5) {
-        GameLogic.playCard(player, card, i*1000);
-        playerCards.splice(index, 1);
-      }
+  scope.playCard = function(player, card) {
+    console.log('playing card', _cardTypes[card]);
+    player.direction += _cardTypes[card].direction;
+    player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
+    switch (player.direction) {
+      case GameLogic.UP:
+        player.position.y -= _cardTypes[card].position;
+        break;
+      case GameLogic.RIGHT:
+        player.position.x += _cardTypes[card].position;
+        break;
+      case GameLogic.DOWN:
+        player.position.y += _cardTypes[card].position;
+        break;
+      case GameLogic.LEFT:
+        player.position.x -= _cardTypes[card].position;
+        break;
     }
 
-    Cards.update(cardObj._id, {$set: {cards: cards}});
-    GameLogic.drawCards(player);
+    if (player.position.x < 0 || player.position.y < 0 ||
+        player.position.x >= Tiles.BOARD_WIDTH || player.position.y >= Tiles.BOARD_HEIGHT) {
+      //off the board, reset.
+      var start = Tiles.getStartPosition(Players.find({gameId: player.gameId}).fetch());
+      player.position.x = start.x;
+      player.position.y = start.y;
+      player.direction = start.direction;
+    }
+
+    GameLogic.updatePosition(player, player.position.x, player.position.y, player.direction);
+    console.log('new position', player.position);
+  };
+
+  scope.submitCards = function(player, cards) {
+    console.log('player ' + player.name + ' submitted cards: ' + cards);
+    Players.update(player._id, {$set: {submittedCards: cards}});
+
+    var submittedPlayers = Players.find({gameId: player.gameId, 'submittedCards.0': {$exists: true}}).fetch();
+    if (submittedPlayers.length == 2) {
+      GameState.nextGamePhase(player.gameId);
+    }
   };
 })(GameLogic);

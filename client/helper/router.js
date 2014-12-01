@@ -89,6 +89,12 @@ Router.route('/board/:_id', {
         }
       }
     });
+    this.render('gameState', {
+      to: 'gameState',
+      data: function() {
+        return Games.findOne(this.params._id);
+      }
+    });
     this.render('chat', {
       to: 'chat',
       data: function() {
@@ -99,7 +105,7 @@ Router.route('/board/:_id', {
       to: 'cards',
       data: function() {
         var c = Cards.findOne();
-        return {cards: c ? c.cards : [], gameId: this.params._id};
+        return {game: Games.findOne(this.params._id), cards: c ? c.cards : []};
       }
     });
   }

@@ -19,15 +19,12 @@ Meteor.methods({
       userId: user._id,
       author: author,
       submitted: new Date().getTime(),
-      started: false
+      started: false,
+      gamePhase: GameState.PHASE.IDLE,
+      playPhase: GameState.PLAY_PHASE.IDLE,
+      playPhaseCount: 0
     });
     var gameId = Games.insert(game);
-
-    // analytics.track(user._id, 'Game created', {
-    //   id: gameId,
-    //   name: game.name,
-    //   user: author
-    // });
 
     return gameId;
   },
@@ -47,12 +44,6 @@ Meteor.methods({
       console.log('User ' + author + ' joining game ' + gameId);
       Players.insert({gameId: gameId, userId: user._id, name: author, position: {x: -1, y: -1}});
     }
-
-    // analytics.track('Game joined', {
-    //   id: gameId,
-    //   name: game.name,
-    //   user: author
-    // });
   },
 
   leaveGame: function(postAttributes) {
@@ -71,11 +62,6 @@ Meteor.methods({
     console.log('User ' + author + ' leaving game ' + postAttributes.gameId);
 
     Players.remove({gameId: game._id, userId: user._id});
-
-    // analytics.track('Left game', {
-    //   id: postAttributes.gameId,
-    //   user: author
-    // });
   },
 
   startGame: function(gameId) {
@@ -87,23 +73,18 @@ Meteor.methods({
     for (var i in players) {
       var start = Tiles.getStartPosition(players);
       GameLogic.updatePosition(players[i], start.x, start.y, start.direction);
-      GameLogic.drawCards(players[i]);
     }
 
     console.log('set game started');
-    Games.update(gameId, {$set: {started: true}});
-
-    // analytics.track('Game started', {
-    //   id: gameId,
-    //   name: game.name
-    // });
+    GameState.nextGamePhase(gameId);
   },
 
   playCards: function(attributes) {
     var player = Players.findOne({gameId: attributes.gameId, userId: Meteor.userId()});
     if (!player)
       throw new Meteor.Error(401, 'Game/Player not found! ' + attributes.gameId);
-    GameLogic.playCards(player, attributes.cards);
+
+    GameLogic.submitCards(player, attributes.cards);
   },
 
   addMessage: function(postAttributes) {

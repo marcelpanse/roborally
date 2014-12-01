@@ -10,7 +10,8 @@ Template.cards.helpers({
   },
   availableCards: function() {
     Session.set("availableCards", this.cards);
-    $(".available").show();
+    Session.set("cardsSubmitted", false);
+    Session.set("playedCards", []);
 
     var cards = [];
     for (var j in this.cards) {
@@ -24,6 +25,12 @@ Template.cards.helpers({
     }, 100);
 
     return cards;
+  },
+  showCards: function() {
+    return this.game.gamePhase == GameState.PHASE.PROGRAM;
+  },
+  showPlayButton: function() {
+    return !Session.get("cardsSubmitted");
   }
 });
 
@@ -49,41 +56,46 @@ function getCardHtml(card, type, index) {
 
 Template.cards.events({
   'click .available': function(e) {
-    var card = $(e.currentTarget).data("card");
-    var playedCards = Session.get("playedCards") || [];
-    var availableCards = Session.get("availableCards") || [];
-    if (playedCards.length < 5) {
-      playedCards.push(availableCards[card]);
-      $(e.currentTarget).hide();
+    if (!Session.get("cardsSubmitted")) {
+      var card = $(e.currentTarget).data("card");
+      var playedCards = Session.get("playedCards") || [];
+      var availableCards = Session.get("availableCards") || [];
+      if (playedCards.length < 5) {
+        playedCards.push(availableCards[card]);
+        $(e.currentTarget).hide();
+      }
+      Session.set("playedCards", playedCards);
+      $(".playBtn").toggleClass("disabled", playedCards.length != 5);
     }
-    Session.set("playedCards", playedCards);
-    $(".playBtn").toggleClass("disabled", playedCards.length != 5);
   },
   'click .played': function(e) {
-    var card = $(e.currentTarget).data("card");
-    var playedCards = Session.get("playedCards") || [];
-    var availableCards = Session.get("availableCards") || [];
+    if (!Session.get("cardsSubmitted")) {
+      var card = $(e.currentTarget).data("card");
+      var playedCards = Session.get("playedCards") || [];
+      var availableCards = Session.get("availableCards") || [];
 
-    for (var i in availableCards) {
-      if (availableCards[i] == playedCards[card]) {
-        var a = $($('.available')[i]);
-        if (!a.is(":visible")) {
-          a.show();
-          break;
+      for (var i in availableCards) {
+        if (availableCards[i] == playedCards[card]) {
+          var a = $($('.available')[i]);
+          if (!a.is(":visible")) {
+            a.show();
+            break;
+          }
         }
       }
+      playedCards.splice(card, 1);
+      Session.set("playedCards", playedCards);
+      $(".playBtn").toggleClass("disabled", playedCards.length != 5);
     }
-    playedCards.splice(card, 1);
-    Session.set("playedCards", playedCards);
-    $(".playBtn").toggleClass("disabled", playedCards.length != 5);
   },
   'click .playBtn': function(e) {
     var playedCards = Session.get("playedCards") || [];
     if (playedCards.length == 5) {
-      Meteor.call('playCards', {gameId: this.gameId, cards: playedCards}, function(error) {
+      Meteor.call('playCards', {gameId: this.game._id, cards: playedCards}, function(error) {
         if (error)
           return alert(error.reason);
         Session.set("playedCards", []);
+        Session.set("cardsSubmitted", true);
       });
     }
   }

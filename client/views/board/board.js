@@ -21,9 +21,11 @@ Template.board.helpers({
   directionBlue: function() {
     return getDirection(this.players[1].direction);
   },
-
   tiles: function() {
     return Tiles.getBoardTiles();
+  },
+  gameEnded: function() {
+    return this.game.gamePhase == GameState.PHASE.ENDED;
   }
 });
 

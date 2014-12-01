@@ -1,19 +1,22 @@
 template(name="board")
   h3
-    | Game: #{name} 
+    | Game: #{game.name} 
     if ownGame
       a.btn.btn-danger.cancel cancel game
 
-  #board
-    each tiles
-      each this
-        span.tile(style="background-image: url('#{this.path}')")
-          if this.finish
-            img.finish(src='/finish.png')
-          if this.start
-            img.finish(src='/start.png')
-    br
-    div(style= positionBlue)
-      img#r1(src='/robot_1_500.png', style= directionBlue)
-    div(style="#{positionRed}")
-      img#r2(src='/robot_2_500.png', style= directionRed)
+  if gameEnded
+    | Game ended! #{game.winner} won the game!
+  else
+    #board
+      each tiles
+        each this
+          span.tile(style="background-image: url('#{this.path}')")
+            if this.finish
+              img.board-item(src='/finish.png')
+            if this.start
+              img.board-item(src='/start.png')
+      br
+      div(style= positionBlue)
+        img#r1(src='/robot_1_500.png', style= directionBlue)
+      div(style="#{positionRed}")
+        img#r2(src='/robot_2_500.png', style= directionRed)
