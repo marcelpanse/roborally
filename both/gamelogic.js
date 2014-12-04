@@ -71,7 +71,7 @@ GameLogic = {
 
     if (card !== undefined) {
       var cardType = _cardTypes[card];
-      console.log('playing card', cardType, player);
+      console.log('playing card ' + cardType + ' for player ' + player.name);
 
       player.direction += cardType.direction;
       player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
