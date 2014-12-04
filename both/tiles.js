@@ -19,7 +19,7 @@ Tiles = {
         var tile = cols[x];
         if (tile.start) {
           //check if no player is already there
-          if (!isPlayerOnTile(players, x, y)) {
+          if (Tiles.isPlayerOnTile(players, x, y) === null) {
             return {x: Number(x), y: Number(y), direction: board[y][x].direction};
           }
         }
@@ -29,18 +29,41 @@ Tiles = {
   };
 
   scope.isPlayerOnFinish = function(player) {
-    return Tiles.getBoardTiles()[player.position.y][player.position.x].finish;
+    return Tiles.getBoardTile(player.position.x, player.position.y).finish;
   };
 
-  function isPlayerOnTile(players, x, y) {
-    var playerOnTile = false;
+  scope.isPlayerOnVoid = function(player) {
+    var a = Tiles.getBoardTile(player.position.x, player.position.y).tileType == Tiles.VOID;
+    if (a) {
+      console.log("Player fell into the void", player.name);
+    }
+    return a;
+  };
+
+  scope.isPlayerOnBoard = function(player) {
+    var a = player.position.x >= 0 && player.position.y >= 0 && player.position.x < Tiles.BOARD_WIDTH && player.position.y < Tiles.BOARD_HEIGHT;
+    if (!a) {
+      console.log("Player fell off the board", player.name);
+    }
+    return a;
+  };
+
+  scope.isPlayerOnTile = function(players, x, y) {
     for (var p in players) {
       if (players[p].position.x == x && players[p].position.y == y) {
-        playerOnTile = true;
+        return players[p];
       }
     }
-    return playerOnTile;
-  }
+    return null;
+  };
+
+  scope.getBoardTile = function(x, y) {
+    if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
+      console.log("Invalid board tile", x, y);
+      return Tiles.getBoardTiles()[0][0];
+    }
+    return Tiles.getBoardTiles()[y][x];
+  };
 
   scope.getBoardTiles = function() {
     if (_boardCache !== null) { //cache the tiles.
@@ -229,7 +252,7 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    return { path: "/tiles/" + tileType + "-" + direction + ".jpg" };
+    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType };
   }
 
 })(Tiles);

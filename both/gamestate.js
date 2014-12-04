@@ -38,7 +38,7 @@ GameState = {
           checkIfWeHaveAWinner(game);
           break;
       }
-    }, 1000);
+    }, 300);
   };
 
   function playDealPhase(game) {
@@ -96,7 +96,7 @@ GameState = {
           playCheckpoints(game);
           break;
       }
-    }, 1000);
+    }, 300);
   };
 
   function playRevealCards(game) {
@@ -105,19 +105,10 @@ GameState = {
   }
 
   function playMoveBots(game) {
-    var submittedPlayers = Players.find({gameId: game._id, 'submittedCards.0': {$exists: true}}).fetch();
-    for (var i in submittedPlayers) {
-      var submittedCards = submittedPlayers[i].submittedCards;
-      var cardToPlay = submittedCards.shift();
-      var cardObj = Cards.findOne({playerId: submittedPlayers[i]._id});
-      var playerCards = cardObj.cards;
-      var index = playerCards.indexOf(cardToPlay);
-      if (index > -1) {
-        GameLogic.playCard(submittedPlayers[i], cardToPlay);
-        Players.update(submittedPlayers[i]._id, {$set: {submittedCards: submittedCards}});
-        playerCards.splice(index, 1);
-        Cards.update(cardObj._id, {$set: {cards: playerCards}});
-      }
+    var players = Players.find({gameId: game._id}).fetch();
+    // play 1 card per player
+    for (var i in players) {
+      Meteor.wrapAsync(GameLogic.playCard)(game._id, players[i]._id);
     }
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOARD}});
     GameState.nextPlayPhase(game._id);
