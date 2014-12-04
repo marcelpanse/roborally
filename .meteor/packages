@@ -5,7 +5,6 @@
 
 meteor-platform
 accounts-password
-accounts-ui
 mizzao:bootstrap-3
 iron:router
 mizzao:user-status
@@ -17,3 +16,5 @@ linto:fontawesome
 spiderable
 percolatestudio:segment.io@1.1.0_1
 fourseven:scss
+ian:accounts-ui-bootstrap-3
+
