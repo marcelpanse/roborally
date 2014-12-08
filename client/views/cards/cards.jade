@@ -5,12 +5,12 @@ template(name="cards")
       h5
         | play
         each chosenCards
-          != this
+          +card
       br
       h5
         | available
         each availableCards
-          != this
+          +card
       if showPlayButton
         a.btn.btn-primary.playBtn.disabled play cards
     else
@@ -18,7 +18,13 @@ template(name="cards")
         h5 
           | #{name}: 
           each playedCardsHtml
-            != this
+            +card
         br
   br
   br
+
+template(name="card")
+  span.card(class="#{class} #{cardId}" data-toggle='tooltip' title='#{title}')
+    if steps
+      |#{steps}x
+    i.fa(class="#{icon}")  #{priority}

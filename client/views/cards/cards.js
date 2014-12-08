@@ -1,38 +1,21 @@
 Template.cards.helpers({
   chosenCards: function() {
-    var sessionCards = Session.get("chosenCards") || [];
-    var cards = [];
-    for (var j in sessionCards) {
-      var card = sessionCards[j];
-      cards.push(getCardHtml(card, 'played', j));
-    }
-    return cards;
+    return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
     Session.set("availableCards", this.cards);
     Session.set("cardsSubmitted", false);
     Session.set("chosenCards", []);
 
-    var cards = [];
-    for (var j in this.cards) {
-      var card = this.cards[j];
-      cards.push(getCardHtml(card, 'available', j));
-    }
-
     //Can't find a better way to do this. Template.rendered is only called once, not every update..
     Meteor.setTimeout(function() {
       $('[data-toggle="tooltip"]').tooltip();
     }, 100);
 
-    return cards;
+    return addUIData(this.cards, true);
   },
   playedCardsHtml: function() {
-    var cards = [];
-    for (var j in this.playedCards) {
-      var card = this.playedCards[j];
-      cards.push(getCardHtml(card, 'available', j));
-    }
-    return cards;
+    return addUIData(this.playedCards || [], false);
   },
   showCards: function() {
     var cards = this.cards || [];
@@ -43,34 +26,12 @@ Template.cards.helpers({
   }
 });
 
-function getCardHtml(card, type, index) {
-  switch (card) {
-    case 0:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='1 step forward'><i class='fa fa-long-arrow-up' /></span>";
-    case 1:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Backup'><i class='fa fa-long-arrow-down' /></span>";
-    case 2:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate left'><i class='fa fa-rotate-left' /></span>";
-    case 3:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate right'><i class='fa fa-rotate-right' /></span>";
-    case 4:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='2 steps forward'><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /></span>";
-    case 5:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='3 steps forward'><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /></span>";
-    case 6:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='U-turn'><i class='fa fa-arrows-v' /></span>";
-  }
-  return "";
-}
-
-Template.cards.events({
+Template.card.events({
   'click .available': function(e) {
     if (!Session.get("cardsSubmitted")) {
-      var card = $(e.currentTarget).data("card");
       var chosenCards = Session.get("chosenCards") || [];
-      var availableCards = Session.get("availableCards") || [];
       if (chosenCards.length < 5) {
-        chosenCards.push(availableCards[card]);
+        chosenCards.push(this);
         $(e.currentTarget).hide();
       }
       Session.set("chosenCards", chosenCards);
@@ -79,24 +40,20 @@ Template.cards.events({
   },
   'click .played': function(e) {
     if (!Session.get("cardsSubmitted")) {
-      var card = $(e.currentTarget).data("card");
+      var cardId = this.cardId;
       var chosenCards = Session.get("chosenCards") || [];
-      var availableCards = Session.get("availableCards") || [];
-
-      for (var i in availableCards) {
-        if (availableCards[i] == chosenCards[card]) {
-          var a = $($('.available')[i]);
-          if (!a.is(":visible")) {
-            a.show();
-            break;
-          }
-        }
-      }
-      chosenCards.splice(card, 1);
+      chosenCards = _.filter(chosenCards, function(item) {
+        return item.cardId != cardId;
+      });
       Session.set("chosenCards", chosenCards);
+
+      $('.available.' + this.cardId).show();
       $(".playBtn").toggleClass("disabled", chosenCards.length != 5);
     }
-  },
+  }
+});
+
+Template.cards.events({
   'click .playBtn': function(e) {
     var chosenCards = Session.get("chosenCards") || [];
     if (chosenCards.length == 5) {
@@ -109,3 +66,44 @@ Template.cards.events({
     }
   }
 });
+
+function addUIData(cards, available) {
+  cards.forEach(function(card) {
+    if (card !== null) {
+      card.class = available ? 'available' : 'played';
+      switch (card.cardType) {
+        case 0:
+          card.title = '1 step forward';
+          card.icon = 'fa-long-arrow-up';
+          break;
+        case 1:
+          card.title = 'Backup';
+          card.icon = 'fa-long-arrow-down';
+          break;
+        case 2:
+          card.title = 'Rotate left';
+          card.icon = 'fa-rotate-left';
+          break;
+        case 3:
+          card.title = 'Rotate right';
+          card.icon = 'fa-rotate-right';
+          break;
+        case 4:
+          card.title = '2 steps forward';
+          card.icon = 'fa-long-arrow-up';
+          card.steps = 2;
+          break;
+        case 5:
+          card.title = '3 steps forward';
+          card.icon = 'fa-long-arrow-up';
+          card.steps = 3;
+          break;
+        case 6:
+          card.title = 'U-turn';
+          card.icon = 'fa-arrows-v';
+          break;
+      }
+    }
+  });
+  return cards;
+}

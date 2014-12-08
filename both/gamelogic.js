@@ -18,24 +18,30 @@ GameLogic = {
     6: {direction: 2, position: 0, name: "U_TURN"}
   };
 
-  scope.drawCards = function(player) {
+  scope.makeDeck = function(game) {
+    var current = Deck.findOne({gameId: game._id});
+    if (!current || current.cards.length < 10) {
+      Deck.upsert({gameId: game._id}, {$set: {cards: _.shuffle(_deck)}});
+    }
+  };
+
+  scope.dealCards = function(player) {
+    var deck = Deck.findOne({gameId: player.gameId});
     var cardObj = Cards.findOne({playerId: player._id});
-    var id;
     if (!cardObj) {
       cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
-      id = Cards.insert(cardObj);
-    } else {
-      id = cardObj._id;
     }
-    var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cardObj.cards.length;
     var cards = cardObj.cards || [];
+    var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
-      cards.push(_.random(Object.keys(_cardTypes).length-1));
+      var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0];
+      cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
     }
 
     console.log('player ' + player.name + ' has new cards', cards);
-    Cards.update(id, {$set: {cards: cards}});
+    Cards.upsert({playerId: player._id}, cardObj);
+    Deck.update(deck._id, deck);
   };
 
   scope.submitCards = function(player, cards) {
@@ -45,7 +51,7 @@ GameLogic = {
     var availableCards = Cards.findOne({playerId: player._id}).cards;
     for (var i in cards) {
       for (var j = 0; j < availableCards.length; j++) {
-        if (cards[i] == availableCards[j]) {
+        if (cards[i].cardId == availableCards[j].cardId) {
           availableCards.splice(j, 1);
           break;
         }
@@ -59,18 +65,15 @@ GameLogic = {
     }
   };
 
-  scope.playCard = function(gameId, playerId, callback) {
+  scope.playCard = function(gameId, playerId, card, callback) {
     var players = Players.find({gameId: gameId}).fetch();
     var player = _.find(players, function(item) {
       return item._id == playerId;
     });
     console.log("trying to play next card for player " + player.name);
-    var submittedCards = player.submittedCards;
-    var card = submittedCards.shift();
-    Players.update(player._id, {$set: {submittedCards: submittedCards}});
 
     if (card !== undefined) {
-      var cardType = _cardTypes[card];
+      var cardType = _cardTypes[card.cardType];
       console.log('playing card ' + cardType + ' for player ' + player.name);
 
       player.direction += cardType.direction;
@@ -156,4 +159,91 @@ GameLogic = {
       callback();
     }, 500); //wait before respawning, so you can see the player stepping into the void
   }
+
+  var _deck = [
+    { priority: 10, cardType: 6 },
+    { priority: 20, cardType: 6, },
+    { priority: 30, cardType: 6, },
+    { priority: 40, cardType: 6, },
+    { priority: 50, cardType: 6, },
+    { priority: 60, cardType: 6, },
+    { priority: 70, cardType: 2 },
+    { priority: 80, cardType: 3 },
+    { priority: 90, cardType: 2 },
+    { priority: 100, cardType: 3 },
+    { priority: 110, cardType: 2 },
+    { priority: 120, cardType: 3 },
+    { priority: 130, cardType: 2 },
+    { priority: 140, cardType: 3 },
+    { priority: 150, cardType: 2 },
+    { priority: 160, cardType: 3 },
+    { priority: 170, cardType: 2 },
+    { priority: 180, cardType: 3 },
+    { priority: 190, cardType: 2 },
+    { priority: 200, cardType: 3 },
+    { priority: 210, cardType: 2 },
+    { priority: 220, cardType: 3 },
+    { priority: 230, cardType: 2 },
+    { priority: 240, cardType: 3 },
+    { priority: 250, cardType: 2 },
+    { priority: 260, cardType: 3 },
+    { priority: 270, cardType: 2 },
+    { priority: 280, cardType: 3 },
+    { priority: 290, cardType: 2 },
+    { priority: 300, cardType: 3 },
+    { priority: 310, cardType: 2 },
+    { priority: 320, cardType: 3 },
+    { priority: 330, cardType: 2 },
+    { priority: 340, cardType: 3 },
+    { priority: 350, cardType: 2 },
+    { priority: 360, cardType: 3 },
+    { priority: 370, cardType: 2 },
+    { priority: 380, cardType: 3 },
+    { priority: 390, cardType: 2 },
+    { priority: 400, cardType: 3 },
+    { priority: 410, cardType: 2 },
+    { priority: 420, cardType: 3 },
+    { priority: 430, cardType: 1 },
+    { priority: 440, cardType: 1 },
+    { priority: 450, cardType: 1 },
+    { priority: 460, cardType: 1 },
+    { priority: 470, cardType: 1 },
+    { priority: 480, cardType: 1 },
+    { priority: 490, cardType: 0 },
+    { priority: 500, cardType: 0 },
+    { priority: 510, cardType: 0 },
+    { priority: 520, cardType: 0 },
+    { priority: 530, cardType: 0 },
+    { priority: 540, cardType: 0 },
+    { priority: 550, cardType: 0 },
+    { priority: 560, cardType: 0 },
+    { priority: 570, cardType: 0 },
+    { priority: 580, cardType: 0 },
+    { priority: 590, cardType: 0 },
+    { priority: 600, cardType: 0 },
+    { priority: 610, cardType: 0 },
+    { priority: 620, cardType: 0 },
+    { priority: 630, cardType: 0 },
+    { priority: 640, cardType: 0 },
+    { priority: 650, cardType: 0 },
+    { priority: 660, cardType: 0 },
+    { priority: 670, cardType: 4 },
+    { priority: 680, cardType: 4 },
+    { priority: 690, cardType: 4 },
+    { priority: 700, cardType: 4 },
+    { priority: 710, cardType: 4 },
+    { priority: 720, cardType: 4 },
+    { priority: 730, cardType: 4 },
+    { priority: 740, cardType: 4 },
+    { priority: 750, cardType: 4 },
+    { priority: 760, cardType: 4 },
+    { priority: 770, cardType: 4 },
+    { priority: 780, cardType: 4 },
+    { priority: 790, cardType: 5 },
+    { priority: 800, cardType: 5 },
+    { priority: 810, cardType: 5 },
+    { priority: 820, cardType: 5 },
+    { priority: 830, cardType: 5 },
+    { priority: 840, cardType: 5 }
+  ];
 })(GameLogic);
