@@ -1,5 +1,5 @@
 Meteor.publish('games', function() {
-  return Games.find();
+  return Games.find({}, {limit: 10, sort: {submitted: -1}});
 });
 
 Meteor.publish('chat', function(gameId) {

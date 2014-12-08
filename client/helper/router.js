@@ -8,6 +8,9 @@ Router.route('/', {
   layoutTemplate: 'home',
   action: function() {
     analytics.page("home");
+    if (Meteor.isCordova) {
+      Router.go('gamelist.page');
+    }
   }
 });
 
@@ -105,7 +108,7 @@ Router.route('/board/:_id', {
       to: 'cards',
       data: function() {
         var c = Cards.findOne();
-        return {game: Games.findOne(this.params._id), cards: c ? c.cards : []};
+        return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], players: Players.find()};
       }
     });
   }

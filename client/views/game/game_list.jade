@@ -18,13 +18,13 @@ template(name="gameList")
     each endedGames  
       h4
         | #{name}
-        span.small won by #{author}
+        span.small.text-lowercase won by #{author} {{formatDate submitted}}
 
 template(name="gameItemPostForm")
   if gameCreated
     with gameCreated
-      You have already created a game with the name '
-      <a href="{{pathFor route='game.page'}}">#{name}</a>'.
+      | You have an open game named
+      a(href="{{pathFor route='game.page'}}") #{name}
   else
     form.main
       div.control-group

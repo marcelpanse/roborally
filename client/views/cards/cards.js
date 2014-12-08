@@ -1,6 +1,6 @@
 Template.cards.helpers({
-  playedCards: function() {
-    var sessionCards = Session.get("playedCards") || [];
+  chosenCards: function() {
+    var sessionCards = Session.get("chosenCards") || [];
     var cards = [];
     for (var j in sessionCards) {
       var card = sessionCards[j];
@@ -11,7 +11,7 @@ Template.cards.helpers({
   availableCards: function() {
     Session.set("availableCards", this.cards);
     Session.set("cardsSubmitted", false);
-    Session.set("playedCards", []);
+    Session.set("chosenCards", []);
 
     var cards = [];
     for (var j in this.cards) {
@@ -24,6 +24,14 @@ Template.cards.helpers({
       $('[data-toggle="tooltip"]').tooltip();
     }, 100);
 
+    return cards;
+  },
+  playedCardsHtml: function() {
+    var cards = [];
+    for (var j in this.playedCards) {
+      var card = this.playedCards[j];
+      cards.push(getCardHtml(card, 'available', j));
+    }
     return cards;
   },
   showCards: function() {
@@ -42,9 +50,9 @@ function getCardHtml(card, type, index) {
     case 1:
       return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Backup'><i class='fa fa-long-arrow-down' /></span>";
     case 2:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate counter-clockwise'><i class='fa fa-rotate-left' /></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate left'><i class='fa fa-rotate-left' /></span>";
     case 3:
-      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate clockwise'><i class='fa fa-rotate-right' /></span>";
+      return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='Rotate right'><i class='fa fa-rotate-right' /></span>";
     case 4:
       return "<span class='card "+ type +"' data-card='"+ index +"' data-toggle='tooltip' title='2 steps forward'><i class='fa fa-long-arrow-up' /><i class='fa fa-long-arrow-up' /></span>";
     case 5:
@@ -59,24 +67,24 @@ Template.cards.events({
   'click .available': function(e) {
     if (!Session.get("cardsSubmitted")) {
       var card = $(e.currentTarget).data("card");
-      var playedCards = Session.get("playedCards") || [];
+      var chosenCards = Session.get("chosenCards") || [];
       var availableCards = Session.get("availableCards") || [];
-      if (playedCards.length < 5) {
-        playedCards.push(availableCards[card]);
+      if (chosenCards.length < 5) {
+        chosenCards.push(availableCards[card]);
         $(e.currentTarget).hide();
       }
-      Session.set("playedCards", playedCards);
-      $(".playBtn").toggleClass("disabled", playedCards.length != 5);
+      Session.set("chosenCards", chosenCards);
+      $(".playBtn").toggleClass("disabled", chosenCards.length != 5);
     }
   },
   'click .played': function(e) {
     if (!Session.get("cardsSubmitted")) {
       var card = $(e.currentTarget).data("card");
-      var playedCards = Session.get("playedCards") || [];
+      var chosenCards = Session.get("chosenCards") || [];
       var availableCards = Session.get("availableCards") || [];
 
       for (var i in availableCards) {
-        if (availableCards[i] == playedCards[card]) {
+        if (availableCards[i] == chosenCards[card]) {
           var a = $($('.available')[i]);
           if (!a.is(":visible")) {
             a.show();
@@ -84,18 +92,18 @@ Template.cards.events({
           }
         }
       }
-      playedCards.splice(card, 1);
-      Session.set("playedCards", playedCards);
-      $(".playBtn").toggleClass("disabled", playedCards.length != 5);
+      chosenCards.splice(card, 1);
+      Session.set("chosenCards", chosenCards);
+      $(".playBtn").toggleClass("disabled", chosenCards.length != 5);
     }
   },
   'click .playBtn': function(e) {
-    var playedCards = Session.get("playedCards") || [];
-    if (playedCards.length == 5) {
-      Meteor.call('playCards', {gameId: this.game._id, cards: playedCards}, function(error) {
+    var chosenCards = Session.get("chosenCards") || [];
+    if (chosenCards.length == 5) {
+      Meteor.call('playCards', {gameId: this.game._id, cards: chosenCards}, function(error) {
         if (error)
           return alert(error.reason);
-        Session.set("playedCards", []);
+        Session.set("chosenCards", []);
         Session.set("cardsSubmitted", true);
       });
     }

@@ -8,6 +8,6 @@ Games.allow({
     return false;
   },
   remove: function(userId, doc) {
-    return false;
+    return ownsDocument(userId, doc);
   }
 });

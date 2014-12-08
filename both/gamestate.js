@@ -44,6 +44,7 @@ GameState = {
   function playDealPhase(game) {
     var players = Players.find({gameId: game._id}).fetch();
     for (var i in players) {
+      Players.update(players[i]._id, {$set: {playedCards: []}});
       GameLogic.drawCards(players[i]);
     }
     Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PROGRAM}});
@@ -101,6 +102,15 @@ GameState = {
 
   function playRevealCards(game) {
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
+
+    var players = Players.find({gameId: game._id}).fetch();
+    // play 1 card per player
+    for (var i in players) {
+      var playedCards = players[i].playedCards || [];
+      playedCards.push(players[i].submittedCards[0]);
+      Players.update(players[i]._id, {$set: {playedCards: playedCards}});
+    }
+
     GameState.nextPlayPhase(game._id);
   }
 

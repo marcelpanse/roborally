@@ -2,3 +2,7 @@
 ownsDocument = function(userId, doc) {
   return doc && doc.userId === userId;
 };
+
+getUsername = function(user) {
+  return (user.profile.name) ? user.profile.name : user.emails[0].address;
+};

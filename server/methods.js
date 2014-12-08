@@ -1,19 +1,14 @@
 Meteor.methods({
   createGame: function(postAttributes) {
-    var user = Meteor.user(),
-    gameWithSameName = Games.findOne({name: postAttributes.name});
+    var user = Meteor.user();
 
     // ensure the user is logged in
     if (!user)
-      throw new Meteor.Error(401, "You need to login to post new stories");
-    // check that there are no previous posts with the same link
-    if (postAttributes.name && gameWithSameName) {
-      throw new Meteor.Error(302,  gameWithSameName._id);
-    }
+      throw new Meteor.Error(401, "You need to login to create a game");
     if (!postAttributes.name || postAttributes.name === '') {
       throw new Meteor.Error(303, 'Name cannot be empty.');
     }
-    var author = (user.profile) ? user.profile.name : user.emails[0].address;
+    var author = getUsername(user);
     // pick out the whitelisted keys
     var game = _.extend(_.pick(postAttributes, 'name'), {
       userId: user._id,
@@ -38,7 +33,7 @@ Meteor.methods({
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
-    var author = (user.profile) ? user.profile.name : user.emails[0].address;
+    var author = getUsername(user);
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
@@ -54,7 +49,7 @@ Meteor.methods({
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
-    var author = (user.profile) ? user.profile.name : user.emails[0].address;
+    var author = getUsername(user);
     console.log('User ' + author + ' leaving game ' + gameId);
 
     if (game.started) {
@@ -99,7 +94,7 @@ Meteor.methods({
     if (!user)
       throw new Meteor.Error(401, "You need to login to post new stories");
 
-    var author = (user.profile) ? user.profile.name : user.emails[0].address;
+    var author = getUsername(user);
     // pick out the whitelisted keys
     var message = _.extend(_.pick(postAttributes, 'message', 'gameId'), {
       userId: user._id,
