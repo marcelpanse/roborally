@@ -37,7 +37,8 @@ h6 {
 }
 
 hr.star-light,
-hr.star-primary {
+hr.star-primary,
+hr.star-well {
     margin: 25px auto 30px;
     padding: 0;
     max-width: 250px;
@@ -47,7 +48,8 @@ hr.star-primary {
 }
 
 hr.star-light:after,
-hr.star-primary:after {
+hr.star-primary:after,
+hr.star-well:after {
     content: "\f005";
     display: inline-block;
     position: relative;
@@ -73,6 +75,16 @@ hr.star-primary {
 hr.star-primary:after {
     color: #2c3e50;
     background-color: #fff;
+}
+
+hr.star-well {
+    color: #fff;
+    border-color: #fff;
+}
+
+hr.star-well:after {
+    color: #fff;
+    background-color: #2c3e50;
 }
 
 .img-centered {
@@ -110,7 +122,7 @@ header .intro-text .skills {
 
 @media(min-width:768px) {
     header .container {
-        padding-top: 200px;
+        padding-top: 150px;
         padding-bottom: 100px;
     }
 

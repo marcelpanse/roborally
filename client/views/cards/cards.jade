@@ -1,30 +1,26 @@
 template(name="cards")
-  h3 
-    | cards
-    if showCards
-      h5
-        | play
-        each chosenCards
+  h3 #{gameState}
+  hr.star-well
+  if showCards
+    h5
+      | Your hand
+    each availableCards
+      +card
+    h5
+      | Playing
+    each chosenCards
+      +card
+    if showPlayButton
+      a.btn.btn-success.playBtn.disabled play cards
+  else
+    each players
+      h5 
+        | #{name}: 
+        each playedCardsHtml
           +card
-      br
-      h5
-        | available
-        each availableCards
-          +card
-      if showPlayButton
-        a.btn.btn-primary.playBtn.disabled play cards
-    else
-      each players
-        h5 
-          | #{name}: 
-          each playedCardsHtml
-            +card
-        br
-  br
-  br
 
 template(name="card")
-  span.card(class="#{class} #{cardId}" data-toggle='tooltip' title='#{title}')
+  span.card.btn.btn-primary(class="#{class} #{cardId}" data-toggle='tooltip' title='#{title}')
     if steps
       |#{steps}x
     i.fa(class="#{icon}")  #{priority}

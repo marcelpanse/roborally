@@ -70,7 +70,6 @@ Router.route('/games/:_id', {
 Router.route('/board/:_id', {
   name: 'board.page',
   loadingTemplate: 'loading',
-  layoutTemplate: 'boardLayout',
 
   waitOn: function() {
     return [
@@ -92,23 +91,23 @@ Router.route('/board/:_id', {
         }
       }
     });
-    this.render('gameState', {
-      to: 'gameState',
-      data: function() {
-        return Games.findOne(this.params._id);
-      }
-    });
-    this.render('chat', {
-      to: 'chat',
-      data: function() {
-        return {messages: Chat.find(), gameId: this.params._id};
-      }
-    });
+    // this.render('gameState', {
+    //   to: 'gameState',
+    //   data: function() {
+    //     return Games.findOne(this.params._id);
+    //   }
+    // });
     this.render('cards', {
-      to: 'cards',
+      to: 'rightPanel',
       data: function() {
         var c = Cards.findOne();
         return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], players: Players.find()};
+      }
+    });
+    this.render('chat', {
+      to: 'rightPanel2',
+      data: function() {
+        return {messages: Chat.find(), gameId: this.params._id};
       }
     });
   }

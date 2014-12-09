@@ -109,8 +109,10 @@ GameState = {
     // play 1 card per player
     for (var i in players) {
       var playedCards = players[i].playedCards || [];
-      playedCards.push(players[i].submittedCards[0]);
-      Players.update(players[i]._id, {$set: {playedCards: playedCards}});
+      if (players[i].submittedCards[0]) {
+        playedCards.push(players[i].submittedCards[0]);
+        Players.update(players[i]._id, {$set: {playedCards: playedCards}});
+      }
     }
 
     GameState.nextPlayPhase(game._id);
@@ -124,9 +126,11 @@ GameState = {
     players.forEach(function(player) {
       var submittedCards = player.submittedCards;
       var card = submittedCards.shift();
-      Players.update(player._id, {$set: {submittedCards: submittedCards}});
-      card.playerId = player._id;
-      cardsToPlay.push(card);
+      if (card) {
+        Players.update(player._id, {$set: {submittedCards: submittedCards}});
+        card.playerId = player._id;
+        cardsToPlay.push(card);
+      }
     });
 
     cardsToPlay = _.sortBy(cardsToPlay, 'priority').reverse();

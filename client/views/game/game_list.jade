@@ -1,37 +1,45 @@
 template(name="gameList")
-  unless currentUser
-    +splash
-  else
-    h3 Open games
-    each openGames
-      h1
-        a(href="{{pathFor route='game.page'}}") #{name}
+  div.chat.well
+    unless currentUser
+      +splash
     else
-      | No open games at the moment, create one at the right.
-    h3 Active games
-    each activeGames
-      h1
-        a(href="{{pathFor route='game.page'}}") #{name}
-    else
-      | No active games at the moment
-    h3 Finished games
-    each endedGames  
-      h4
-        | #{name}
-        span.small.text-lowercase won by #{author} {{formatDate submitted}}
+      h2 Open games
+      hr.star-well
+      each openGames
+        h4.text-lowercase
+          a.white(href="{{pathFor route='game.page'}}") #{name}
+          span.small.text-lowercase created {{formatDate submitted}}
+      else
+        p No open games at the moment, create one at the right.
+      br
+      h3 Active games
+      hr.star-well
+      each activeGames
+        h4.text-lowercase
+          a.white(href="{{pathFor route='game.page'}}") #{name}
+          span.small.text-lowercase created {{formatDate submitted}}
+      else
+        p No active games at the moment
+      br
+      h3 Finished games
+      hr.star-well
+      each endedGames  
+        h4.text-lowercase
+          | #{name}
+          span.small.text-lowercase won by #{author} {{formatDate submitted}}
 
 template(name="gameItemPostForm")
+  h2 Create game
+  hr.star-well
   if gameCreated
     with gameCreated
       | You have an open game named
       a(href="{{pathFor route='game.page'}}") #{name}
   else
-    form.main
-      div.control-group
-        label.control-label(for="name") URL
-        div.controls
-          input(name="name", type="text", value="", placeholder="Game name")
+    form.main(role="form")
+      div.form-group
+        input.form-control.input-lg(name="name", type="text", value="", placeholder="The name of your game")
       br
       div.control-group
         div.controls
-          input.btn.btn-primary(type="submit", value="Submit")
+          input.btn.btn-primary.btn-lg(type="submit", value="Create game")

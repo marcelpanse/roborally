@@ -1,17 +1,15 @@
 template(name="gamePageActions")
-  h3
-    #{name}
-    span.small (#{author})
+  h2
+    | Game created by 
+    span.small #{author}
     
   unless gameReady
     unless inGame
-      a.btn.btn-success.join.action-button(href="#") Join game
+      a.btn.btn-success.btn-lg.join.action-button(href="#") Join game
 
   if gameReady
     if ownGame
-      a.btn.btn-success.start.action-button(href="#") Start game
-    else
-      Game full!
+      a.btn.btn-success.btn-lg.start.action-button(href="#") Start game
 
   if inGame
     a.btn.btn-danger.leave.action-button(href="#") Leave game
@@ -19,9 +17,9 @@ template(name="gamePageActions")
   if ownGame
     a.btn.btn-danger.delete.action-button(href="#") Cancel game
 
-
 template(name="players")
-  h4 Players:
-  ul
+  h3 Players
   each this
-    li #{name}
+    p #{name}
+  else
+    p nobody joined yet :-(

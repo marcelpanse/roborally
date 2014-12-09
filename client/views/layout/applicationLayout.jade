@@ -1,29 +1,52 @@
 template(name="applicationLayout")
   head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='You are brilliant. You are powerful. You are sophisticated. You are BORED. The ultimate unofficial RoboRally board game fan site.')
+    meta(name='author', content='Marcel Panse')
     title RoboRally
+    // Custom Fonts
+    link(href='http://fonts.googleapis.com/css?family=Montserrat:400,700', rel='stylesheet', type='text/css')
+    link(href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic', rel='stylesheet', type='text/css')
+    // HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries
+    // WARNING: Respond.js doesn't work if you view the page via file://
+    //if lt IE 9
+    script(src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js')
+    script(src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js')
   body
-  // Static navbar
-  div.navbar.navbar-default(role="navigation")
-    div.container-fluid
-      div.navbar-header
-        button.navbar-toggle.collapsed(type="button" data-toggle="collapse" data-target=".navbar-collapse")
-          span.sr-only Toggle navigation
-          span.icon-bar
-          span.icon-bar
-          span.icon-bar
-        a.navbar-brand(href="/") RoboRally!
-      div.navbar-collapse.collapse
-        ul.nav.navbar-nav
-          li: a(href="{{pathFor 'gamelist.page'}}") Games
-        ul.nav.navbar-nav.navbar-right
-          li.login
-            +loginButtons
-  div.container
-    div.row
-      div.col-md-8
-        +yield
-      div.col-md-4.well
-        +yield("rightPanel")
-        +yield("rightPanel2")
-  div.footer.well.well-sm
-    +usersPill
+    // Navigation
+    nav.navbar.navbar-default.navbar-fixed-top
+      .container
+        // Brand and toggle get grouped for better mobile display
+        .navbar-header.page-scroll
+          button.navbar-toggle(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href='/') RoboRally
+        // Collect the nav links, forms, and other content for toggling
+        #bs-example-navbar-collapse-1.collapse.navbar-collapse
+          ul.nav.navbar-nav.navbar-right
+            li.hidden
+              a(href='/')
+            li.page-scroll
+              a(href="{{pathFor 'gamelist.page'}}") Games
+            li.page-scroll
+              +loginButtons
+    header
+      .container
+        .row
+          .col-md-8
+            +yield
+          .col-md-4.well
+            +yield("rightPanel")
+            +yield("rightPanel2")
+    // Footer
+    footer.text-center
+      .footer-below
+        .container
+          .row
+            .col-lg-12
+              +usersPill

@@ -1,5 +1,6 @@
 Template.cards.helpers({
   chosenCards: function() {
+    reAddTooltip();
     return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
@@ -7,14 +8,11 @@ Template.cards.helpers({
     Session.set("cardsSubmitted", false);
     Session.set("chosenCards", []);
 
-    //Can't find a better way to do this. Template.rendered is only called once, not every update..
-    Meteor.setTimeout(function() {
-      $('[data-toggle="tooltip"]').tooltip();
-    }, 100);
-
+    reAddTooltip();
     return addUIData(this.cards, true);
   },
   playedCardsHtml: function() {
+    reAddTooltip();
     return addUIData(this.playedCards || [], false);
   },
   showCards: function() {
@@ -23,8 +21,43 @@ Template.cards.helpers({
   },
   showPlayButton: function() {
     return !Session.get("cardsSubmitted");
+  },
+  gameState: function() {
+    switch (this.game.gamePhase) {
+      case GameState.PHASE.IDLE:
+      case GameState.PHASE.DEAL:
+        return "Dealing cards";
+      case GameState.PHASE.ENDED:
+        return "Game over";
+      case GameState.PHASE.PROGRAM:
+        return "Pick your cards";
+      case GameState.PHASE.PLAY:
+        switch (this.game.playPhase) {
+          case GameState.PLAY_PHASE.IDLE:
+          case GameState.PLAY_PHASE.REVEAL_CARDS:
+            return "Revealing cards";
+          case GameState.PLAY_PHASE.MOVE_BOTS:
+            return "Moving bots";
+          case GameState.PLAY_PHASE.MOVE_BOARD:
+            return "Moving board elements";
+          case GameState.PLAY_PHASE.LASERS:
+            return "Shooting lasers";
+          case GameState.PLAY_PHASE.CHECKPOINTS:
+            return "Checkpoints";
+        }
+    }
+    console.log(this.game.gamePhase, this.game.playPhase);
+    return "Problem?";
   }
 });
+
+function reAddTooltip() {
+  //Can't find a better way to do this. Template.rendered is only called once, not every update..
+  Meteor.setTimeout(function() {
+    $(".tooltip").remove();
+    $('[data-toggle="tooltip"]').tooltip();
+  }, 100);
+}
 
 Template.card.events({
   'click .available': function(e) {

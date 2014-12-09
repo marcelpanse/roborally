@@ -1,8 +1,9 @@
 $tile-size: 50px
 $board-size: 12 * $tile-size
 
-.login
+#login-dropdown-list
    padding-top: 15px
+   padding-bottom: 15px
 
 .footer
   margin-top: 25px
@@ -14,6 +15,14 @@ $board-size: 12 * $tile-size
 .action-button
   margin: 5px
 
+a.white
+  color: white
+
+.well
+  background-color: #2c3e50
+  border: none
+  border-radius: 10px
+
 .chat
   position:relative
   margin:0 auto
@@ -23,10 +32,8 @@ $board-size: 12 * $tile-size
   .messages
     width: 100%
     height: 300px
-    overflow:hidden
-
-    :hover
-      overflow-y:scroll
+    overflow:auto
+    text-align: left
 
     > div
       padding:5px
@@ -57,14 +64,15 @@ $board-size: 12 * $tile-size
       -webkit-transform-origin: 50% 50%
 
 span.card
-  border: 1px solid black
-  padding: 5px
   margin: 5px
 
 img#robot
   width: $tile-size
   height: $tile-size
 
-div.end-message
-  padding: 30px
+.myRobot
+  text-align: left
   font-size: 18px
+  > img
+    display: inline
+    margin: 0

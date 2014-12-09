@@ -16,7 +16,8 @@ Template.chat.events({
 });
 
 Template.chat.rendered = function() {
-  Chat.find({gameId: this.gameId}).observe({added: function() {
+  Chat.find().observe({added: function() {
+    console.log('added');
     var $chat     = $('.chat'),
         $printer  = $('.messages', $chat),
         printerH  = $printer.innerHeight();
