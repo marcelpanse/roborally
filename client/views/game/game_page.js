@@ -41,6 +41,7 @@ Template.gamePageActions.events({
     Meteor.call('startGame', this._id, function(error) {
       if (error)
         return alert(error.reason);
+      analytics.track("game-started");
     });
   }
 });

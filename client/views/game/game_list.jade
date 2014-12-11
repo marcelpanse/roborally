@@ -33,7 +33,7 @@ template(name="gameItemPostForm")
   hr.star-well
   if gameCreated
     with gameCreated
-      | You have an open game named
+      | You have an open game named 
       a(href="{{pathFor route='game.page'}}") #{name}
   else
     form.main(role="form")

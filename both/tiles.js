@@ -57,10 +57,40 @@ Tiles = {
     return null;
   };
 
+  scope.canMove = function(x, y, tx, ty) {
+    var tile = Tiles.getBoardTile(x, y);
+    var targetTile = Tiles.getBoardTile(tx, ty);
+    var tileSide = "na";
+    var targetTileSide = "na";
+
+    if (x > tx) {
+      tileSide = "left";
+      targetTileSide = "right";
+    } else if (x < tx) {
+      tileSide = "right";
+      targetTileSide = "left";
+    } else if (y > ty) {
+      tileSide = "up";
+      targetTileSide = "down";
+    } else if (y < ty) {
+      tileSide = "down";
+      targetTileSide = "up";
+    }
+
+    if (tile.tileType == Tiles.WALL && String(tile.wallDirection).indexOf(tileSide) > -1) {
+      return false;
+    }
+    if (targetTile !== null && targetTile.tileType == Tiles.WALL && String(targetTile.wallDirection).indexOf(targetTileSide) > -1) {
+      return false;
+    }
+
+    return true;
+  };
+
   scope.getBoardTile = function(x, y) {
     if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
       console.log("Invalid board tile", x, y);
-      return Tiles.getBoardTiles()[0][0];
+      return null;
     }
     return Tiles.getBoardTiles()[y][x];
   };
@@ -252,7 +282,7 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType };
+    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, wallDirection: direction };
   }
 
 })(Tiles);

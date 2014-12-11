@@ -65,6 +65,7 @@ GameState = {
         console.log("Player " + players[i].name + " won the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[i].name}});
         ended = true;
+        break;
       }
     }
     if (!ended) {

@@ -84,36 +84,7 @@ GameLogic = {
       } else {
         var step = Math.min(cardType.position, 1);
         for (var i = 0; i < Math.abs(cardType.position); i++) {
-          switch (player.direction) {
-            case GameLogic.UP:
-              playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y - step);
-              if (playerOnTile !== null) {
-                playerOnTile.position.y -= step;
-              }
-              player.position.y -= step;
-              break;
-            case GameLogic.RIGHT:
-              playerOnTile = Tiles.isPlayerOnTile(players, player.position.x + step, player.position.y);
-              if (playerOnTile !== null) {
-                playerOnTile.position.x += step;
-              }
-              player.position.x += step;
-              break;
-            case GameLogic.DOWN:
-              playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y + step);
-              if (playerOnTile !== null) {
-                playerOnTile.position.y += step;
-              }
-              player.position.y += step;
-              break;
-            case GameLogic.LEFT:
-              playerOnTile = Tiles.isPlayerOnTile(players, player.position.x - step, player.position.y);
-              if (playerOnTile !== null) {
-                playerOnTile.position.x -= step;
-              }
-              player.position.x -= step;
-              break;
-          }
+          executeStep(players, player, step);
           if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player)) {
             break; //player respawned, don't continue playing out this card.
           }
@@ -124,6 +95,63 @@ GameLogic = {
     }
     callback();
   };
+
+  function executeStep(players, player, step) {
+    switch (player.direction) {
+      case GameLogic.UP:
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y - step)) {
+          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y - step);
+          if (playerOnTile !== null) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y - step)) {
+              playerOnTile.position.y -= step;
+              player.position.y -= step;
+            }
+          } else {
+            player.position.y -= step;
+          }
+        }
+        break;
+      case GameLogic.RIGHT:
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x + step, player.position.y)) {
+          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x + step, player.position.y);
+          if (playerOnTile !== null) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x + step, playerOnTile.position.y)) {
+              playerOnTile.position.x += step;
+              player.position.x += step;
+            }
+          } else {
+            player.position.x += step;
+          }
+        }
+        break;
+      case GameLogic.DOWN:
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y + step)) {
+          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y + step);
+          if (playerOnTile !== null) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y + step)) {
+              playerOnTile.position.y += step;
+              player.position.y += step;
+            }
+          } else {
+            player.position.y += step;
+          }
+        }
+        break;
+      case GameLogic.LEFT:
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x - step, player.position.y)) {
+          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x - step, player.position.y);
+          if (playerOnTile !== null) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x - step, playerOnTile.position.y)) {
+              playerOnTile.position.x -= step;
+              player.position.x -= step;
+            }
+          } else {
+            player.position.x -= step;
+          }
+        }
+        break;
+    }
+  }
 
   function checkRespawnsAndUpdateDb(players, player, callback) {
     Meteor.setTimeout(function() {

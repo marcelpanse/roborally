@@ -26,6 +26,7 @@ Template.gameItemPostForm.events({
     Meteor.call('createGame', game, function(error, id) {
       if (error)
         return alert(error.reason);
+      analytics.track("game-created");
       Router.go('game.page', {_id: id});
     });
   }

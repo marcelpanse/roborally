@@ -20,7 +20,6 @@ Meteor.methods({
       playPhaseCount: 0
     });
     var gameId = Games.insert(game);
-
     return gameId;
   },
 
