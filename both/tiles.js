@@ -49,12 +49,13 @@ Tiles = {
   };
 
   scope.isPlayerOnTile = function(players, x, y) {
-    for (var p in players) {
-      if (players[p].position.x == x && players[p].position.y == y) {
-        return players[p];
+    var found = null;
+    players.forEach(function(player) {
+      if (player.position.x == x && player.position.y == y) {
+        found = player;
       }
-    }
-    return null;
+    });
+    return found;
   };
 
   scope.canMove = function(x, y, tx, ty) {
@@ -77,10 +78,10 @@ Tiles = {
       targetTileSide = "up";
     }
 
-    if (tile.tileType == Tiles.WALL && String(tile.wallDirection).indexOf(tileSide) > -1) {
+    if (tile.tileType == Tiles.WALL && String(tile.elementDirection).indexOf(tileSide) > -1) {
       return false;
     }
-    if (targetTile !== null && targetTile.tileType == Tiles.WALL && String(targetTile.wallDirection).indexOf(targetTileSide) > -1) {
+    if (targetTile !== null && targetTile.tileType == Tiles.WALL && String(targetTile.elementDirection).indexOf(targetTileSide) > -1) {
       return false;
     }
 
@@ -117,7 +118,7 @@ Tiles = {
 
     // row 2
     b[1][0] = getTile(Tiles.EMPTY, "1");
-    b[1][1] = getTile(Tiles.ROLLER, "right");
+    b[1][1] = getTile(Tiles.ROLLER, "down");
     b[1][2] = getTile(Tiles.ROLLER, "right");
     b[1][3] = getTile(Tiles.ROLLER, "right");
     b[1][4] = getTile(Tiles.ROLLER, "right");
@@ -282,7 +283,7 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, wallDirection: direction };
+    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, elementDirection: direction };
   }
 
 })(Tiles);

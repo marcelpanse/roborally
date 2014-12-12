@@ -120,7 +120,7 @@ GameState = {
   }
 
   function playMoveBots(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = Players.find({gameId: game._id});
     // play 1 card per player
     var cardsToPlay = [];
 
@@ -145,6 +145,9 @@ GameState = {
   }
 
   function playMoveBoard(game) {
+    var players = Players.find({gameId: game._id}).fetch();
+    Meteor.wrapAsync(GameLogic.executeRollers)(players);
+
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.LASERS}});
     GameState.nextPlayPhase(game._id);
   }

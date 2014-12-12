@@ -74,7 +74,7 @@ GameLogic = {
 
     if (card !== undefined) {
       var cardType = _cardTypes[card.cardType];
-      console.log('playing card ' + cardType + ' for player ' + player.name);
+      console.log('playing card ' + cardType.name + ' for player ' + player.name);
 
       player.direction += cardType.direction;
       player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
@@ -93,6 +93,42 @@ GameLogic = {
     } else {
       console.log("card is not playable " + card + " player " + player.name);
     }
+    callback();
+  };
+
+  scope.executeRollers = function(players, callback) {
+    players.forEach(function(player) {
+      //check if is on roller
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y);
+      if (tile.tileType == Tiles.ROLLER) {
+        //move player 1 step in roller direction
+        //check if target pos is occupied and not on roller.
+        switch (tile.elementDirection) {
+          case "up":
+            if (!Tiles.isPlayerOnTile(players, player.position.x, player.position.y-1)) {
+              player.position.y -= 1;
+            }
+            break;
+          case "right":
+            if (!Tiles.isPlayerOnTile(players, player.position.x+1, player.position.y)) {
+              player.position.x += 1;
+            }
+            break;
+          case "down":
+            if (!Tiles.isPlayerOnTile(players, player.position.x, player.position.y+1)) {
+              player.position.y += 1;
+            }
+            break;
+          case "left":
+            if (!Tiles.isPlayerOnTile(players, player.position.x-1, player.position.y)) {
+              player.position.x -= 1;
+            }
+            break;
+        }
+      }
+      //check void's
+      checkRespawnsAndUpdateDb(players, player);
+    });
     callback();
   };
 
@@ -156,8 +192,7 @@ GameLogic = {
   function checkRespawnsAndUpdateDb(players, player, callback) {
     Meteor.setTimeout(function() {
       var respawned = false;
-      for (var j in players) {
-        var playerToUpdate = players[j];
+      players.forEach(function(playerToUpdate) {
         if (!Tiles.isPlayerOnBoard(playerToUpdate) || Tiles.isPlayerOnVoid(playerToUpdate)) {
           if (player._id === playerToUpdate._id) {
             respawned = true;
@@ -170,8 +205,10 @@ GameLogic = {
           console.log("updating position", playerToUpdate.name);
           Players.update(playerToUpdate._id, playerToUpdate);
         }
+      });
+      if (callback) {
+        callback(null, respawned);
       }
-      callback(null, respawned);
     }, 300);
   }
 
