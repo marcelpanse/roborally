@@ -209,7 +209,7 @@ GameLogic = {
       if (callback) {
         callback(null, respawned);
       }
-    }, 300);
+    }, 500);
   }
 
   function respawnPlayerWithDelay(players, player, callback) {

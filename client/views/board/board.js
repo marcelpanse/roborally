@@ -13,20 +13,18 @@ Template.board.helpers({
   positionBlue: function() {
     var x = this.players[0].position.x;
     var y = this.players[0].position.y;
-
-    return calcPosition(x,y);
+    return animatePosition("#r1", x, y);
   },
   positionYellow: function() {
     var x = this.players[1].position.x;
     var y = this.players[1].position.y;
-
-    return calcPosition(x,y);
+    return animatePosition("#r2", x, y);
   },
   directionBlue: function() {
-    return getDirection(this.players[0].direction);
+    return animateRotation("#r1", this.players[0].direction);
   },
   directionYellow: function() {
-    return getDirection(this.players[1].direction);
+    return animateRotation("#r2", this.players[1].direction);
   },
   tiles: function() {
     return Tiles.getBoardTiles();
@@ -36,28 +34,77 @@ Template.board.helpers({
   }
 });
 
-var getDirection = function (direction) {
-    switch(direction) {
-      case GameLogic.UP:
-        return '-webkit-transform: rotate(0deg);';
-      case GameLogic.RIGHT:
-        return '-webkit-transform: rotate(90deg);';
-      case GameLogic.DOWN:
-        return '-webkit-transform: rotate(180deg);';
-      case GameLogic.LEFT:
-        return '-webkit-transform: rotate(270deg);';
-    }
-};
+function animatePosition(element, x, y) {
+  var newPosition = calcPosition(x,y);
+  var oldX = newPosition.x;
+  var oldY = newPosition.y;
 
-var calcPosition = function(x, y) {
+  var position = $(element).position();
+  if (position) {
+    oldX = position.left;
+    oldY = position.top;
+
+    if (oldX != newPosition.x || oldY != newPosition.y) {
+      Tracker.afterFlush(function() {
+        var deltaX = newPosition.x - oldX;
+        var deltaY = newPosition.y - oldY;
+        $(element).stop();
+        $(element).animate({
+          left: "+=" + deltaX + "px",
+          top: "+=" + deltaY + "px"
+        }, 300, 'linear');
+      });
+    }
+  }
+  return "left: " + oldX + "px; top: " + oldY + "px;";
+}
+
+function animateRotation(element, direction) {
+  var oldRotation = $(element).css('rotate');
+  if (oldRotation === undefined) {
+    oldRotation = 0;
+  } else if (oldRotation !== 0) {
+    console.log(oldRotation);
+    oldRotation = parseInt(oldRotation.match(/\d+/g)[0]);
+  }
+
+  var newRotation = 0;
+  switch(direction) {
+    case GameLogic.UP:
+      newRotation = 0;
+      break;
+    case GameLogic.RIGHT:
+      newRotation = 90;
+      break;
+    case GameLogic.DOWN:
+      newRotation = 180;
+      break;
+    case GameLogic.LEFT:
+      newRotation = 270;
+      break;
+  }
+
+  if (newRotation != oldRotation) {
+    Tracker.afterFlush(function() {
+      var delta = newRotation - oldRotation;
+      $(element).stop();
+      $(element).transition({
+        rotate: '+='+delta+'deg'
+      }, 300, 'linear');
+    });
+  }
+  return '';
+}
+
+function calcPosition(x, y) {
   var tileWidth = 50;//$("#board").width()/12;
   var tileHeight = 50;//$("#board").height()/12;
 
   x = (tileWidth*x);
   y = (tileHeight*y);
 
-  return "left: " + x + "px; top: " + y + "px;";
-};
+  return {x: x, y: y};
+}
 
 Template.board.events({
   'click .cancel': function() {

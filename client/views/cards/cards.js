@@ -52,11 +52,10 @@ Template.cards.helpers({
 });
 
 function reAddTooltip() {
-  //Can't find a better way to do this. Template.rendered is only called once, not every update..
-  Meteor.setTimeout(function() {
+  Tracker.afterFlush(function() {
     $(".tooltip").remove();
     $('[data-toggle="tooltip"]').tooltip();
-  }, 100);
+  });
 }
 
 Template.card.events({

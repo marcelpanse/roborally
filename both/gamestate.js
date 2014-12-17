@@ -100,7 +100,7 @@ GameState = {
           playCheckpoints(game);
           break;
       }
-    }, 300);
+    }, 500);
   };
 
   function playRevealCards(game) {

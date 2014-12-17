@@ -14,9 +14,9 @@ template(name="board")
             if this.start
               img.board-item(src='/start.png')
       br
-      div(style= positionBlue)
+      div#r1(style= positionBlue)
         img(src='/robot_1_500.png', style= directionBlue)
-      div(style="#{positionYellow}")
+      div#r2(style="#{positionYellow}")
         img(src='/robot_2_500.png', style= directionYellow)
   .myRobot
     unless gameEnded

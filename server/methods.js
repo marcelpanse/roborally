@@ -19,8 +19,7 @@ Meteor.methods({
       playPhase: GameState.PLAY_PHASE.IDLE,
       playPhaseCount: 0
     });
-    var gameId = Games.insert(game);
-    return gameId;
+    return Games.insert(game);
   },
 
   joinGame: function(gameId) {
