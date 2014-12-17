@@ -35,7 +35,8 @@ GameState = {
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
-          checkIfWeHaveAWinner(game);
+          Games.update(game._id, {$set: {gamePhase: GameState.PHASE.DEAL}});
+          GameState.nextGamePhase(game._id);
           break;
       }
     }, 300);
@@ -68,10 +69,7 @@ GameState = {
         break;
       }
     }
-    if (!ended) {
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.DEAL}});
-      GameState.nextGamePhase(game._id);
-    }
+    return ended;
   }
 
   // play phases:
@@ -158,16 +156,18 @@ GameState = {
   }
 
   function playCheckpoints(game) {
-    if (game.playPhaseCount < 4) {
-      Games.update(game._id,
-        { $set: {playPhase: GameState.PLAY_PHASE.REVEAL_CARDS}, $inc: {playPhaseCount: 1} }
-      );
-      GameState.nextPlayPhase(game._id);
-    } else {
-      Games.update(game._id,
-        { $set: {playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0} }
-      );
-      GameState.nextGamePhase(game._id);
+    if (!checkIfWeHaveAWinner(game)) {
+      if (game.playPhaseCount < 4) {
+        Games.update(game._id,
+          { $set: {playPhase: GameState.PLAY_PHASE.REVEAL_CARDS}, $inc: {playPhaseCount: 1} }
+        );
+        GameState.nextPlayPhase(game._id);
+      } else {
+        Games.update(game._id,
+          { $set: {playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0} }
+        );
+        GameState.nextGamePhase(game._id);
+      }
     }
   }
 

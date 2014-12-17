@@ -49,10 +49,11 @@ function animatePosition(element, x, y) {
         var deltaX = newPosition.x - oldX;
         var deltaY = newPosition.y - oldY;
         $(element).stop();
+
         $(element).animate({
           left: "+=" + deltaX + "px",
           top: "+=" + deltaY + "px"
-        }, 300, 'linear');
+        }, Math.max(Math.abs(deltaX), Math.abs(deltaY)) * 4);
       });
     }
   }
@@ -64,7 +65,6 @@ function animateRotation(element, direction) {
   if (oldRotation === undefined) {
     oldRotation = 0;
   } else if (oldRotation !== 0) {
-    console.log(oldRotation);
     oldRotation = parseInt(oldRotation.match(/\d+/g)[0]);
   }
 

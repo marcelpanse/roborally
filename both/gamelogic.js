@@ -20,9 +20,8 @@ GameLogic = {
 
   scope.makeDeck = function(game) {
     var current = Deck.findOne({gameId: game._id});
-    if (!current || current.cards.length < 10) {
-      Deck.upsert({gameId: game._id}, {$set: {cards: _.shuffle(_deck)}});
-    }
+    //create/shuffle new deck (cards are returned from hands)
+    Deck.upsert({gameId: game._id}, {$set: {cards: _.shuffle(_deck)}});
   };
 
   scope.dealCards = function(player) {
@@ -35,7 +34,7 @@ GameLogic = {
     var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
-      var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0];
+      var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0]; //grab card from deck, so it can't be handed out twice
       cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
     }
 
@@ -80,12 +79,13 @@ GameLogic = {
       player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
 
       if (cardType.position === 0) {
-        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player);
+        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, 500);
       } else {
         var step = Math.min(cardType.position, 1);
         for (var i = 0; i < Math.abs(cardType.position); i++) {
           executeStep(players, player, step);
-          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player)) {
+          var timeout = i+1 < Math.abs(cardType.position) ? 0 : 500; //don't delay if there is another step to execute
+          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, 0)) {
             break; //player respawned, don't continue playing out this card.
           }
         }
@@ -127,7 +127,7 @@ GameLogic = {
         }
       }
       //check void's
-      checkRespawnsAndUpdateDb(players, player);
+      checkRespawnsAndUpdateDb(players, player, 500);
     });
     callback();
   };
@@ -189,7 +189,7 @@ GameLogic = {
     }
   }
 
-  function checkRespawnsAndUpdateDb(players, player, callback) {
+  function checkRespawnsAndUpdateDb(players, player, timeout, callback) {
     Meteor.setTimeout(function() {
       var respawned = false;
       players.forEach(function(playerToUpdate) {
@@ -209,7 +209,7 @@ GameLogic = {
       if (callback) {
         callback(null, respawned);
       }
-    }, 500);
+    }, timeout);
   }
 
   function respawnPlayerWithDelay(players, player, callback) {
