@@ -131,45 +131,7 @@ function addUIData(cards, available) {
   cards.forEach(function(card) {
     if (card !== null) {
       card.class = available ? 'available' : 'played';
-      switch (card.cardType) {
-        case 0:
-          card.title = '1 step forward';
-          card.icon = 'fa-long-arrow-up';
-          card.type = 'f1'
-          break;
-        case 1:
-          card.title = 'Backup';
-          card.icon = 'fa-long-arrow-down';
-          card.type = 'b'
-          break;
-        case 2:
-          card.title = 'Rotate left';
-          card.icon = 'fa-rotate-left';
-          card.type = 'l'
-          break;
-        case 3:
-          card.title = 'Rotate right';
-          card.icon = 'fa-rotate-right';
-          card.type = 'r'
-          break;
-        case 4:
-          card.title = '2 steps forward';
-          card.icon = 'fa-long-arrow-up';
-          card.steps = 2;
-          card.type = 'f2'
-          break;
-        case 5:
-          card.title = '3 steps forward';
-          card.icon = 'fa-long-arrow-up';
-          card.steps = 3;
-          card.type = 'f3'
-          break;
-        case 6:
-          card.title = 'U-turn';
-          card.icon = 'fa-arrows-v';
-          card.type = 'u'
-          break;
-      }
+      card.type = ['f1', 'b', 'l', 'r', 'f2', 'f3', 'u'][card.cardType]
     }
   });
   return cards;
