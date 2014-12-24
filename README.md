@@ -1,7 +1,7 @@
 RoboRally
 =========
 
-This is an experimental online version of the original RoboRally board game written in Meteor.
+This is an experimental online version of the original RoboRally board game written in Meteor. You can play the game at http://www.roborally.com/.
 
 <h5>About the game</h5>
 
