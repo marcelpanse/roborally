@@ -2,7 +2,9 @@ GameLogic = {
   UP: 0,
   RIGHT: 1,
   DOWN: 2,
-  LEFT: 3
+  LEFT: 3,
+  TIMER: 30,
+  CARD_SLOTS: 5
 };
 
 (function (scope) {
@@ -45,22 +47,49 @@ GameLogic = {
 
   scope.submitCards = function(player, cards) {
     console.log('player ' + player.name + ' submitted cards: ' + cards);
-    Players.update(player._id, {$set: {submittedCards: cards}});
 
+    //check if all played cards are available from original hand...
     var availableCards = Cards.findOne({playerId: player._id}).cards;
-    for (var i in cards) {
+    for (var i = cards.length-1; i >= 0; i--) {
+      var found = false;
       for (var j = 0; j < availableCards.length; j++) {
         if (cards[i].cardId == availableCards[j].cardId) {
           availableCards.splice(j, 1);
+          found = true;
           break;
         }
       }
+      if (!found) {
+        console.log("illegal card detected! (removing card)");
+        cards.splice(i, 1);
+      }
     }
+
+    if (cards.length < GameLogic.CARD_SLOTS) {
+      console.log("Not enough cards submitted");
+      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length;
+      for (var q = 0; q < nrOfNewCards; q++) {
+        var cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]; //grab card from hand
+        console.log("Handing out random card", cardFromHand);
+        cards.push({cardId: Meteor.uuid(), cardType: cardFromHand.cardType, priority: cardFromHand.priority});
+      }
+    }
+
+    Players.update(player._id, {$set: {submittedCards: cards, submitted: true}});
     Cards.update({playerId: player._id}, {$set: {cards: availableCards}});
 
-    var submittedPlayers = Players.find({gameId: player.gameId, 'submittedCards.0': {$exists: true}}).fetch();
-    if (submittedPlayers.length == 2) {
+    if (Players.find({gameId: player.gameId, submitted: true}).count() == 2) {
+      Games.update(player.gameId, {$set: {timer: -1}});
       GameState.nextGamePhase(player.gameId);
+    } else {
+      //start timer
+      Games.update(player.gameId, {$set: {timer: 1}});
+      Meteor.setTimeout(function() {
+        if (Games.findOne(player.gameId).timer === 1) {
+          console.log("time up! setting timer to 0");
+          Games.update(player.gameId, {$set: {timer: 0}});
+        }
+      }, GameLogic.TIMER * 1000);
     }
   };
 

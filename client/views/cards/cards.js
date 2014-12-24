@@ -1,12 +1,12 @@
+var timerHandle = null;
 Template.cards.helpers({
   chosenCards: function() {
     reAddTooltip();
     return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
+    console.log("available cards update");
     Session.set("availableCards", this.cards);
-    Session.set("cardsSubmitted", false);
-    Session.set("chosenCards", []);
 
     reAddTooltip();
     return addUIData(this.cards, true);
@@ -17,10 +17,36 @@ Template.cards.helpers({
   },
   showCards: function() {
     var cards = this.cards || [];
-    return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0;
+    return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0 &&
+      !Players.findOne({userId: Meteor.userId()}).submitted;
   },
   showPlayButton: function() {
-    return !Session.get("cardsSubmitted");
+    return !Players.findOne({userId: Meteor.userId()}).submitted;
+  },
+  timer: function() {
+    if (this.game.timer === 1 && timerHandle === null) {
+      console.log("starting timer");
+      Session.set("timeLeft", 30);
+      timerHandle = Meteor.setInterval(function() {
+        Session.set("timeLeft", Math.max(0, Session.get("timeLeft") - 1));
+      }, 1000);
+    }
+    if (this.game.timer === 0) {
+      console.log("game timer = 0");
+      submitCards(this.game);
+      Session.set("timeLeft", 0);
+      Meteor.clearInterval(timerHandle);
+      timerHandle = null;
+    }
+    if (this.game.timer === -1) {
+      console.log("game timer = -1");
+      Session.set("timeLeft", 0);
+      Meteor.clearInterval(timerHandle);
+      timerHandle = null;
+    }
+
+    var timeLeft = Session.get("timeLeft") || 0;
+    return  timeLeft > 0 ? "("+ timeLeft +")" : "";
   },
   gameState: function() {
     switch (this.game.gamePhase) {
@@ -60,7 +86,7 @@ function reAddTooltip() {
 
 Template.card.events({
   'click .available': function(e) {
-    if (!Session.get("cardsSubmitted")) {
+    if (!Players.findOne({userId: Meteor.userId()}).submitted) {
       var chosenCards = Session.get("chosenCards") || [];
       if (chosenCards.length < 5) {
         chosenCards.push(this);
@@ -71,7 +97,7 @@ Template.card.events({
     }
   },
   'click .played': function(e) {
-    if (!Session.get("cardsSubmitted")) {
+    if (!Players.findOne({userId: Meteor.userId()}).submitted) {
       var cardId = this.cardId;
       var chosenCards = Session.get("chosenCards") || [];
       chosenCards = _.filter(chosenCards, function(item) {
@@ -87,17 +113,19 @@ Template.card.events({
 
 Template.cards.events({
   'click .playBtn': function(e) {
-    var chosenCards = Session.get("chosenCards") || [];
-    if (chosenCards.length == 5) {
-      Meteor.call('playCards', {gameId: this.game._id, cards: chosenCards}, function(error) {
-        if (error)
-          return alert(error.reason);
-        Session.set("chosenCards", []);
-        Session.set("cardsSubmitted", true);
-      });
-    }
+    submitCards(this.game);
   }
 });
+
+function submitCards(game) {
+  var chosenCards = Session.get("chosenCards") || [];
+  console.log("submitting cards", chosenCards);
+  Meteor.call('playCards', {gameId: game._id, cards: chosenCards}, function(error) {
+    Session.set("chosenCards", []);
+    if (error)
+      return alert(error.reason);
+  });
+}
 
 function addUIData(cards, available) {
   cards.forEach(function(card) {
