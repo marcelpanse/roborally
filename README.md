@@ -1,4 +1,4 @@
-roborally
+RoboRally
 =========
 
 This is an experimental online version of the original RoboRally board game written in Meteor.
