@@ -82,7 +82,11 @@ Meteor.methods({
     if (!player)
       throw new Meteor.Error(401, 'Game/Player not found! ' + attributes.gameId);
 
-    GameLogic.submitCards(player, attributes.cards);
+    if (!player.submitted) {
+      GameLogic.submitCards(player, attributes.cards);
+    } else {
+      console.log("Player already submitted his cards.");
+    }
   },
 
   addMessage: function(postAttributes) {

@@ -47,7 +47,7 @@ GameState = {
 
     var players = Players.find({gameId: game._id}).fetch();
     for (var i in players) {
-      Players.update(players[i]._id, {$set: {playedCards: []}});
+      Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submitted: false}});
       GameLogic.dealCards(players[i]);
     }
     Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PROGRAM}});
@@ -56,20 +56,6 @@ GameState = {
   function playProgramCardsSubmitted(game) {
     Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY}});
     GameState.nextPlayPhase(game._id);
-  }
-
-  function checkIfWeHaveAWinner(game) {
-    var players = Players.find({gameId: game._id}).fetch();
-    var ended = false;
-    for (var i in players) {
-      if (Tiles.isPlayerOnFinish(players[i])) {
-        console.log("Player " + players[i].name + " won the game!!");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[i].name}});
-        ended = true;
-        break;
-      }
-    }
-    return ended;
   }
 
   // play phases:
@@ -169,6 +155,20 @@ GameState = {
         GameState.nextGamePhase(game._id);
       }
     }
+  }
+
+  function checkIfWeHaveAWinner(game) {
+    var players = Players.find({gameId: game._id}).fetch();
+    var ended = false;
+    for (var i in players) {
+      if (Tiles.isPlayerOnFinish(players[i])) {
+        console.log("Player " + players[i].name + " won the game!!");
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[i].name}});
+        ended = true;
+        break;
+      }
+    }
+    return ended;
   }
 
 })(GameState);
