@@ -1,18 +1,15 @@
 var timerHandle = null;
 Template.cards.helpers({
   chosenCards: function() {
-    reAddTooltip();
     return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
     console.log("available cards update");
     Session.set("availableCards", this.cards);
 
-    reAddTooltip();
     return addUIData(this.cards, true);
   },
   playedCardsHtml: function() {
-    reAddTooltip();
     return addUIData(this.playedCards || [], false);
   },
   showCards: function() {
@@ -77,13 +74,6 @@ Template.cards.helpers({
   }
 });
 
-function reAddTooltip() {
-  Tracker.afterFlush(function() {
-    $(".tooltip").remove();
-    $('[data-toggle="tooltip"]').tooltip();
-  });
-}
-
 Template.card.events({
   'click .available': function(e) {
     if (!Players.findOne({userId: Meteor.userId()}).submitted) {
@@ -131,38 +121,7 @@ function addUIData(cards, available) {
   cards.forEach(function(card) {
     if (card !== null) {
       card.class = available ? 'available' : 'played';
-      switch (card.cardType) {
-        case 0:
-          card.title = '1 step forward';
-          card.icon = 'fa-long-arrow-up';
-          break;
-        case 1:
-          card.title = 'Backup';
-          card.icon = 'fa-long-arrow-down';
-          break;
-        case 2:
-          card.title = 'Rotate left';
-          card.icon = 'fa-rotate-left';
-          break;
-        case 3:
-          card.title = 'Rotate right';
-          card.icon = 'fa-rotate-right';
-          break;
-        case 4:
-          card.title = '2 steps forward';
-          card.icon = 'fa-long-arrow-up';
-          card.steps = 2;
-          break;
-        case 5:
-          card.title = '3 steps forward';
-          card.icon = 'fa-long-arrow-up';
-          card.steps = 3;
-          break;
-        case 6:
-          card.title = 'U-turn';
-          card.icon = 'fa-arrows-v';
-          break;
-      }
+      card.type = ['f1', 'b', 'l', 'r', 'f2', 'f3', 'u'][card.cardType];
     }
   });
   return cards;
