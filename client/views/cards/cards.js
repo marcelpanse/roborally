@@ -1,18 +1,15 @@
 var timerHandle = null;
 Template.cards.helpers({
   chosenCards: function() {
-    reAddTooltip();
     return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
     console.log("available cards update");
     Session.set("availableCards", this.cards);
 
-    reAddTooltip();
     return addUIData(this.cards, true);
   },
   playedCardsHtml: function() {
-    reAddTooltip();
     return addUIData(this.playedCards || [], false);
   },
   showCards: function() {
@@ -77,13 +74,6 @@ Template.cards.helpers({
   }
 });
 
-function reAddTooltip() {
-  Tracker.afterFlush(function() {
-    $(".tooltip").remove();
-    $('[data-toggle="tooltip"]').tooltip();
-  });
-}
-
 Template.card.events({
   'click .available': function(e) {
     if (!Players.findOne({userId: Meteor.userId()}).submitted) {
@@ -131,7 +121,7 @@ function addUIData(cards, available) {
   cards.forEach(function(card) {
     if (card !== null) {
       card.class = available ? 'available' : 'played';
-      card.type = ['f1', 'b', 'l', 'r', 'f2', 'f3', 'u'][card.cardType]
+      card.type = ['f1', 'b', 'l', 'r', 'f2', 'f3', 'u'][card.cardType];
     }
   });
   return cards;
