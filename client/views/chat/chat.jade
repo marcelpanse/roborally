@@ -4,7 +4,11 @@ template(name="chat")
     hr.star-well
     div.messages
       each this.messages
-        div #{author}: #{message}
+        if author
+          div #{author}: #{message}
+        else
+          div.system #{message}
+          
 
   form.form-inline(role="form")
     div.form-group
