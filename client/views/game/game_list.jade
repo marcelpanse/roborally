@@ -25,7 +25,7 @@ template(name="gameList")
       hr.star-well
       each endedGames  
         h4.text-lowercase
-          | #{name}
+          a.white(href="{{pathFor route='game.page'}}") #{name}
           span.small.text-lowercase won by #{author} {{formatDate submitted}}
 
 template(name="gameItemPostForm")
