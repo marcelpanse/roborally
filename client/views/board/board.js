@@ -1,11 +1,8 @@
 Template.board.helpers({
   inGame: function() {
-    for (var i in this.players) {
-      if (this.players[i].userId == Meteor.userId()) {
-        return true;
-      }
-    }
-    return false;
+    return _.some(this.players, function(player) {
+      player.userId === Meteor.userId()
+    });
   },
   getRobotId: function() {
     return this.players[0].userId == Meteor.userId() ? 1 : 2;
