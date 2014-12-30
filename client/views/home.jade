@@ -32,6 +32,8 @@ template(name='home')
             li.hidden
               a(href='#page-top')
             li.page-scroll
+              a(href='#online') Play online
+            li.page-scroll
               a(href='#images') Images
             li.page-scroll
               a(href='#about') About
@@ -44,6 +46,24 @@ template(name='home')
               span.name RoboRally
               hr.star-light
               span.skills You are brilliant. You are powerful. You are sophisticated. You are BORED.
+    // Online Section
+    section#online
+      .container
+        .row
+          .col-leg-12.text-center
+            h2 Play online
+            hr.star-primary
+            p
+              | This multiplayer game is currently in BETA! The game is NOT fully implemented and still work in progress. RoboRally online is free to play and fully open-source. 
+              | Please head over to 
+              a(href="https://github.com/marcelpanse/roborally", target="_blank") 
+                | the GitHub repository 
+              | if you want to contribute and help to make this game awesome. Please report any bugs or request features in 
+              a(href="https://github.com/marcelpanse/roborally/issues", target="_blank")
+                | the issue tracker.
+              | Any help is greatly appreciated.
+            br
+            a(href="{{pathFor route='gamelist.page'}}").btn.btn-primary.btn-xlg Play RoboRally online!
     // Portfolio Grid Section
     section#images
       img.img-responsive.home(src='/roborally-photo.jpg')
@@ -89,7 +109,7 @@ template(name='home')
         .container
           .row
             .col-lg-12
-              a(href="{{pathFor route='gamelist.page'}}") Copyright © RoboRally.com 2014
+              | Copyright © RoboRally.com 2015
     // Scroll to Top Button (Only visible on small and extra-small screen sizes)
     .scroll-top.page-scroll.visible-xs.visble-sm
       a.btn.btn-primary(href='#page-top')
