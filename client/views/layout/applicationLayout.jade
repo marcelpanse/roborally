@@ -16,7 +16,7 @@ template(name="applicationLayout")
     script(src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js')
   body
     // Navigation
-    nav.navbar.navbar-default.navbar-fixed-top
+    nav.navbar.navbar-default.navbar-fixed-top.navbar-shrink
       .container
         // Brand and toggle get grouped for better mobile display
         .navbar-header.page-scroll
@@ -50,3 +50,7 @@ template(name="applicationLayout")
           .row
             .col-lg-12
               +usersPill
+              h6.pull-right.small
+                i.fa.fa-question-circle
+                a(href="https://github.com/marcelpanse/roborally/issues")
+                  | report a bug or request a feature

@@ -88,6 +88,16 @@ GameLogic = {
         if (Games.findOne(player.gameId).timer === 1) {
           console.log("time up! setting timer to 0");
           Games.update(player.gameId, {$set: {timer: 0}});
+
+          //wait for player to auto-submit selected cards..
+          Meteor.setTimeout(function() {
+            //if nothing happened the system to should auto-submit random cards..
+            if (Players.find({gameId: player.gameId, submitted: true}).count() == 1) {
+              var unsubmittedPlayer = Players.findOne({gameId: player.gameId, submitted: false});
+              GameLogic.submitCards(unsubmittedPlayer, []);
+              console.log("Player " + unsubmittedPlayer.name + " did not respond, submitting random cards");
+            }
+          }, 2500);
         }
       }, GameLogic.TIMER * 1000);
     }

@@ -4,12 +4,12 @@ template(name="cards")
   if showCards
     h5
       | Your hand
-    div
+    div.hand
       each availableCards
         +card
     h5
       | Playing
-    div
+    div.playing
       each chosenCards
         +card
     if showPlayButton

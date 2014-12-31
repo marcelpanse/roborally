@@ -4,6 +4,15 @@
  * For details, see http://www.apache.org/licenses/LICENSE-2.0.
  */
 
+.btn-xlg {
+  padding: 18px 28px;
+  font-size: 22px;
+  line-height: normal;
+  -webkit-border-radius: 8px;
+     -moz-border-radius: 8px;
+          border-radius: 8px;
+}
+
 body {
     overflow-x: hidden;
 }
@@ -22,7 +31,7 @@ a:focus,
 a:active,
 a.active {
     outline: 0;
-    color: #18bc9c;
+    color: #70B9B0;
 }
 
 h1,
@@ -65,7 +74,7 @@ hr.star-light {
 
 hr.star-light:after {
     color: #fff;
-    background-color: #18bc9c;
+    background-color: #70B9B0;
 }
 
 hr.star-primary {
@@ -94,7 +103,7 @@ hr.star-well:after {
 header {
     text-align: center;
     color: #fff;
-    background: #18bc9c;
+    background: #70B9B0;
 }
 
 header .container {
@@ -193,7 +202,7 @@ section h2 {
 
 section.success {
     color: #fff;
-    background: #18bc9c;
+    background: #70B9B0;
 }
 
 @media(max-width:767px) {
@@ -277,7 +286,7 @@ section.success {
 .btn-outline:active,
 .btn-outline.active {
     border: solid 2px #fff;
-    color: #18bc9c;
+    color: #70B9B0;
     background: #fff;
 }
 
@@ -330,7 +339,7 @@ section.success {
 }
 
 .floating-label-form-group-with-focus label {
-    color: #18bc9c;
+    color: #70B9B0;
 }
 
 form .row:first-child .floating-label-form-group {

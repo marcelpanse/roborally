@@ -165,6 +165,11 @@ GameState = {
         console.log("Player " + players[i].name + " won the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[i].name}});
         ended = true;
+        Chat.insert({
+          gameId: players[i].gameId,
+          message: 'Player ' + players[i].name + ' won the game',
+          submitted: new Date().getTime()
+        });
         break;
       }
     }

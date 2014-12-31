@@ -83,7 +83,15 @@ function animateRotation(element, direction) {
 
   if (newRotation != oldRotation) {
     Tracker.afterFlush(function() {
-      var delta = newRotation - oldRotation;
+      var delta = newRotation - (oldRotation % 360);
+
+      if (delta == 270) {
+        delta = -90;
+      }
+      if (delta == -270) {
+        delta = 90;
+      }
+
       $(element).stop();
       $(element).transition({
         rotate: '+='+delta+'deg'

@@ -19,8 +19,8 @@ Meteor.startup(function() {
       return;
 
     analytics.identify(user._id, {
-      name: user.profile.name ? user.profile.name : '',
-      email: getUsername(user)
+      name: getUsername(user),
+      email: user.services.facebook ? user.services.facebook.email : user.emails[0].address
     });
 
     c.stop();

@@ -19,7 +19,15 @@ Meteor.methods({
       playPhase: GameState.PLAY_PHASE.IDLE,
       playPhaseCount: 0
     });
-    return Games.insert(game);
+    var gameId = Games.insert(game);
+
+    Chat.insert({
+      gameId: gameId,
+      message: 'Game created',
+      submitted: new Date().getTime()
+    });
+
+    return gameId;
   },
 
   joinGame: function(gameId) {
@@ -37,6 +45,12 @@ Meteor.methods({
       console.log('User ' + author + ' joining game ' + gameId);
       Players.insert({gameId: gameId, userId: user._id, name: author, position: {x: -1, y: -1}});
     }
+
+    Chat.insert({
+      gameId: gameId,
+      message: author + ' joined the game',
+      submitted: new Date().getTime()
+    });
   },
 
   leaveGame: function(gameId) {
@@ -56,6 +70,12 @@ Meteor.methods({
     } else {
       Players.remove({gameId: game._id, userId: user._id});
     }
+
+    Chat.insert({
+      gameId: gameId,
+      message: author + ' left the game',
+      submitted: new Date().getTime()
+    });
   },
 
   startGame: function(gameId) {
@@ -74,6 +94,13 @@ Meteor.methods({
     }
 
     console.log('set game started');
+
+    Chat.insert({
+      gameId: gameId,
+      message: 'Game started',
+      submitted: new Date().getTime()
+    });
+
     GameState.nextGamePhase(gameId);
   },
 
@@ -84,6 +111,11 @@ Meteor.methods({
 
     if (!player.submitted) {
       GameLogic.submitCards(player, attributes.cards);
+      Chat.insert({
+        gameId: player.gameId,
+        message: 'Player ' + player.name + ' submitted cards',
+        submitted: new Date().getTime()
+      });
     } else {
       console.log("Player already submitted his cards.");
     }
@@ -94,7 +126,7 @@ Meteor.methods({
 
     // ensure the user is logged in
     if (!user)
-      throw new Meteor.Error(401, "You need to login to post new stories");
+      throw new Meteor.Error(401, "You need to login to post messages");
 
     var author = getUsername(user);
     // pick out the whitelisted keys
