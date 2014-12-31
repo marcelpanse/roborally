@@ -3,13 +3,13 @@ Meteor.subscribe('onlineUsers');
 Meteor.startup(function() {
   analytics.load("fqB9zzTwPC");
 
-  Deps.autorun(function(c) {
+  Tracker.autorun(function(c) {
     try {
       UserStatus.startMonitor({threshold: 10000, interval: 1000, idleOnBlur: false});
     } catch (e) { }
   });
 
-  Deps.autorun(function(c) {
+  Tracker.autorun(function(c) {
     // waiting for user subscription to load
     if (! Router.current() || ! Router.current().ready())
       return;
