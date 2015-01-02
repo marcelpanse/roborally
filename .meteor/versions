@@ -12,6 +12,7 @@ blaze-tools@1.0.2
 boilerplate-generator@1.0.2
 callback-hook@1.0.2
 check@1.0.3
+chfritz:easycron@0.0.3
 coffeescript@1.0.5
 ddp@1.0.13
 deps@1.0.6
