@@ -9,6 +9,7 @@ GameLogic = {
 
 (function (scope) {
   var _MAX_NUMBER_OF_CARDS = 9;
+  var _CARD_PLAY_DELAY = 500;
 
   var _cardTypes = {
     0: {direction: 0, position: 1, name: "STEP_FORWARD"},
@@ -118,13 +119,13 @@ GameLogic = {
       player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
 
       if (cardType.position === 0) {
-        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, 500);
+        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, _CARD_PLAY_DELAY);
       } else {
         var step = Math.min(cardType.position, 1);
         for (var i = 0; i < Math.abs(cardType.position); i++) {
           executeStep(players, player, step);
-          var timeout = i+1 < Math.abs(cardType.position) ? 0 : 500; //don't delay if there is another step to execute
-          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, 0)) {
+          var timeout = i+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
+          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, timeout)) {
             break; //player respawned, don't continue playing out this card.
           }
         }
@@ -166,7 +167,7 @@ GameLogic = {
         }
       }
       //check void's
-      checkRespawnsAndUpdateDb(players, player, 500);
+      checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
     });
     callback();
   };
@@ -261,7 +262,7 @@ GameLogic = {
       console.log("respawning player", player.name);
       Players.update(player._id, player);
       callback();
-    }, 500); //wait before respawning, so you can see the player stepping into the void
+    }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
   }
 
   var _deck = [

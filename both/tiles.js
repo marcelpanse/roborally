@@ -32,6 +32,18 @@ Tiles = {
     return Tiles.getBoardTile(player.position.x, player.position.y).finish;
   };
 
+  scope.checkCheckpoints = function(player) {
+    if (!player.checkpoint1 && Tiles.getBoardTile(player.position.x, player.position.y).checkpoint1) {
+      Players.update(player._id, {$set: {checkpoint1: true}});
+      return true;
+    }
+    if (player.checkpoint1 && !player.checkpoint2 && Tiles.getBoardTile(player.position.x, player.position.y).checkpoint2) {
+      Players.update(player._id, {$set: {checkpoint2: true}});
+      return true;
+    }
+    return false;
+  };
+
   scope.isPlayerOnVoid = function(player) {
     var a = Tiles.getBoardTile(player.position.x, player.position.y).tileType == Tiles.VOID;
     if (a) {
@@ -145,8 +157,7 @@ Tiles = {
   };
 
   scope.hasWall = function(x, y, direction) {
-    var tile;
-    tile = Tiles.getBoardTile(x, y);
+    var tile = Tiles.getBoardTile(x, y);
     return tile.tileType === Tiles.WALL && RegExp(direction).test(tile.elementDirection);
   };
 
@@ -214,7 +225,7 @@ Tiles = {
     b[3][4] = getTile(Tiles.ROLLER, "down");
     b[3][5] = getTile(Tiles.ROLLER, "left");
     b[3][6] = getTile(Tiles.ROLLER, "up");
-    b[3][7] = getTile(Tiles.WALL, "left-down");
+    b[3][7] = getTile(Tiles.WALL, "left-down"); b[3][7].checkpoint1 = true;
     b[3][8] = getTile(Tiles.WALL, "down");
     b[3][9] = getTile(Tiles.EMPTY, "2");
     b[3][10] = getTile(Tiles.WALL, "down");
@@ -278,7 +289,7 @@ Tiles = {
 
     // row 9
     b[8][0] = getTile(Tiles.EMPTY, "1");
-    b[8][1] = getTile(Tiles.EMPTY, "2");
+    b[8][1] = getTile(Tiles.EMPTY, "2"); b[8][1].checkpoint2 = true;
     b[8][2] = getTile(Tiles.WALL, "left");
     b[8][3] = getTile(Tiles.EMPTY, "1");
     b[8][4] = getTile(Tiles.WALL, "left-up");
@@ -310,7 +321,7 @@ Tiles = {
     b[10][2] = getTile(Tiles.VOID, "square");
     b[10][3] = getTile(Tiles.EMPTY, "1");
     b[10][4] = getTile(Tiles.EMPTY, "1");
-    b[10][5] = getTile(Tiles.ROLLER, "up");
+    b[10][5] = getTile(Tiles.ROLLER, "down");
     b[10][6] = getTile(Tiles.ROLLER, "up");
     b[10][7] = getTile(Tiles.ROLLER, "left");
     b[10][8] = getTile(Tiles.ROLLER, "left");
@@ -345,7 +356,20 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    return { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, elementDirection: direction };
+    var x = { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, elementDirection: direction };
+    switch (tileType) {
+      case Tiles.ROLLER:
+        x.description = "This is a converyor belt. You will move 1 space in the direction of the arrow when ending here after a card has been played.";
+        break;
+      case Tiles.VOID:
+        x.description = "Don't fall in this giant hole in the ground or you'll die..";
+        break;
+      case Tiles.WALL:
+      case Tiles.CORNER:
+        x.description = "Even awesome robots can't pass through these massive walls.";
+        break;
+    }
+    return x;
   }
 
 })(Tiles);

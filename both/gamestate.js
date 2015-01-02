@@ -17,6 +17,7 @@ GameState = {
 };
 
 (function (scope) {
+  var _NEXT_PHASE_DELAY = 500;
 
   // game phases:
 
@@ -39,7 +40,7 @@ GameState = {
           GameState.nextGamePhase(game._id);
           break;
       }
-    }, 300);
+    }, _NEXT_PHASE_DELAY);
   };
 
   function playDealPhase(game) {
@@ -84,7 +85,7 @@ GameState = {
           playCheckpoints(game);
           break;
       }
-    }, 500);
+    }, _NEXT_PHASE_DELAY);
   };
 
   function playRevealCards(game) {
@@ -161,13 +162,15 @@ GameState = {
     var players = Players.find({gameId: game._id}).fetch();
     var ended = false;
     for (var i in players) {
-      if (Tiles.isPlayerOnFinish(players[i])) {
-        console.log("Player " + players[i].name + " won the game!!");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[i].name}});
+      var player = players[i];
+      Tiles.checkCheckpoints(player);
+      if (player.checkpoint1 && player.checkpoint2 && Tiles.isPlayerOnFinish(player)) {
+        console.log("Player " + player.name + " won the game!!");
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         ended = true;
         Chat.insert({
-          gameId: players[i].gameId,
-          message: 'Player ' + players[i].name + ' won the game',
+          gameId: player.gameId,
+          message: 'Player ' + player.name + ' won the game',
           submitted: new Date().getTime()
         });
         break;

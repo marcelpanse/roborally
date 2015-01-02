@@ -1,7 +1,7 @@
 Template.board.helpers({
   inGame: function() {
     return _.some(this.players, function(player) {
-      player.userId === Meteor.userId()
+      return player.userId === Meteor.userId();
     });
   },
   getRobotId: function() {
@@ -22,6 +22,26 @@ Template.board.helpers({
   },
   directionYellow: function() {
     return animateRotation("#r2", this.players[1].direction);
+  },
+  checkpoint1class: function() {
+    var players = Template.parentData(2).players;
+    if (players[0].userId == Meteor.userId() && players[0].checkpoint1) {
+      return "visited";
+    }
+    else if (players[1].userId == Meteor.userId() && players[1].checkpoint1) {
+      return "visited";
+    }
+    return "";
+  },
+  checkpoint2class: function() {
+    var players = Template.parentData(2).players;
+    if (players[0].userId == Meteor.userId() && players[0].checkpoint2) {
+      return "visited";
+    }
+    else if (players[1].userId == Meteor.userId() && players[1].checkpoint2) {
+      return "visited";
+    }
+    return "";
   },
   tiles: function() {
     return Tiles.getBoardTiles();
@@ -54,6 +74,13 @@ function animatePosition(element, x, y) {
       });
     }
   }
+
+  Tracker.afterFlush(function() {
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
+  });
+
   return "left: " + oldX + "px; top: " + oldY + "px;";
 }
 

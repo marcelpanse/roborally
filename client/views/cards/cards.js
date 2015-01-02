@@ -23,7 +23,7 @@ Template.cards.helpers({
   timer: function() {
     if (this.game.timer === 1 && timerHandle === null) {
       console.log("starting timer");
-      Session.set("timeLeft", 30);
+      Session.set("timeLeft", GameLogic.TIMER);
       timerHandle = Meteor.setInterval(function() {
         Session.set("timeLeft", Math.max(0, Session.get("timeLeft") - 1));
       }, 1000);

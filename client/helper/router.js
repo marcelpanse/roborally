@@ -91,12 +91,6 @@ Router.route('/board/:_id', {
         }
       }
     });
-    // this.render('gameState', {
-    //   to: 'gameState',
-    //   data: function() {
-    //     return Games.findOne(this.params._id);
-    //   }
-    // });
     this.render('cards', {
       to: 'rightPanel',
       data: function() {
