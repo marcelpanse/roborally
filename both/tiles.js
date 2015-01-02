@@ -88,6 +88,68 @@ Tiles = {
     return true;
   };
 
+  // scope.lineOfSight = (x, y, tx, ty) ->
+  //   if x == tx
+  //     [minY,maxY] = [y,ty].sort()
+  //     return false if scope.hasWall(x, minY, 'down')
+  //     return false if scope.hasWall(x, maxY, 'up')
+
+  //     for i in [minY+1...maxY]
+  //       return false if scope.hasWall(x, i, 'down|up')
+  //   else if y ==ty
+  //     [minX,maxX] = [x, tx]
+  //     return false if scope.hasWall(minX, y, 'right')
+  //     return false if scope.hasWall(maxX, y, 'left')
+
+  //     for i in [minX+1...maxX]
+  //       return false if scope.hasWall(i, y, 'left|right')
+  //   else
+  //     return false
+  //   true
+
+  // scope.hasWall = (x, y, direction) ->
+  //   tile = Tiles.getBoardTile(x, y)
+  //   tile.tileType == Tiles.WALL && RegExp(direction).test(tile.elementDirection)
+  scope.lineOfSight = function(x, y, tx, ty) {
+    var i, maxX, maxY, minX, minY, _i, _j, _ref, _ref1, _ref2, _ref3;
+    if (x === tx) {
+      _ref = [y, ty].sort(), minY = _ref[0], maxY = _ref[1];
+      if (scope.hasWall(x, minY, 'down')) {
+        return false;
+      }
+      if (scope.hasWall(x, maxY, 'up')) {
+        return false;
+      }
+      for (i = _i = _ref1 = minY + 1; _ref1 <= maxY ? _i < maxY : _i > maxY; i = _ref1 <= maxY ? ++_i : --_i) {
+        if (scope.hasWall(x, i, 'down|up')) {
+          return false;
+        }
+      }
+    } else if (y === ty) {
+      _ref2 = [x, tx], minX = _ref2[0], maxX = _ref2[1];
+      if (scope.hasWall(minX, y, 'right')) {
+        return false;
+      }
+      if (scope.hasWall(maxX, y, 'left')) {
+        return false;
+      }
+      for (i = _j = _ref3 = minX + 1; _ref3 <= maxX ? _j < maxX : _j > maxX; i = _ref3 <= maxX ? ++_j : --_j) {
+        if (scope.hasWall(i, y, 'left|right')) {
+          return false;
+        }
+      }
+    } else {
+      return false;
+    }
+    return true;
+  };
+
+  scope.hasWall = function(x, y, direction) {
+    var tile;
+    tile = Tiles.getBoardTile(x, y);
+    return tile.tileType === Tiles.WALL && RegExp(direction).test(tile.elementDirection);
+  };
+
   scope.getBoardTile = function(x, y) {
     if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
       console.log("Invalid board tile", x, y);
