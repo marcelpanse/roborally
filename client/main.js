@@ -20,7 +20,7 @@ Meteor.startup(function() {
 
     analytics.identify(user._id, {
       name: getUsername(user),
-      email: user.services.facebook ? user.services.facebook.email : user.emails[0].address
+      email: user.services && user.services.facebook ? user.services.facebook.email : user.emails[0].address
     });
 
     c.stop();
