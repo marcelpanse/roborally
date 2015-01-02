@@ -90,52 +90,56 @@ Tiles = {
 
   // scope.lineOfSight = (x, y, tx, ty) ->
   //   if x == tx
-  //     return false if scope.hasWall(x, Math.min(y, ty), 'down')
-  //     return false if scope.hasWall(x, Math.max(y, ty), 'up')
+  //     [minY,maxY] = [y,ty].sort()
+  //     return false if scope.hasWall(x, minY, 'down')
+  //     return false if scope.hasWall(x, maxY, 'up')
 
-  //     for i in [Math.min(y, ty)+1...Math.max(y, ty)]
+  //     for i in [minY+1...maxY]
   //       return false if scope.hasWall(x, i, 'down|up')
   //   else if y ==ty
-  //     return false if scope.hasWall(Math.min(x, tx), y, 'right')
-  //     return false if scope.hasWall(Math.max(x, tx), y, 'left')
+  //     [minX,maxX] = [x, tx]
+  //     return false if scope.hasWall(minX, y, 'right')
+  //     return false if scope.hasWall(maxX, y, 'left')
 
-  //     for i in [Math.min(x, tx)+1...Math.max(x, tx)]
+  //     for i in [minX+1...maxX]
   //       return false if scope.hasWall(i, y, 'left|right')
   //   else
-  //     false
+  //     return false
   //   true
 
   // scope.hasWall = (x, y, direction) ->
   //   tile = Tiles.getBoardTile(x, y)
   //   tile.tileType == Tiles.WALL && RegExp(direction).test(tile.elementDirection)
   scope.lineOfSight = function(x, y, tx, ty) {
-    var i, _i, _j, _ref, _ref1, _ref2, _ref3;
+    var i, maxX, maxY, minX, minY, _i, _j, _ref, _ref1, _ref2, _ref3;
     if (x === tx) {
-      if (scope.hasWall(x, Math.min(y, ty), 'down')) {
+      _ref = [y, ty].sort(), minY = _ref[0], maxY = _ref[1];
+      if (scope.hasWall(x, minY, 'down')) {
         return false;
       }
-      if (scope.hasWall(x, Math.max(y, ty), 'up')) {
+      if (scope.hasWall(x, maxY, 'up')) {
         return false;
       }
-      for (i = _i = _ref = Math.min(y, ty) + 1, _ref1 = Math.max(y, ty); _ref <= _ref1 ? _i < _ref1 : _i > _ref1; i = _ref <= _ref1 ? ++_i : --_i) {
+      for (i = _i = _ref1 = minY + 1; _ref1 <= maxY ? _i < maxY : _i > maxY; i = _ref1 <= maxY ? ++_i : --_i) {
         if (scope.hasWall(x, i, 'down|up')) {
           return false;
         }
       }
     } else if (y === ty) {
-      if (scope.hasWall(Math.min(x, tx), y, 'right')) {
+      _ref2 = [x, tx], minX = _ref2[0], maxX = _ref2[1];
+      if (scope.hasWall(minX, y, 'right')) {
         return false;
       }
-      if (scope.hasWall(Math.max(x, tx), y, 'left')) {
+      if (scope.hasWall(maxX, y, 'left')) {
         return false;
       }
-      for (i = _j = _ref2 = Math.min(x, tx) + 1, _ref3 = Math.max(x, tx); _ref2 <= _ref3 ? _j < _ref3 : _j > _ref3; i = _ref2 <= _ref3 ? ++_j : --_j) {
+      for (i = _j = _ref3 = minX + 1; _ref3 <= maxX ? _j < maxX : _j > maxX; i = _ref3 <= maxX ? ++_j : --_j) {
         if (scope.hasWall(i, y, 'left|right')) {
           return false;
         }
       }
     } else {
-      false;
+      return false;
     }
     return true;
   };
