@@ -4,5 +4,9 @@ ownsDocument = function(userId, doc) {
 };
 
 getUsername = function(user) {
-  return (user.profile.name) ? user.profile.name : user.emails[0].address;
+  if (user.profile.name) {
+    return user.profile.name;
+  } else {
+    return user.emails[0].address.split('@')[0].replace(/[^a-zA-Z]/g, ' ').replace(/ +/g, ' ');
+  }
 };
