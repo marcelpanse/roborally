@@ -164,7 +164,17 @@ GameState = {
     for (var i in players) {
       var player = players[i];
       Tiles.checkCheckpoints(player);
-      if (player.checkpoint1 && player.checkpoint2 && Tiles.isPlayerOnFinish(player)) {
+      if (player.lives <= 0) {
+        console.log("Player " + player.name + " ran out of lives and lost the game!!");
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: i>0 ? players[0].name : players[1].name}});
+        ended = true;
+        Chat.insert({
+          gameId: player.gameId,
+          message: 'Player ' + player.name + ' ran out of lives and lost the game',
+          submitted: new Date().getTime()
+        });
+        break;
+      } else if (player.checkpoint1 && player.checkpoint2 && Tiles.isPlayerOnFinish(player)) {
         console.log("Player " + player.name + " won the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         ended = true;

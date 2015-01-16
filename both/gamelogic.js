@@ -238,8 +238,17 @@ GameLogic = {
             respawned = true;
           }
           playerToUpdate.submittedCards = [];
+          playerToUpdate.damage = 2;
+          playerToUpdate.lives--;
           Players.update(playerToUpdate._id, playerToUpdate);
           console.log("updating position", playerToUpdate.name);
+
+          Chat.insert({
+            gameId: player.gameId,
+            message: player.name + ' died and got re-assembled! (lives: '+ player.lives +', damage: '+ player.damage +')',
+            submitted: new Date().getTime()
+          });
+
           Meteor.wrapAsync(respawnPlayerWithDelay)(players, playerToUpdate);
         } else {
           console.log("updating position", playerToUpdate.name);

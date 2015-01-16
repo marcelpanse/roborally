@@ -4,6 +4,14 @@ Template.board.helpers({
       return player.userId === Meteor.userId();
     });
   },
+  player: function() {
+    for (var i in this.players) {
+      var player = this.players[i];
+      if (player.userId === Meteor.userId()) {
+        return player;
+      }
+    }
+  },
   getRobotId: function() {
     return this.players[0].userId == Meteor.userId() ? 1 : 2;
   },
