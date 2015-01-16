@@ -34,7 +34,8 @@ GameLogic = {
       cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
     }
     var cards = cardObj.cards || [];
-    var nrOfNewCards = _MAX_NUMBER_OF_CARDS - cards.length;
+    var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage);
+    var nrOfNewCards = maxCards - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
       var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0]; //grab card from deck, so it can't be handed out twice
