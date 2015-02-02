@@ -122,6 +122,7 @@ GameState = {
     cardsToPlay = _.sortBy(cardsToPlay, 'priority').reverse();
 
     cardsToPlay.forEach(function(card) {
+      Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
       Meteor.wrapAsync(GameLogic.playCard)(game._id, card.playerId, card);
     });
 
