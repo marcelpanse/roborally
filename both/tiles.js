@@ -177,11 +177,10 @@ Tiles = {
     return Tiles.getBoardTiles(playerCount, boardName)[y][x];
   };
   scope.getBoardTiles = function(playerCount,boardName) {
-	console.log('Getboardtiles called with: '+playerCount+','+boardName)
     if (boardName === 'test_bed_1') {
-	  return Tiles.getBoardTEST_BED_1(playerCount).tiles;
+  	  return Tiles.getBoardTEST_BED_1(playerCount).tiles;
     } else {
-	  return Tiles.getBoardDefault(playerCount).tiles;
+	    return Tiles.getBoardDefault(playerCount).tiles;
     }
   };
   

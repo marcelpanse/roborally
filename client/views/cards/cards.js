@@ -121,7 +121,7 @@ function addUIData(cards, available) {
   cards.forEach(function(card) {
     if (card !== null) {
       card.class = available ? 'available' : 'played';
-      card.type = ['f1', 'b', 'l', 'r', 'f2', 'f3', 'u'][card.cardType];
+      card.type = ['u', 'r', 'l', 'b', 'f1', 'f2', 'f3'][card.cardType];
     }
   });
   return cards;
