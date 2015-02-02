@@ -18,7 +18,7 @@ Tiles = {
 
   scope.getStartPosition = function(players) {
     var game = Games.findOne(players[0].gameId);
-    var board = Tiles.getBoardTiles(players.length,boardName);
+    var board = Tiles.getBoardTiles(players.length,game.name);
     for (var y in board) { //rows
       var cols = board[y];
       for (var x in cols) { //cols
@@ -208,7 +208,7 @@ Tiles = {
   }
   
   scope.getBoardDefault = function(playerCount) {
-    if (typeof _boardCache[_boards.DEFAULT]!=='undefined') {
+    if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
       return _boardCache[_boards.DEFAULT];
     }
     var b = create2DArray(12);
@@ -397,30 +397,31 @@ Tiles = {
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
 		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
     Tiles.labelBoard(_boardCache[_boards.DEFAULT]);
-	return _boardCache[_boards.DEFAULT];
+    return _boardCache[_boards.DEFAULT];
   };
 
   scope.getBoardTEST_BED_1 = function(playerCount) {
-    if (typeof _boardCache[_boards.TEST_BED_1]!=='undefined') {
-      return _boardCache[_boards.TEST_BED_1].tiles;
+    if (typeof _boardCache[_boards.TEST_BED_1]!=='undefined' && _boardCache[_boards.TEST_BED_1]!==null) {
+      return _boardCache[_boards.TEST_BED_1];
     }
-	console.log("Creating board test_bed_1");
     var b = create2DArray(12);
-    for(var x = 0;x<12;++x)
-      for(var y = 0;y<12;++y)
+
+    for(var x=0;x<12;++x)
+      for(var y=0;y<12;++y)
         b[x][y] = getTile(Tiles.EMPTY, "1");
+		
     var startsX=[];
     var startsY=[];
     var startsDirection=[];
     var checkpointsX=[];
     var checkpointsY=[];
-    
     startsX[0]=0; startsY[0]=2; startsDirection[0]=GameLogic.DOWN;
     startsX[1]=2; startsY[1]=0; startsDirection[1]=GameLogic.RIGHT;
     checkpointsX[0]=2; checkpointsY[0]=2;
     checkpointsX[1]=3; checkpointsY[1]=3;
+
     _boardCache[_boards.TEST_BED_1]=
-	    {tiles: b,
+        {tiles: b,
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
 		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
     Tiles.labelBoard(_boardCache[_boards.TEST_BED_1]);
