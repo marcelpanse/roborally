@@ -138,9 +138,10 @@ GameLogic = {
   };
 
   scope.executeRollers = function(players, callback) {
+    var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
       //check if is on roller
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y);
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name);
       if (tile.tileType == Tiles.ROLLER) {
         //move player 1 step in roller direction
         //check if target pos is occupied and not on roller.
@@ -174,12 +175,13 @@ GameLogic = {
   };
 
   function executeStep(players, player, step) {
+	var game = Games.findOne(player.gameId);
     switch (player.direction) {
       case GameLogic.UP:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y - step)) {
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y - step,players.length,game.name)) {
           playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y - step);
           if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y - step)) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y - step,players.length,game.name)) {
               playerOnTile.position.y -= step;
               player.position.y -= step;
             }
@@ -189,10 +191,10 @@ GameLogic = {
         }
         break;
       case GameLogic.RIGHT:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x + step, player.position.y)) {
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x + step, player.position.y,players.length,game.name)) {
           playerOnTile = Tiles.isPlayerOnTile(players, player.position.x + step, player.position.y);
           if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x + step, playerOnTile.position.y)) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x + step, playerOnTile.position.y,players.length,game.name)) {
               playerOnTile.position.x += step;
               player.position.x += step;
             }
@@ -202,10 +204,10 @@ GameLogic = {
         }
         break;
       case GameLogic.DOWN:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y + step)) {
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y + step,players.length,game.name)) {
           playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y + step);
           if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y + step)) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y + step,players.length,game.name)) {
               playerOnTile.position.y += step;
               player.position.y += step;
             }
@@ -215,10 +217,10 @@ GameLogic = {
         }
         break;
       case GameLogic.LEFT:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x - step, player.position.y)) {
+        if (Tiles.canMove(player.position.x, player.position.y, player.position.x - step, player.position.y,players.length,game.name)) {
           playerOnTile = Tiles.isPlayerOnTile(players, player.position.x - step, player.position.y);
           if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x - step, playerOnTile.position.y)) {
+            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x - step, playerOnTile.position.y,players.length,game.name)) {
               playerOnTile.position.x -= step;
               player.position.x -= step;
             }
