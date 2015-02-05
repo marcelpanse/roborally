@@ -26,6 +26,10 @@ Meteor.methods({
       message: 'Game created',
       submitted: new Date().getTime()
     });
+    Meteor.call('joinGame', gameId, function(error) {
+      if (error)
+        return alert(error.reason);
+    });
 
     return gameId;
   },
