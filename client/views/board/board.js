@@ -52,7 +52,7 @@ Template.board.helpers({
     return "";
   },
   tiles: function() {
-    return Tiles.getBoardTiles(this.players.length,this.game.name);
+    return Tiles.getBoardTiles(this.game);
   },
   gameEnded: function() {
     return this.game.gamePhase == GameState.PHASE.ENDED;

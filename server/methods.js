@@ -17,8 +17,11 @@ Meteor.methods({
       started: false,
       gamePhase: GameState.PHASE.IDLE,
       playPhase: GameState.PLAY_PHASE.IDLE,
-      playPhaseCount: 0
+      playPhaseCount: 0,
+      boardId: Tiles.BOARD_DEFAULT
     });
+    if(game.name==='test_bed_1')
+      game.boardId=Tiles.BOARD_TEST_BED_1;
     var gameId = Games.insert(game);
 
     Chat.insert({
@@ -89,7 +92,7 @@ Meteor.methods({
     }
 
     for (var i in players) {
-      var start = Tiles.getStartPosition(players);
+      var start = Tiles.getStartPosition(players,i);
       var player = players[i];
       player.position.x = start.x;
       player.position.y = start.y;
