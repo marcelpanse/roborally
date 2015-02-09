@@ -132,12 +132,17 @@ GameState = {
   function playMoveBoard(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeRollers)(players);
+    Meteor.wrapAsync(GameLogic.executeExpressRollers)(players);
+    Meteor.wrapAsync(GameLogic.executeGears)(players);
+    //Meteor.wrapAsync(GameLogic.executePushers)(players);
 
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.LASERS}});
     GameState.nextPlayPhase(game._id);
   }
 
   function playLasers(game) {
+    var players = Players.find({gameId: game._id}).fetch();
+    Meteor.wrapAsync(GameLogic.executeLasers)(players);
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.CHECKPOINTS}});
     GameState.nextPlayPhase(game._id);
   }

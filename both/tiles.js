@@ -1,9 +1,14 @@
-Tiles = {
+(function(){Tiles = {
   EMPTY: "empty",
   VOID: "void",
-  WALL: "wall",
-  CORNER: "corner",
   ROLLER: "roller",
+  PUSHER: "pusher",
+  GEAR:   "gear",
+  REPAIR: "repair",
+  OPTION: "option", 
+  
+  WALL: "wall",      // deprecated, use tile property 'wall' to define wall
+    
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 12
 };
@@ -11,7 +16,8 @@ Tiles = {
 (function (scope) {
   _boards = {
 	DEFAULT: 0,
-	TEST_BED_1: 1
+	TEST_BED_1: 1,
+  CROSS: 2
   }
   
   var _boardCache = [];
@@ -76,6 +82,7 @@ Tiles = {
     });
     return found;
   };
+  
 
   scope.canMove = function(x, y, tx, ty,playerCount,gameName) {
     var tile = Tiles.getBoardTile(x, y,playerCount,gameName);
@@ -97,10 +104,10 @@ Tiles = {
       targetTileSide = "up";
     }
 
-    if (tile.tileType == Tiles.WALL && String(tile.elementDirection).indexOf(tileSide) > -1) {
+    if (tile.wall && String(tile.wall).indexOf(tileSide) > -1) {
       return false;
     }
-    if (targetTile !== null && targetTile.tileType == Tiles.WALL && String(targetTile.elementDirection).indexOf(targetTileSide) > -1) {
+    if (targetTile !== null && targetTile.wall && String(targetTile.wall).indexOf(targetTileSide) > -1) {
       return false;
     }
 
@@ -166,7 +173,7 @@ Tiles = {
 
   scope.hasWall = function(x, y, direction) {
     var tile = Tiles.getBoardTile(x, y, playerCount, gameName);
-    return tile.tileType === Tiles.WALL && RegExp(direction).test(tile.elementDirection);
+    return (tile.wall &&  RegExp(direction).test(tile.wall); 
   };
 
   scope.getBoardTile = function(x, y, playerCount, boardName) {
@@ -226,7 +233,7 @@ Tiles = {
     b[0][10] = getTile(Tiles.ROLLER, "up");
     b[0][11] = getTile(Tiles.EMPTY, "2");
 
-    // row 2
+    // row 2    
     b[1][0] = getTile(Tiles.EMPTY, "1");
     b[1][1] = getTile(Tiles.ROLLER, "down");
     b[1][2] = getTile(Tiles.ROLLER, "right");
@@ -398,6 +405,258 @@ Tiles = {
     Tiles.labelBoard(_boardCache[_boards.DEFAULT]);
     return _boardCache[_boards.DEFAULT];
   };
+    
+  function Tile(type) {
+    if (typeof(type) === 'undefined') {
+      type = Tiles.EMPTY;
+    }
+    this.type = type;
+    this.tileType = type;
+    this.wall = false;
+    this.damage = 0;
+    
+    this.path = funtion() {
+      var p = "/tiles/"
+      if (this.wall) {
+         p += "wall-" + this.wall 
+      } else {
+        
+        switch (type) {
+        case 'empty':
+        case 'repair':
+        case 'option':
+        case 'gear':
+        case 'pusher':
+          p += 'empty-1';
+          break;
+        case 'roller':
+          p += 'roller'
+          if (this.move.x = -1) {
+            p += '-left';
+          } else if (this.move.x = 1) {
+            p += '-right';
+          } else if (this.move.y = -1) {
+            p += '-up';
+          } else if (this.move.y = 1) {
+            p += '-down';
+          } 
+        case 'void':
+          p += 'void-square';
+          break;
+        }
+      }
+      p += '.jpg';
+      return p;
+    }
+  };
+  
+  function Board() {
+    var this.tiles = create2DArray(12);
+    var this.start_tiles=[];
+    var this.checkpoints=[];
+
+    var dir_to_i = { 'u': 0, 'r':1, 'd':2, 'l':3 }
+    var opp_dir = {r:'l', l:'r', u:'d', d:'u', right:'left', left:'right', up:'down', down:'up'}
+    for(var x=0;x<BOARD_WIDTH;++x)
+      for(var y=0;y<BOARD_HEIGHT;++y)
+        this.tiles[x][y] = new Tile();
+    
+    this.setType(y,x,type) {
+      this.tiles[y][x].type = type;
+      this.tiles[y][x].tileType = type;
+    }
+    
+    this.addStart(y,x,direction) {
+      start_tiles.push( {x:x, y:y, direction:direction} );
+      
+      this.tiles[y][x].start = true;     //TODO remove 'start' and 'direction' and use start_tiles in getStartPosition
+      this.tiles[y][x].direction = true;
+    }
+    
+    this.addCheckpoint(y,x) {
+      this.checkpoints.push({x:x,y:y,number:nr})
+      
+      switch (this.checkpoints.length) { //TODO this is ridiculous; these checkpoint variables should be replaced with an array
+      case 3:
+        ch2 = this.checkpoints[1];
+        this.tiles[ch2.y][ch2.x].checkpoint2 = true;
+        this.tiles[ch2.y][ch2.x].checkpoint1 = false;
+        this.tiles[ch2.y][ch2.x].finish = false;
+      case 2:
+        ch1 = this.checkpoints[0];
+        this.tiles[ch1.y][ch1.x].checkpoint1 = true;
+        this.tiles[ch1.y][ch1.x].finish = false;
+      case 1:
+        fin = this.checkpoints[this.checkpoints.length-1];
+        this.tiles[fin.y][fin.x].finish = true;
+      }
+    }
+      
+      
+    this.stepX = function(direction) {
+      if (direction === 'l' || direction === 'left') {
+          return -1;
+      } else if (direction === 'r' || direction === 'right') {
+          return 1;
+      } else {
+          return 0;
+      }
+    };
+    
+    this.stepY = function(direction) {
+      if (direction === 'u' || direction === 'up') {
+          return -1;
+      } else if (direction === 'd' || direction === 'down') {
+          return 1;
+      } else {
+          return 0;
+      }
+    };
+    
+    this.step = function(dir) {
+      return {x:this.stepX(dir), y:this.stepY(dir)};
+    }
+    
+    this.nextX = function(x, direction) {
+      return x + this.stepX(direction);
+    };
+      
+    this.nextY = function(y, direction) {
+      return y + this.stepY(direction);
+    };
+    
+
+    this.addWall = function(y,x,direction) {
+      if (this.tiles[y][x].wall) {
+        this.tiles[y][x].wall += '-' + direction;  
+      } else {
+        this.tiles[y][x].wall = direction;    
+      }
+    };
+    
+    this.addDoubleLaser = function(startX, startY, direction, length) {
+      this.addLaser(startX, startY, direction, length, 2);
+    };
+      
+    this.addLaser = function(startX, startY, direction, length, strength) {
+      if(typeof(strength)==='undefined') strength = 1;
+      this.addWall(startY,startX,opp_dir[direction]); // lasers are always between walls      
+      for(var i=0;i<length;++i) {
+        this.tiles[startY][startX].damage = strength;
+        startY = this.nextX(startX,direction);
+        startX = this.nextY(startY,direction);
+      }
+      this.addWall(startY,startX,direction);
+    };
+      
+    this.addRoller = function(startX, startY, route) {
+      var last_dir = '';
+      var cur_dir = route.charAt(0);
+
+      this.setType(startX, startY, Tiles.ROLLER);
+      this.tiles[startX][startY].move = this.step(cur_dir);
+          
+      for(var i=1;i<route.length;++i) {
+        last_dir = route.charAt(i-1);
+        cur_dir = route.charAt(i);
+        if (last_dir !== cur_dir) {   // not the curved conveyor belt but the previous one rotates the robot
+          var rot = dir_to_i[cur_dir] - dir_to_i[last_dir]
+          if (rot === -1 || rot === 3) {
+            this.tiles[startX][startY].rotate = -1;  
+          } else {
+            this.tiles[startX][startY].rotate = 1;
+          }
+        }
+        startX = this.nextX(startX, last_dir);
+        startY = this.nextY(startY, last_dir);
+        this.tiles[startX][startY].move = this.step(cur_dir);
+        this.setType(startX,startY,Tiles.ROLLER);
+      };
+
+  };
+  
+  this.setVoid = function(y,x) {
+    this.setType(x,y,Tiles.VOID);
+  }
+  this.addRepair = function(y,x) {
+    this.repair = true;
+  }
+  this.addOption = function(y,x) {
+    this.tiles[y][x].repair = true;
+    this.tiles[y][x].option = true;
+  }
+  
+  
+  scope.getBoardCross = function(playerCount) {
+    if (typeof _boardCache[_boards.CROSS]!=='undefined' && _boardCache[_boards.CROSS]!==null) {
+      return _boardCache[_boards.CROSS];
+    }
+    var board = new Board();
+
+    board.addWall(0,2, "up");
+    board.addWall(0,7, "up");
+    board.addWall(0,9, "up");
+    board.addWall(2,0, "left");
+    board.addWall(2,11,"right");
+    board.addWall(3,1, "right-down");
+    board.addWall(3,3, "right");
+    board.addWall(3,7, "left-down");
+    board.addWall(4,0, "left");
+    board.addWall(4,9, "down");
+    board.addWall(4,11,"right");
+    board.addWall(7,0, "left-down");
+    board.addWall(7,7, "left-up");
+    board.addWall(7,10,"up");
+    board.addWall(7,11,"right");
+    board.addWall(8,4, "up");
+    board.addWall(9,0, "left");
+    board.addWall(9,2, "right");
+    board.addWall(9,11,"right");
+    board.addWall(11,2,"down");
+    board.addWall(11,4,"down");
+    board.addWall(11,7,"right-down");
+    board.addWall(11,9,"down");
+      
+    board.addRoller(0,1,"ddrrrrddldldlll");
+    board.addRoller(0,5,"dd");
+    board.addRoller(1,11,"llu");
+    board.addRoller(5,11,"llllluluuuu");
+    board.addRoller(6,0,"rrrrrdrdddd");
+    board.addRoller(0,10,"rrd");
+    board.addRoller(11,10,"uulllluuuurrrrr");
+    board.addRoller(11,6,"uu");
+      
+    board.addLaser(0,4, "d", 3);
+    board.addDoubleLaser(1,8, "d", 3);
+    board.addLaser(8,2, "r", 2);
+    board.addLaser(8,7, "r", 2);
+    
+    board.addRepair(0,11);
+    board.addRepair(9,0);
+    board.addOption(3,2);
+    board.addOption(7,9);
+      
+    board.setVoid(2,9);
+    board.setVoid(1,4);
+    board.setVoid(2,4);
+    board.setVoid(5,4);
+    board.setVoid(6,3);
+    board.setVoid(6,4);
+    board.setVoid(6,5);
+    board.setVoid(7,4);
+    board.setVoid(8,9);
+    board.setVoid(10,2);
+    board.setVoid(11,0);
+        
+    board.addStart(0,2, GameLogic.DOWN);
+    board.addStart(2,0, GameLogic.RIGHT);
+    board.addCheckpoint(3,7);
+    board.addCheckpoint(8,1);
+    board.addCheckpoint(7,7);
+
+    _boardCache[_boards.CROSS] = board;
+    return _boardCache[_boards.CROSS];
+  };
 
   scope.getBoardTEST_BED_1 = function(playerCount) {
     if (typeof _boardCache[_boards.TEST_BED_1]!=='undefined' && _boardCache[_boards.TEST_BED_1]!==null) {
@@ -436,16 +695,28 @@ Tiles = {
   }
 
   function getTile(tileType, direction) {
-    var x = { path: "/tiles/" + tileType + "-" + direction + ".jpg", tileType: tileType, elementDirection: direction };
+    var x = { path: "/tiles/" + tileType + "-" + direction + ".jpg", 
+              tileType: tileType, 
+              type: tileType,
+              damage: 0,
+              move: { x:0, y:0 },
+              rotate: 0,
+              wall: false,
+              repair: false,
+              option: false
+            }
+    
     switch (tileType) {
       case Tiles.ROLLER:
         x.description = "This is a converyor belt. You will move 1 space in the direction of the arrow when ending here after a card has been played.";
+        x.move = step(direction);
         break;
       case Tiles.VOID:
         x.description = "Don't fall in this giant hole in the ground or you'll die..";
         break;
       case Tiles.WALL:
       case Tiles.CORNER:
+        x.wall = direction;
         x.description = "Even awesome robots can't pass through these massive walls.";
         break;
     }
@@ -453,3 +724,5 @@ Tiles = {
   }
 
 })(Tiles);
+
+})();

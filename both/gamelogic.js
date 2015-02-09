@@ -137,98 +137,166 @@ GameLogic = {
     callback();
   };
 
+
+  scope.tryToMovePlayersOnRollers = function(players, moves) {  
+    var move_canceled = true;
+    while (move_canceled) {  // if a move was canceled we have to check for other conflicts again
+      move_canceled = false;
+      for (var i=0;i<moves.length;++i) {
+        for (var j=i+1;j<moves.length;++j) {
+          if (moves[i].x === moves[j].x && moves[i].y === moves[j].y) {
+            moves[i].canceled = true;
+            moves[j].canceled = true;
+            moves[i].x = moves[i].player.position.x;
+            moves[j].x = moves[j].player.position.x;
+            moves[i].y = moves[i].player.position.y;
+            moves[j].y = moves[j].player.position.y;
+            move_canceled = true;
+          }
+        }
+      }
+    }
+    for (var move in moves) {
+      if (!move.canceled)
+        //move player 1 step in roller direction and rotate
+        move.player.position.x = move.x;
+        move.player.position.y = move.y;
+        move.player.direction  = move.tile.rotate;
+        move.player.direction %= 4;
+        checkRespawnsAndUpdateDb(players, move.player, _CARD_PLAY_DELAY);
+      }
+    }
+  }
+  
   scope.executeRollers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
+    var roller_moves = [];
     players.forEach(function(player) {
       //check if is on roller
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name);
       if (tile.tileType == Tiles.ROLLER) {
-        //move player 1 step in roller direction
-        //check if target pos is occupied and not on roller.
-        switch (tile.elementDirection) {
-          case "up":
-            if (!Tiles.isPlayerOnTile(players, player.position.x, player.position.y-1)) {
-              player.position.y -= 1;
-            }
-            break;
-          case "right":
-            if (!Tiles.isPlayerOnTile(players, player.position.x+1, player.position.y)) {
-              player.position.x += 1;
-            }
-            break;
-          case "down":
-            if (!Tiles.isPlayerOnTile(players, player.position.x, player.position.y+1)) {
-              player.position.y += 1;
-            }
-            break;
-          case "left":
-            if (!Tiles.isPlayerOnTile(players, player.position.x-1, player.position.y)) {
-              player.position.x -= 1;
-            }
-            break;
-        }
+        roller_moves += {player: player, x: player.position.x+tile.move.x, y: player.position.y+tile.move.y, tile: tile, canceled: false};
+      } else {
+        roller_moves += {player: player, x: player.position.x, y: player.position.y, canceled: true};  // to detect conflicts add non-moving players
       }
-      //check void's
-      checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
     });
+    scope.tryToMovePlayersOnRollers(players, roller_moves);
     callback();
   };
-
-  function executeStep(players, player, step) {
-	var game = Games.findOne(player.gameId);
+  
+  // move players 2nd step in roller direction; 1st step is done by executeRollers, 
+  scope.executeExpressRollers = function(players, callback) {
+    var game = Games.findOne(players[0].gameId);
+    var roller_moves = [];
+    players.forEach(function(player) {
+      //check if is on roller
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name);
+      if (tile.tileType == Tiles.ROLLER && tile.speed == 2) {
+        GameLogic.movePlayerWithRoller(player, players, tile);
+      }
+    }
+    scope.tryToMovePlayersOnRollers(players, roller_moves);
+    callback();
+  }
+  
+  scope.executeGears = function(players, callback) {
+    var game = Games.findOne(players[0].gameId);
+    players.forEach(function(player) {
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name);
+      if (tile.tileType == Tiles.GEAR) {
+        player.direction = tile.rotate;
+        player.direction %= 4;
+        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
+      }
+    }
+    callback();
+  }
+  
+  scope.executeLasers = function(players, callback) {
+    var game = Games.findOne(players[0].gameId);
+    players.forEach(function(player) {
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name);
+      if (tile.damage > 0) {
+        player.damage += tile.damage;
+        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
+      }
+      if (!player.powered_down) {
+        scope.shootRobotLaser(players, player);
+      }
+    }
+    callback();
+  }
+  
+  scope.shootRobotLaser = function(players, player) {
+    var stepY = 0;
+    var stepX = 0;
+    var wallDir = [];
     switch (player.direction) {
       case GameLogic.UP:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y - step,players.length,game.name)) {
-          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y - step);
-          if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y - step,players.length,game.name)) {
-              playerOnTile.position.y -= step;
-              player.position.y -= step;
-            }
-          } else {
-            player.position.y -= step;
-          }
-        }
+        stepY = -1;
+        wallDir = ['up','down'];
         break;
       case GameLogic.RIGHT:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x + step, player.position.y,players.length,game.name)) {
-          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x + step, player.position.y);
-          if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x + step, playerOnTile.position.y,players.length,game.name)) {
-              playerOnTile.position.x += step;
-              player.position.x += step;
-            }
-          } else {
-            player.position.x += step;
-          }
-        }
+        wallDir = ['right','left'];
+        stepX = 1;
         break;
       case GameLogic.DOWN:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x, player.position.y + step,players.length,game.name)) {
-          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x, player.position.y + step);
-          if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x, playerOnTile.position.y + step,players.length,game.name)) {
-              playerOnTile.position.y += step;
-              player.position.y += step;
-            }
-          } else {
-            player.position.y += step;
-          }
-        }
+        stepY = 1;
+        wallDir = ['down','up'];
         break;
       case GameLogic.LEFT:
-        if (Tiles.canMove(player.position.x, player.position.y, player.position.x - step, player.position.y,players.length,game.name)) {
-          playerOnTile = Tiles.isPlayerOnTile(players, player.position.x - step, player.position.y);
-          if (playerOnTile !== null) {
-            if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x - step, playerOnTile.position.y,players.length,game.name)) {
-              playerOnTile.position.x -= step;
-              player.position.x -= step;
-            }
-          } else {
-            player.position.x -= step;
-          }
-        }
+        wallDir = ['left','right'];
+        stepX = -1;
         break;
+    }
+    var x = player.position.x;
+    var y = player.position.y;
+    while ( x > 0 && y > 0 && x < Tiles.BOARD_WIDTH && y < Tiles.BOARD_HEIGHT &&
+            !Tiles.hasWall(x,y, wallDir[0]) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1])) {
+      x += stepX;
+      y += stepY;
+      victim = Tiles.isPlayerOnTile(players,x,y)
+      if (victim) {
+        victim.damage += 1;
+        checkRespawnsAndUpdateDb(players, victim, _CARD_PLAY_DELAY);
+        break;
+      }
+    }
+  }
+  
+  function executeStep(players, player, step) {
+    var game = Games.findOne(player.gameId);
+    var stepX = 0;
+    var stepY = 0;
+    switch (player.direction) {
+      case GameLogic.UP:
+        stepY = -1;
+        break;
+      case GameLogic.RIGHT:
+        stepX = 1;
+        break;
+      case GameLogic.DOWN:
+        stepY = 1;
+        break;
+      case GameLogic.LEFT:
+        stepX = -1;
+        break;
+    }
+    if (stepX != 0 || stepY != 0) {
+      if (Tiles.canMove(player.position.x, player.position.y, player.position.x + stepX, player.position.y + stepY,players.length,game.name)) {
+        playerOnTile = Tiles.isPlayerOnTile(players, player.position.x + stepX, player.position.y + stepY);
+        if (playerOnTile !== null) {
+          if (Tiles.canMove(playerOnTile.position.x, playerOnTile.position.y, playerOnTile.position.x + stepX, playerOnTile.position.y + stepY,players.length,game.name)) {
+            playerOnTile.position.y += stepY;
+            playerOnTile.position.x += stepX;
+            player.position.y += stepY;
+            player.position.x += stepX;
+          }
+        } else {
+          player.position.y += stepY;
+          player.position.x += stepX;
+        }
+      }
     }
   }
 
