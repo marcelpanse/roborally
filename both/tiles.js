@@ -1,4 +1,4 @@
-(function(){Tiles = {
+Tiles = {
   EMPTY: "empty",
   VOID: "void",
   ROLLER: "roller",
@@ -8,6 +8,7 @@
   OPTION: "option", 
   
   WALL: "wall",      // deprecated, use tile property 'wall' to define wall
+                     // walls and lasers can be part of other tile types
     
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 12
@@ -171,9 +172,9 @@
     return true;
   };
 
-  scope.hasWall = function(x, y, direction) {
+  scope.hasWall = function(x, y, direction, playerCount, gameName) {
     var tile = Tiles.getBoardTile(x, y, playerCount, gameName);
-    return (tile.wall &&  RegExp(direction).test(tile.wall); 
+    return (tile.wall && RegExp(direction).test(tile.wall)); 
   };
 
   scope.getBoardTile = function(x, y, playerCount, boardName) {
@@ -415,13 +416,12 @@
     this.wall = false;
     this.damage = 0;
     
-    this.path = funtion() {
+    this.path = function() {
       var p = "/tiles/"
       if (this.wall) {
-         p += "wall-" + this.wall 
+        p += "wall-" + this.wall; 
       } else {
-        
-        switch (type) {
+        switch(type) {
         case 'empty':
         case 'repair':
         case 'option':
@@ -451,32 +451,38 @@
   };
   
   function Board() {
-    var this.tiles = create2DArray(12);
-    var this.start_tiles=[];
-    var this.checkpoints=[];
+    this.tiles = create2DArray(12);
+    this.start_tiles=[];
+    varthis.checkpoints=[];
 
-    var dir_to_i = { 'u': 0, 'r':1, 'd':2, 'l':3 }
-    var opp_dir = {r:'l', l:'r', u:'d', d:'u', right:'left', left:'right', up:'down', down:'up'}
-    for(var x=0;x<BOARD_WIDTH;++x)
-      for(var y=0;y<BOARD_HEIGHT;++y)
-        this.tiles[x][y] = new Tile();
-    
-    this.setType(y,x,type) {
-      this.tiles[y][x].type = type;
-      this.tiles[y][x].tileType = type;
+    var dir_to_i = {u: 0, r:1, d:2, l:3 };
+    var opp_dir  = {r:'l',        l:'r',        u:'d',     d:'u', 
+                    right:'left', left:'right', up:'down', down:'up'};
+    var long_dir = {r:'right',     l:'left',   u:'up', d:'down',
+                    right:'right', left:'left',up:'up',down:'down'  };
+                    
+    for(var x=0;x<BOARD_WIDTH;++x) {
+      for(var y=0;y<BOARD_HEIGHT;++y) {
+        this.tiles[y][x] = new Tile();
+      }
     }
     
-    this.addStart(y,x,direction) {
+    this.setType = function(y,x,type) {
+      this.tiles[y][x].type = type;
+      this.tiles[y][x].tileType = type;
+    };
+    
+    this.addStart = function(y,x,direction) {
       start_tiles.push( {x:x, y:y, direction:direction} );
       
       this.tiles[y][x].start = true;     //TODO remove 'start' and 'direction' and use start_tiles in getStartPosition
       this.tiles[y][x].direction = true;
-    }
+    };
     
-    this.addCheckpoint(y,x) {
+    this.addCheckpoint = function(y,x) {
       this.checkpoints.push({x:x,y:y,number:nr})
       
-      switch (this.checkpoints.length) { //TODO this is ridiculous; these checkpoint variables should be replaced with an array
+      switch (this.checkpoints.length) { //TODO these checkpoint variables should be replaced with an array
       case 3:
         ch2 = this.checkpoints[1];
         this.tiles[ch2.y][ch2.x].checkpoint2 = true;
@@ -490,41 +496,8 @@
         fin = this.checkpoints[this.checkpoints.length-1];
         this.tiles[fin.y][fin.x].finish = true;
       }
-    }
-      
-      
-    this.stepX = function(direction) {
-      if (direction === 'l' || direction === 'left') {
-          return -1;
-      } else if (direction === 'r' || direction === 'right') {
-          return 1;
-      } else {
-          return 0;
-      }
     };
-    
-    this.stepY = function(direction) {
-      if (direction === 'u' || direction === 'up') {
-          return -1;
-      } else if (direction === 'd' || direction === 'down') {
-          return 1;
-      } else {
-          return 0;
-      }
-    };
-    
-    this.step = function(dir) {
-      return {x:this.stepX(dir), y:this.stepY(dir)};
-    }
-    
-    this.nextX = function(x, direction) {
-      return x + this.stepX(direction);
-    };
-      
-    this.nextY = function(y, direction) {
-      return y + this.stepY(direction);
-    };
-    
+          
 
     this.addWall = function(y,x,direction) {
       if (this.tiles[y][x].wall) {
@@ -540,21 +513,27 @@
       
     this.addLaser = function(startX, startY, direction, length, strength) {
       if(typeof(strength)==='undefined') strength = 1;
-      this.addWall(startY,startX,opp_dir[direction]); // lasers are always between walls      
+      this.addWall(startY,startX,long_dir[opp_dir[direction]]); // lasers are always between walls      
       for(var i=0;i<length;++i) {
         this.tiles[startY][startX].damage = strength;
-        startY = this.nextX(startX,direction);
-        startX = this.nextY(startY,direction);
+        startY = nextX(startX,direction);
+        startX = nextY(startY,direction);
       }
-      this.addWall(startY,startX,direction);
+      this.addWall(startY,startX,long_dir[direction]);
     };
       
-    this.addRoller = function(startX, startY, route) {
+    this.addExpressRoller = function(startX, startY, route) {  
+      this.addRoller(startX, startY, route, 2);
+    };
+    
+    this.addRoller = function(startX, startY, route, speed) {
+      if(typeof(speed)==='undefined') speed = 1;
       var last_dir = '';
       var cur_dir = route.charAt(0);
 
       this.setType(startX, startY, Tiles.ROLLER);
-      this.tiles[startX][startY].move = this.step(cur_dir);
+      this.tiles[startX][startY].move = step(cur_dir);
+      this.tiles[startX][startY].speed = speed;
           
       for(var i=1;i<route.length;++i) {
         last_dir = route.charAt(i-1);
@@ -567,25 +546,35 @@
             this.tiles[startX][startY].rotate = 1;
           }
         }
-        startX = this.nextX(startX, last_dir);
-        startY = this.nextY(startY, last_dir);
-        this.tiles[startX][startY].move = this.step(cur_dir);
+        startX = nextX(startX, last_dir);
+        startY = nextY(startY, last_dir);
+        this.tiles[startX][startY].move = step(cur_dir);
+        this.tiles[startX][startY].speed = speed;
         this.setType(startX,startY,Tiles.ROLLER);
-      };
-
+      }
+    };
+  
+    this.setVoid = function(y,x) {
+      this.setType(x,y,Tiles.VOID);
+    };
+    this.addRepair = function(y,x) {
+      this.repair = true;
+    };
+    this.addOption = function(y,x) {
+      this.tiles[y][x].repair = true;
+      this.tiles[y][x].option = true;
+    };
+  
+    this.addPusher = function(y,x, direction, pusher_type) {
+      this.setType(y,x, Tiles.PUSHER);
+      this.tiles[y][x].move = step(direction);
+      if (active == 'even') {
+        this.tiles[y][x].pusher_type = 0;
+      } else {
+        this.tiles[y][x].pusher_type = 1;
+      }
+    };
   };
-  
-  this.setVoid = function(y,x) {
-    this.setType(x,y,Tiles.VOID);
-  }
-  this.addRepair = function(y,x) {
-    this.repair = true;
-  }
-  this.addOption = function(y,x) {
-    this.tiles[y][x].repair = true;
-    this.tiles[y][x].option = true;
-  }
-  
   
   scope.getBoardCross = function(playerCount) {
     if (typeof _boardCache[_boards.CROSS]!=='undefined' && _boardCache[_boards.CROSS]!==null) {
@@ -692,7 +681,7 @@
       arr[i] = [];
     }
     return arr;
-  }
+  };
 
   function getTile(tileType, direction) {
     var x = { path: "/tiles/" + tileType + "-" + direction + ".jpg", 
@@ -704,9 +693,9 @@
               wall: false,
               repair: false,
               option: false
-            }
+            };
     
-    switch (tileType) {
+    switch(tileType) {
       case Tiles.ROLLER:
         x.description = "This is a converyor belt. You will move 1 space in the direction of the arrow when ending here after a card has been played.";
         x.move = step(direction);
@@ -721,8 +710,37 @@
         break;
     }
     return x;
-  }
-
+  };
+  
+  stepX = function(direction) {
+    if (direction === 'l' || direction === 'left') {
+        return -1;
+    } else if (direction === 'r' || direction === 'right') {
+        return 1;
+    } else {
+        return 0;
+    }
+  };
+  
+  stepY = function(direction) {
+    if (direction === 'u' || direction === 'up') {
+        return -1;
+    } else if (direction === 'd' || direction === 'down') {
+        return 1;
+    } else {
+        return 0;
+    }
+  };
+  
+  step = function(dir) {
+    return {x:stepX(dir), y:stepY(dir)};
+  };
+  
+  nextX = function(x, direction) {
+    return x + stepX(direction);
+  };
+    
+  nextY = function(y, direction) {
+    return y + stepY(direction);
+  };
 })(Tiles);
-
-})();
