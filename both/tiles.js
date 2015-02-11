@@ -20,8 +20,10 @@ Tiles = {
 	TEST_BED_1: 1,
   CROSS: 2
   }
+  var checkpoints = [];
   
   var _boardCache = [];
+  
 
   scope.getStartPosition = function(players) {
     var game = Games.findOne(players[0].gameId);
@@ -41,17 +43,10 @@ Tiles = {
     return {x: 0, y: 0, direction: 0};
   };
 
-  scope.isPlayerOnFinish = function(player,playerCount,boardName) {
-    return Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).finish;
-  };
-
   scope.checkCheckpoints = function(player,playerCount,boardName) {
-    if (!player.checkpoint1 && Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).checkpoint1) {
-      Players.update(player._id, {$set: {checkpoint1: true}});
-      return true;
-    }
-    if (player.checkpoint1 && !player.checkpoint2 && Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).checkpoint2) {
-      Players.update(player._id, {$set: {checkpoint2: true}});
+    var tile = Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName);
+    if (tile.checkpoint && tile.checkpoint === player.visited_checkpoints+1) {
+      Players.update(player._id, {$set: {visited_checkpoints: tile.checkpoint}});
       return true;
     }
     return false;
@@ -191,27 +186,31 @@ Tiles = {
 	    return Tiles.getBoardDefault(playerCount).tiles;
     }
   };
+  scope.getCheckpointCount = function(playerCount, boardName) {
+    if (boardName === 'test_bed_1') {
+  	  return Tiles.getBoardTEST_BED_1(playerCount).checkpoints.length;
+    } else {
+	    return Tiles.getBoardDefault(playerCount).checkpoints.length;
+    }
+  }
   
   //TODO: Deprecate this function, board.jade should read the board object rather than relying
   //        on hard-coded variable names.
   scope.labelBoard = function(gameBoard) {
-	for(var i=0; i<gameBoard.startsX.length; ++i) {
-      console.log('Start '+gameBoard.startsX[i]+','+gameBoard.startsY[i]+','+gameBoard.startsDirection[i]);
-      gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].start=true;
-	  gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].direction = gameBoard.startsDirection[i];
+     
+  	for(var i=0; i<gameBoard.startsX.length; ++i) {
+        console.log('Start '+gameBoard.startsX[i]+','+gameBoard.startsY[i]+','+gameBoard.startsDirection[i]);
+        gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].start=true;
+  	  gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].direction = gameBoard.startsDirection[i];
     }
-	console.log('There are '+gameBoard.checkpointsX.length+' in this game');
-	if(gameBoard.checkpointsX.length>=2) {
-	  i=0;
-      console.log('Checkpoint '+i+' located at '+gameBoard.checkpointsX[i]+','+gameBoard.checkpointsY[i]);
-      gameBoard.tiles[gameBoard.checkpointsX[i]][gameBoard.checkpointsY[i]].checkpoint1=true;
+  	console.log('There are '+gameBoard.checkpoints.length+' in this game');
+    
+    for (var i in gameBoard.checkpoints) {
+      var cp = gameBoard.checkpoints[i];
+      console.log('Checkpoint '+(i+1)+' located at '+cp.x+','+cp.y);
+      gameBoard.tiles[cp.x][cp.y].checkpoint=i+1;
     }
-	if(gameBoard.checkpointsX.length>=3) {
-	  i=1;
-      console.log('Checkpoint '+i+' located at '+gameBoard.checkpointsX[i]+','+gameBoard.checkpointsY[i]);
-      gameBoard.tiles[gameBoard.checkpointsX[i]][gameBoard.checkpointsY[i]].checkpoint2=true;
-    }
-    gameBoard.tiles[gameBoard.checkpointsX[gameBoard.checkpointsX.length-1]][gameBoard.checkpointsY[gameBoard.checkpointsX.length-1]].finish=true;
+    gameBoard.tiles[cp.x][cp.y].finish=true;
   }
   
   scope.getBoardDefault = function(playerCount) {
@@ -391,18 +390,17 @@ Tiles = {
     var startsX=[];
     var startsY=[];
     var startsDirection=[];
-    var checkpointsX=[];
-    var checkpointsY=[];
     startsX[0]=0; startsY[0]=2; startsDirection[0]=GameLogic.DOWN;
     startsX[1]=2; startsY[1]=0; startsDirection[1]=GameLogic.RIGHT;
-    checkpointsX[0]=3; checkpointsY[0]=7;
-    checkpointsX[1]=8; checkpointsY[1]=1;
-    checkpointsX[2]=7; checkpointsY[2]=7;
+    var checkpoints = [ {y:3, x:7, number:1}, 
+                        {y:8, x:1, number:2},
+                        {y:7, x:7, number:3}
+                      ];
 
     _boardCache[_boards.DEFAULT] =
 		{tiles: b,
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
-		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
+		 checkpoints: checkpoints};
     Tiles.labelBoard(_boardCache[_boards.DEFAULT]);
     return _boardCache[_boards.DEFAULT];
   };
@@ -480,22 +478,15 @@ Tiles = {
     };
     
     this.addCheckpoint = function(y,x) {
-      this.checkpoints.push({x:x,y:y,number:nr})
-      
-      switch (this.checkpoints.length) { //TODO these checkpoint variables should be replaced with an array
-      case 3:
-        ch2 = this.checkpoints[1];
-        this.tiles[ch2.y][ch2.x].checkpoint2 = true;
-        this.tiles[ch2.y][ch2.x].checkpoint1 = false;
-        this.tiles[ch2.y][ch2.x].finish = false;
-      case 2:
-        ch1 = this.checkpoints[0];
-        this.tiles[ch1.y][ch1.x].checkpoint1 = true;
-        this.tiles[ch1.y][ch1.x].finish = false;
-      case 1:
-        fin = this.checkpoints[this.checkpoints.length-1];
-        this.tiles[fin.y][fin.x].finish = true;
+      var cnt = this.checkpoints.length;
+      if (cnt > 0) {
+        var last_cp = this.checkpoints[cnt-1];
+        this.tiles[last_cp.y][last_cp.x].finish = false;
       }
+      cnt += 1;
+      this.checkpoints.push({x:x,y:y,number:cnt});
+      this.tiles[y][x].checkpoint = cnt;
+      this.tiles[y][x].finish = true;    
     };
           
 
@@ -660,17 +651,17 @@ Tiles = {
     var startsX=[];
     var startsY=[];
     var startsDirection=[];
-    var checkpointsX=[];
-    var checkpointsY=[];
     startsX[0]=0; startsY[0]=2; startsDirection[0]=GameLogic.DOWN;
     startsX[1]=2; startsY[1]=0; startsDirection[1]=GameLogic.RIGHT;
-    checkpointsX[0]=2; checkpointsY[0]=2;
-    checkpointsX[1]=3; checkpointsY[1]=3;
+    
+    var checkpoints = [ {y:2, x:2, number:1}, 
+                        {y:3, x:3, number:2},
+                      ];
 
     _boardCache[_boards.TEST_BED_1]=
         {tiles: b,
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
-		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
+		 checkpoints: checkpoints,};
     Tiles.labelBoard(_boardCache[_boards.TEST_BED_1]);
     return _boardCache[_boards.TEST_BED_1];
   };

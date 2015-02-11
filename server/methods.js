@@ -47,7 +47,7 @@ Meteor.methods({
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
-      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, position: {x: -1, y: -1}});
+      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, position: {x: -1, y: -1}});
     }
 
     Chat.insert({

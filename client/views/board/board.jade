@@ -13,17 +13,14 @@ template(name="board")
               img.board-item(src='/finish.png', data-toggle="tooltip" data-placement="bottom" data-container="body" title="Make sure to hit the checkpoints before finishing and win the game!")
             if this.start
               img.board-item(src='/start.png', data-toggle="tooltip" data-placement="bottom" data-container="body" title="Spawnpoint, you will respawn here if you die.")
-            if this.checkpoint1
-              .checkpoint(class= checkpoint1class, data-toggle="tooltip" data-placement="bottom" data-container="body" title="This is the first checkpoint, go here first!")
-                |1
-            if this.checkpoint2
-              .checkpoint(class= checkpoint2class, data-toggle="tooltip" data-placement="bottom" data-container="body" title="This is the second checkpoint.")
-                |2
+            if this.checkpoint
+              .checkpoint(class="{{checkpointClasses this.checkpoint}}", data-toggle="tooltip" data-placement="bottom" data-container="body" title="This is checkpoint no.#{this.checkpoint}.")
+                this.checkpoint
+
       br
-      div#r1(style= positionBlue)
-        img(src='/robot_1_500.png', style= directionBlue)
-      div#r2(style="#{positionYellow}")
-        img(src='/robot_2_500.png', style= directionYellow)
+      each robots
+        div(class=robot_class, style= position )
+          img(src= path, style= direction )
   .myRobot
     unless gameEnded
       img#robot(src='/robot_#{getRobotId}_500.png') 

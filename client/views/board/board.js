@@ -12,44 +12,49 @@ Template.board.helpers({
       }
     }
   },
+
+  robots: function() {
+    var p = [];
+    for (var i in this.players) {
+      var player = this.players[i];
+      var rclass = "r" + (i+1);
+      p.push({
+        path: "/robot_"+i.toString()+"_500.png",
+        robot_class: rclass,
+        direction: animateRotation(rclass, player.direction),
+        position: animatePosition(rclass, player.position.x, player.position.y),
+      });
+    }
+    return p;
+  },
   getRobotId: function() {
-    return this.players[0].userId == Meteor.userId() ? 1 : 2;
+    for (var i in this.players) {
+      var player = this.players[i];
+      if (player.userId === Meteor.userId()) {
+        return i.toString();
+      }
+    }
   },
-  positionBlue: function() {
-    var x = this.players[0].position.x;
-    var y = this.players[0].position.y;
-    return animatePosition("#r1", x, y);
-  },
-  positionYellow: function() {
-    var x = this.players[1].position.x;
-    var y = this.players[1].position.y;
-    return animatePosition("#r2", x, y);
-  },
-  directionBlue: function() {
-    return animateRotation("#r1", this.players[0].direction);
-  },
-  directionYellow: function() {
-    return animateRotation("#r2", this.players[1].direction);
-  },
-  checkpoint1class: function() {
+  checkpointClasses: function() {
     var players = Template.parentData(2).players;
-    if (players[0].userId == Meteor.userId() && players[0].checkpoint1) {
-      return "visited";
+    var game = Template.parentData(2).game;
+    var cnt = Tiles.getCheckpointCount(players.length, game.name);
+    for (var i in this.players) {
+      var player = this.players[i];
+      if (player.userId === Meteor.userId()) {
+        break;
+      }
     }
-    else if (players[1].userId == Meteor.userId() && players[1].checkpoint1) {
-      return "visited";
+    
+    var ch = {};
+    for (var i=1;i<cnt;++i)  {
+      if (player.visited_checkpoints > i) {
+        ch.push("visited");
+      } else {
+        ch.push("");
+      }
     }
-    return "";
-  },
-  checkpoint2class: function() {
-    var players = Template.parentData(2).players;
-    if (players[0].userId == Meteor.userId() && players[0].checkpoint2) {
-      return "visited";
-    }
-    else if (players[1].userId == Meteor.userId() && players[1].checkpoint2) {
-      return "visited";
-    }
-    return "";
+    return ch;
   },
   tiles: function() {
     return Tiles.getBoardTiles(this.players.length,this.game.name);
