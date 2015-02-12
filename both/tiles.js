@@ -11,7 +11,7 @@ Tiles = {
                      // walls and lasers can be part of other tile types
     
   BOARD_WIDTH: 12,
-  BOARD_HEIGHT: 12
+  BOARD_HEIGHT: 16
 };
 
 (function (scope) {
@@ -213,7 +213,7 @@ Tiles = {
     gameBoard.tiles[cp.x][cp.y].finish=true;
   }
   
-  scope.getBoardDefault = function(playerCount) {
+  scope.getBoardDefaultOld = function(playerCount) {
     if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
       return _boardCache[_boards.DEFAULT];
     }
@@ -405,21 +405,45 @@ Tiles = {
     return _boardCache[_boards.DEFAULT];
   };
     
-  function Tile(type) {
-    if (typeof(type) === 'undefined') {
-      type = Tiles.EMPTY;
+  function Item(type, direction) {
+    this.style = style_direction(direction);
+    this.path = "/tiles/"+ type + ".png";
+    this.description = '';
+    switch(type) {
+    case 'wall':
+      this.description =  "Even awesome robots can't pass through these massive walls.";
+      break;
+    case 'laser':
+      this.description = "This is a laser. You will gain one damage.";
+      break;
     }
-    this.type = type;
-    this.tileType = type;
+  }
+  
+  function Tile(tile_type) {
+    if (typeof(tile_type) === 'undefined') {
+      tile_type = Tiles.EMPTY;
+    }
+    this.type = tile_type;
+    this.tileType = tile_type;
     this.wall = false;
+    this.items = [];
     this.damage = 0;
+    this.direction = GameLogic.UP;
+    this.roller_type = ''
+    
+    this.orientation_css = function() {
+      return style_direction(this.direction);
+    }
     
     this.path = function() {
       var p = "/tiles/"
-      if (this.wall) {
-        p += "wall-" + this.wall; 
-      } else {
-        switch(type) {
+      // if (this.type == 'roller') {
+     //    p += 'roller-up';
+     //  }
+     //  else if (this.wall) {
+     //    p += "wall-" + this.wall;
+     //  } else {
+        switch(this.type) {
         case 'empty':
         case 'repair':
         case 'option':
@@ -428,56 +452,58 @@ Tiles = {
           p += 'empty-1';
           break;
         case 'roller':
-          p += 'roller'
-          if (this.move.x = -1) {
-            p += '-left';
-          } else if (this.move.x = 1) {
-            p += '-right';
-          } else if (this.move.y = -1) {
-            p += '-up';
-          } else if (this.move.y = 1) {
-            p += '-down';
-          } 
+          p += 'roller-' + this.roller_type
+          
+          break;
         case 'void':
           p += 'void-square';
           break;
+        default: 
+          p += 'empty-2';
+          break;
         }
-      }
+     // }
       p += '.jpg';
       return p;
-    }
+    };
+    
+    this.addItem = function(type, direction) {
+      this.items.push(new Item(type,direction-this.direction));  // the items are inside of the tile span so the 
+                                                                 // direction has to be relative to the tile orientation
+    };
+    
   };
   
   function Board() {
-    this.tiles = create2DArray(12);
+    this.tiles = create2DArray(16);
     this.start_tiles=[];
-    varthis.checkpoints=[];
+    this.checkpoints=[];
 
-    var dir_to_i = {u: 0, r:1, d:2, l:3 };
     var opp_dir  = {r:'l',        l:'r',        u:'d',     d:'u', 
                     right:'left', left:'right', up:'down', down:'up'};
-    var long_dir = {r:'right',     l:'left',   u:'up', d:'down',
-                    right:'right', left:'left',up:'up',down:'down'  };
-                    
-    for(var x=0;x<BOARD_WIDTH;++x) {
-      for(var y=0;y<BOARD_HEIGHT;++y) {
+   
+
+    for(var y=0;y<Tiles.BOARD_HEIGHT;++y) {                    
+      for(var x=0;x<Tiles.BOARD_WIDTH;++x) {
         this.tiles[y][x] = new Tile();
       }
     }
     
-    this.setType = function(y,x,type) {
+    
+    
+    this.setType = function(x,y,type) {
       this.tiles[y][x].type = type;
       this.tiles[y][x].tileType = type;
     };
     
-    this.addStart = function(y,x,direction) {
-      start_tiles.push( {x:x, y:y, direction:direction} );
+
+    this.addStart = function(x,y,direction) {
+      this.start_tiles.push( {x:x, y:y, direction:direction} );
       
       this.tiles[y][x].start = true;     //TODO remove 'start' and 'direction' and use start_tiles in getStartPosition
-      this.tiles[y][x].direction = true;
     };
     
-    this.addCheckpoint = function(y,x) {
+    this.addCheckpoint = function(x,y) {
       var cnt = this.checkpoints.length;
       if (cnt > 0) {
         var last_cp = this.checkpoints[cnt-1];
@@ -490,11 +516,15 @@ Tiles = {
     };
           
 
-    this.addWall = function(y,x,direction) {
+    this.addWall = function(x,y,direction) {
       if (this.tiles[y][x].wall) {
         this.tiles[y][x].wall += '-' + direction;  
       } else {
         this.tiles[y][x].wall = direction;    
+      }
+      var dirs = direction.split('-')
+      for(var i in dirs) {
+        this.tiles[y][x].addItem('wall', str_to_dir(dirs[i]));
       }
     };
     
@@ -503,60 +533,88 @@ Tiles = {
     };
       
     this.addLaser = function(startX, startY, direction, length, strength) {
+      var laser_type = 'laser'
       if(typeof(strength)==='undefined') strength = 1;
-      this.addWall(startY,startX,long_dir[opp_dir[direction]]); // lasers are always between walls      
+      if (strength === 2) { 
+        laser_type = 'doublelaser'
+      }    
       for(var i=0;i<length;++i) {
         this.tiles[startY][startX].damage = strength;
-        startY = nextX(startX,direction);
-        startX = nextY(startY,direction);
+        this.tiles[startY][startX].addItem(laser_type, str_to_dir(direction));
+        if (i === 0) {  // lasers are always between walls  
+          this.addWall(startX,startY,long_dir[opp_dir[direction]]);
+        } else if (i===length-1) {
+          this.addWall(startX,startY,long_dir[direction]);
+        }
+        startY = nextY(startY,direction);
+        startX = nextX(startX,direction);
       }
-      this.addWall(startY,startX,long_dir[direction]);
+     
+      
     };
       
     this.addExpressRoller = function(startX, startY, route) {  
       this.addRoller(startX, startY, route, 2);
     };
     
+    this.setRollerTileProp = function(x,y, roller_type, direction, speed) {
+      this.tiles[y][x].direction = str_to_dir(direction);
+      this.tiles[y][x].move = step(direction);
+      this.tiles[y][x].speed = speed;
+
+      if (this.tiles[y][x].type === Tiles.ROLLER && this.tiles[y][x].roller_type !== roller_type) {
+        var t = this.tiles[y][x].roller_type.split('-');
+        t.push(roller_type);
+        roller_type = t.sort().join('-');
+      }
+      this.tiles[y][x].roller_type = roller_type;
+      this.setType(x,y,Tiles.ROLLER);
+    };
+    
     this.addRoller = function(startX, startY, route, speed) {
+      console.log("add Roller"); 
       if(typeof(speed)==='undefined') speed = 1;
       var last_dir = '';
       var cur_dir = route.charAt(0);
+      var roller_type = 'straight';
 
-      this.setType(startX, startY, Tiles.ROLLER);
-      this.tiles[startX][startY].move = step(cur_dir);
-      this.tiles[startX][startY].speed = speed;
-          
+      this.setRollerTileProp(startX, startY, roller_type, cur_dir, speed);
+ 
       for(var i=1;i<route.length;++i) {
         last_dir = route.charAt(i-1);
         cur_dir = route.charAt(i);
         if (last_dir !== cur_dir) {   // not the curved conveyor belt but the previous one rotates the robot
-          var rot = dir_to_i[cur_dir] - dir_to_i[last_dir]
+          var rot = str_to_dir(cur_dir) - str_to_dir(last_dir)
           if (rot === -1 || rot === 3) {
-            this.tiles[startX][startY].rotate = -1;  
+            this.tiles[startY][startX].rotate = -1; 
+            roller_type = 'ccw'; 
           } else {
-            this.tiles[startX][startY].rotate = 1;
+            this.tiles[startY][startX].rotate = 1;
+            roller_type = 'cw';
           }
+        } else {
+          roller_type = 'straight';
         }
         startX = nextX(startX, last_dir);
         startY = nextY(startY, last_dir);
-        this.tiles[startX][startY].move = step(cur_dir);
-        this.tiles[startX][startY].speed = speed;
-        this.setType(startX,startY,Tiles.ROLLER);
+
+        console.log("X"+startX+" Y"+startY+" D"+cur_dir+"-"+str_to_dir(cur_dir));
+        this.setRollerTileProp(startX, startY, roller_type, cur_dir, speed);
       }
     };
   
-    this.setVoid = function(y,x) {
+    this.setVoid = function(x,y) {
       this.setType(x,y,Tiles.VOID);
     };
-    this.addRepair = function(y,x) {
+    this.addRepair = function(x,y) {
       this.repair = true;
     };
-    this.addOption = function(y,x) {
+    this.addOption = function(x,y) {
       this.tiles[y][x].repair = true;
       this.tiles[y][x].option = true;
     };
   
-    this.addPusher = function(y,x, direction, pusher_type) {
+    this.addPusher = function(x,y, direction, pusher_type) {
       this.setType(y,x, Tiles.PUSHER);
       this.tiles[y][x].move = step(direction);
       if (active == 'even') {
@@ -565,77 +623,114 @@ Tiles = {
         this.tiles[y][x].pusher_type = 1;
       }
     };
+    
+    this.addStartArea = function(name,x,y) {
+      scope.getStartArea[name](this,x,y);
+    }
   };
   
-  scope.getBoardCross = function(playerCount) {
-    if (typeof _boardCache[_boards.CROSS]!=='undefined' && _boardCache[_boards.CROSS]!==null) {
-      return _boardCache[_boards.CROSS];
-    }
+  scope.getBoardDefault = function(playerCount) {
+    // if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
+    //   return _boardCache[_boards.DEFAULT];
+    // }
     var board = new Board();
 
-    board.addWall(0,2, "up");
-    board.addWall(0,7, "up");
-    board.addWall(0,9, "up");
-    board.addWall(2,0, "left");
-    board.addWall(2,11,"right");
-    board.addWall(3,1, "right-down");
-    board.addWall(3,3, "right");
-    board.addWall(3,7, "left-down");
-    board.addWall(4,0, "left");
-    board.addWall(4,9, "down");
-    board.addWall(4,11,"right");
-    board.addWall(7,0, "left-down");
-    board.addWall(7,7, "left-up");
-    board.addWall(7,10,"up");
-    board.addWall(7,11,"right");
-    board.addWall(8,4, "up");
-    board.addWall(9,0, "left");
-    board.addWall(9,2, "right");
-    board.addWall(9,11,"right");
-    board.addWall(11,2,"down");
-    board.addWall(11,4,"down");
-    board.addWall(11,7,"right-down");
-    board.addWall(11,9,"down");
+    board.addWall( 2, 0, "up");
+    board.addWall( 7, 0, "up");
+    board.addWall( 9, 0, "up");
+    board.addWall( 0, 2, "left");
+    board.addWall(11 ,2, "right");
+    board.addWall( 1, 3, "right-down");
+    board.addWall( 3, 3, "right");
+    board.addWall( 7, 3, "left-down");
+    board.addWall( 0, 4, "left");
+    board.addWall( 9, 4, "down");
+    board.addWall(11, 4, "right");
+    board.addWall( 0, 7, "left-down");
+    board.addWall( 7, 7, "left-up");
+    board.addWall(10, 7, "up");
+    board.addWall(11, 7, "right");
+    board.addWall( 4, 8, "up");
+    board.addWall( 0, 9, "left");
+    board.addWall( 2, 9, "right");
+    board.addWall( 9,11, "right");
+    board.addWall( 2,11, "down");
+    board.addWall( 4,11, "down");
+    board.addWall( 7,11, "right-down");
+    board.addWall( 9,11, "down");
       
-    board.addRoller(0,1,"ddrrrrddldldlll");
-    board.addRoller(0,5,"dd");
-    board.addRoller(1,11,"llu");
-    board.addRoller(5,11,"llllluluuuu");
-    board.addRoller(6,0,"rrrrrdrdddd");
-    board.addRoller(0,10,"rrd");
-    board.addRoller(11,10,"uulllluuuurrrrr");
-    board.addRoller(11,6,"uu");
+    board.addRoller( 1, 0,"drrrrddldldllll");
+    board.addRoller( 5, 0,"dd");
+    board.addRoller(11, 1,"luu");
+    board.addRoller(11, 5,"lllluluuuuu");
+    board.addRoller( 0, 6,"rrrrdrddddd");
+    board.addRoller( 0, 10,"rdd");
+    board.addRoller(10,11,"ulllluuuurrrrrr");
+    board.addRoller( 6,11,"uu");
       
-    board.addLaser(0,4, "d", 3);
-    board.addDoubleLaser(1,8, "d", 3);
-    board.addLaser(8,2, "r", 2);
-    board.addLaser(8,7, "r", 2);
+    board.addLaser(4, 0, "d", 3);
+    board.addLaser(2, 8, "r", 2);
+    board.addLaser(7, 8, "r", 2);
+    board.addDoubleLaser(8, 1, "d", 3);
     
-    board.addRepair(0,11);
-    board.addRepair(9,0);
-    board.addOption(3,2);
-    board.addOption(7,9);
+    board.addRepair(11, 0);
+    board.addRepair( 0, 9);
+    board.addOption( 2, 3);
+    board.addOption( 9, 7);
       
-    board.setVoid(2,9);
-    board.setVoid(1,4);
-    board.setVoid(2,4);
-    board.setVoid(5,4);
-    board.setVoid(6,3);
-    board.setVoid(6,4);
-    board.setVoid(6,5);
-    board.setVoid(7,4);
-    board.setVoid(8,9);
-    board.setVoid(10,2);
-    board.setVoid(11,0);
+    board.setVoid( 9, 2);
+    board.setVoid( 1, 4);
+    board.setVoid( 2, 4);
+    board.setVoid( 5, 4);
+    board.setVoid( 4, 5);
+    board.setVoid( 5, 5);
+    board.setVoid( 6, 5);
+    board.setVoid( 5, 6);
+    board.setVoid( 9, 8);
+    board.setVoid( 2,10);
+    board.setVoid( 0,11);
         
-    board.addStart(0,2, GameLogic.DOWN);
-    board.addStart(2,0, GameLogic.RIGHT);
-    board.addCheckpoint(3,7);
-    board.addCheckpoint(8,1);
-    board.addCheckpoint(7,7);
-
-    _boardCache[_boards.CROSS] = board;
-    return _boardCache[_boards.CROSS];
+    // board.addStart(2,0, GameLogic.DOWN);
+    // board.addStart(0,2, GameLogic.RIGHT);
+    board.addCheckpoint(7, 3);
+    board.addCheckpoint(1, 8);
+    board.addCheckpoint(7, 7);
+    board.addStartArea('default',0,12);
+    _boardCache[_boards.DEFAULT] = board;
+    return _boardCache[_boards.DEFAULT];
+  };
+  
+  scope.getStartArea = {
+    default: function(board,startX,startY) {
+    // if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
+    //   return _boardCache[_boards.DEFAULT];
+    // }
+    board.addWall(startX+2, startY+0,"up");
+    board.addWall(startX+4, startY+0,"up");
+    board.addWall(startX+7, startY+0,"up");
+    board.addWall(startX+9, startY+0,"up");
+    board.addWall(startX+1, startY+2,"left");
+    board.addWall(startX+3, startY+2,"left");
+    board.addWall(startX+5, startY+2,"left");
+    board.addWall(startX+6, startY+2,"left");
+    board.addWall(startX+8, startY+2,"left");
+    board.addWall(startX+10,startY+2,"left");
+    board.addWall(startX+11,startY+2,"left");
+    board.addWall(startX+2, startY+3,"down");
+    board.addWall(startX+4, startY+3,"down");
+    board.addWall(startX+7, startY+3,"down");
+    board.addWall(startX+9, startY+3,"down");
+    
+    board.addStart(startX+5, startY+2, GameLogic.UP);
+    board.addStart(startX+6, startY+2, GameLogic.UP);
+    board.addStart(startX+3, startY+2, GameLogic.UP);
+    board.addStart(startX+8, startY+2, GameLogic.UP);
+    board.addStart(startX+1, startY+2, GameLogic.UP);
+    board.addStart(startX+10,startY+2, GameLogic.UP);
+    board.addStart(startX+0, startY+2, GameLogic.UP);
+    board.addStart(startX+11,startY+2, GameLogic.UP);
+    return board;
+    }
   };
 
   scope.getBoardTEST_BED_1 = function(playerCount) {
@@ -734,4 +829,16 @@ Tiles = {
   nextY = function(y, direction) {
     return y + stepY(direction);
   };
+  
+  style_direction = function(direction) {
+    return "transform: rotate("+(90)*direction+"deg);"
+  };
+  
+  str_to_dir = function(str) {
+    return GameLogic[long_dir[str].toUpperCase()];
+  };
+  
+  var long_dir = {r:'right',     l:'left',   u:'up', d:'down',
+                  right:'right', left:'left',up:'up',down:'down'  };
+  
 })(Tiles);

@@ -42,18 +42,18 @@ Template.board.helpers({
     for (var i in this.players) {
       var player = this.players[i];
       if (player.userId === Meteor.userId()) {
-        break;
+        var ch = {};
+        for (var i=1;i<cnt;++i)  {
+          if (player.visited_checkpoints > i) {
+            ch.push("visited");
+          } else {
+            ch.push("");
+          }
+        }
       }
     }
     
-    var ch = {};
-    for (var i=1;i<cnt;++i)  {
-      if (player.visited_checkpoints > i) {
-        ch.push("visited");
-      } else {
-        ch.push("");
-      }
-    }
+   
     return ch;
   },
   tiles: function() {
