@@ -3,7 +3,7 @@ template(name="gamePageActions")
     | Game created by 
     span.small #{author}
     
-  unless gameReady
+  unless gameFull
     unless inGame
       a.btn.btn-success.btn-lg.join.action-button(href="#") Join game
 

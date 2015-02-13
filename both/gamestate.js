@@ -133,12 +133,17 @@ GameState = {
   function playMoveBoard(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeRollers)(players);
+    Meteor.wrapAsync(GameLogic.executeExpressRollers)(players);
+    Meteor.wrapAsync(GameLogic.executeGears)(players);
+    Meteor.wrapAsync(GameLogic.executePushers)(players);
 
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.LASERS}});
     GameState.nextPlayPhase(game._id);
   }
 
   function playLasers(game) {
+    var players = Players.find({gameId: game._id}).fetch();
+    Meteor.wrapAsync(GameLogic.executeLasers)(players);
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.CHECKPOINTS}});
     GameState.nextPlayPhase(game._id);
   }
@@ -175,7 +180,7 @@ GameState = {
           submitted: new Date().getTime()
         });
         break;
-      } else if (player.checkpoint1 && player.checkpoint2 && Tiles.isPlayerOnFinish(player,game)) {
+      } else if (player.visisted_checkpoints === Tiles.getCheckpointCount(game)) {
         console.log("Player " + player.name + " won the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         ended = true;

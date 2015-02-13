@@ -50,7 +50,7 @@ Meteor.methods({
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
-      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, position: {x: -1, y: -1}});
+      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, position: {x: -1, y: -1}});
     }
 
     Chat.insert({
@@ -87,8 +87,8 @@ Meteor.methods({
 
   startGame: function(gameId) {
     var players = Players.find({gameId: gameId}).fetch();
-    if (players.length != 2) {
-      throw new Meteor.Error(401, "Need exactly 2 players to start the game");
+    if (players.length > 8) {
+      throw new Meteor.Error(401, "Too many players.");
     }
 
     for (var i in players) {
