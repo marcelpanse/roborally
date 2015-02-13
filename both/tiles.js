@@ -5,8 +5,8 @@ Tiles = {
   PUSHER: "pusher",
   GEAR:   "gear",
   REPAIR: "repair",
-  OPTION: "option", 
-    
+  OPTION: "option",
+
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 16,
   BOARD_DEFAULT: 0,
@@ -64,7 +64,7 @@ Tiles = {
     });
     return found;
   };
-  
+
 
   scope.canMove = function(x, y, tx, ty,game) {
     var tile = Tiles.getBoardTile(x, y,game);
@@ -98,9 +98,9 @@ Tiles = {
 
   scope.hasWall = function(x, y, direction, game) {
     var tile = Tiles.getBoardTile(x, y, game);
-    return (tile.wall && RegExp(direction).test(tile.wall)); 
+    return (tile.wall && RegExp(direction).test(tile.wall));
   };
-  
+
   scope.getCheckpointCount = function(game) {
     return Tiles.getBoard(game).checkpoints.length;
   };
@@ -113,11 +113,11 @@ Tiles = {
     //$$$DEBUG
     return Tiles.getBoardTiles(game)[y][x];
   };
-  
+
   scope.getBoardTiles = function(game) {
 	  return Tiles.getBoard(game).tiles;
   };
-  
+
   scope.getBoard = function(game) {
     if (typeof _boardCache[game.boardId]!=='undefined' && _boardCache[game.boardID]!==null) {
       return _boardCache[game.boardID];
@@ -130,10 +130,10 @@ Tiles = {
     }
     return _boardCache[game.boardID];
   };
-  
+
   scope.getBoardDefault = function() {
     var board = BoardBuilder.emptyBoard();
-    
+
     board.setVoid( 9, 2);
     board.setVoid( 1, 4);
     board.setVoid( 2, 4);
@@ -145,7 +145,7 @@ Tiles = {
     board.setVoid( 9, 8);
     board.setVoid( 2,10);
     board.setVoid( 0,11);
-    
+
     board.setRoller( 1, 0,"drrrrddldldllll");
     board.setRoller( 5, 0,"dd");
     board.setRoller(11, 1,"luu");
@@ -154,13 +154,13 @@ Tiles = {
     board.setRoller( 0, 10,"rdd");
     board.setRoller(10,11,"ulllluuuurrrrrr");
     board.setRoller( 6,11,"uu");
-    
+
     board.setRepair(11, 0);
     board.setRepair( 0, 9);
-    
+
     board.setOption( 2, 3);
     board.setOption( 9, 7);
-    
+
     board.addWall( 2, 0, "up");
     board.addWall( 7, 0, "up");
     board.addWall( 9, 0, "up");
@@ -184,29 +184,29 @@ Tiles = {
     board.addWall( 4,11, "down");
     board.addWall( 7,11, "right-down");
     board.addWall( 9,11, "down");
-          
+
     board.addLaser(4, 0, "d", 3);
     board.addLaser(2, 8, "r", 2);
     board.addLaser(7, 8, "r", 2);
-    
+
     board.addDoubleLaser(8, 1, "d", 3);
-    
+
     board.addCheckpoint(7, 3);
     board.addCheckpoint(1, 8);
     board.addCheckpoint(7, 7);
-    
+
     board.addStartArea('simple',0,12);
     return board;
   };
-  
+
 
   scope.getBoardTEST_BED_1 = function() {
-    var board = new BoardBuilder.emptyBoard();		
+    var board = new BoardBuilder.emptyBoard();
     board.addStart(0, 0, GameLogic.DOWN);
     board.addStart(11, 11, GameLogic.UP);
     board.addCheckpoint(2, 2);
     board.addCheckpoint(3, 3);
     return board;
   };
-  
+
 })(Tiles);
