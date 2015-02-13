@@ -29,4 +29,9 @@ template(name="board")
       i.fa.fa-arrow-left  This is your robot
     if inGame
       a.btn.btn-danger.cancel Leave game
-    | Lives: #{player.lives}, Damage: #{player.damage}
+    span(data-toggle="tooltip" data-placement="top" data-container="body" 
+          title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+      | Lives: #{player.lives}, 
+    span(data-toggle="tooltip" data-placement="top" data-container="body" 
+          title="You will start with 2 damage when re-assembling on a start point. Additionally you will receive 1 damage by laser fire. For every received damage you will be dealt 1 card less. For your 5th damage and every damage after a card will lock in the register. At 10 damage you will explode and re-assemble on a start point.")
+      | Damage: #{player.damage}
