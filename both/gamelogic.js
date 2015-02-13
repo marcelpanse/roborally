@@ -109,32 +109,34 @@ GameLogic = {
 
   scope.playCard = function(gameId, playerId, card, callback) {
     var players = Players.find({gameId: gameId}).fetch();
-    var player = _.find(players, function(item) {
-      return item._id == playerId;
-    });
-    console.log("trying to play next card for player " + player.name);
+    var playerNum = -1;
+    for(var i=0; playerNum==-1 && i<players.length; ++i) {
+      if(players[i]._id === playerId)
+        playerNum=i;
+    }
+    console.log("trying to play next card for player " + players[playerNum].name);
 
     if (card !== undefined) {
       var cardType = _cardTypes[card.cardType];
-      console.log('playing card ' + cardType.name + ' for player ' + player.name);
+      console.log('playing card ' + cardType.name + ' for player ' + players[playerNum].name);
 
-      player.direction += cardType.direction;
-      player.direction = ((player.direction%4)+4)%4; //convert everything to between 0-3
+      players[playerNum].direction += cardType.direction;
+      players[playerNum].direction = ((players[playerNum].direction%4)+4)%4; //convert everything to between 0-3
 
       if (cardType.position === 0) {
-        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, _CARD_PLAY_DELAY);
+        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, playerNum, _CARD_PLAY_DELAY);
       } else {
         var step = Math.min(cardType.position, 1);
         for (var i = 0; i < Math.abs(cardType.position); i++) {
-          executeStep(players, player, step);
+          executeStep(players, players[playerNum], step);
           var timeout = i+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
-          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, timeout)) {
-            break; //player respawned, don't continue playing out this card.
+          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, playerNum, timeout)) {
+            break; //players[playerNum] respawned, don't continue playing out this card.
           }
         }
       }
     } else {
-      console.log("card is not playable " + card + " player " + player.name);
+      console.log("card is not playable " + card + " player " + players[playerNum].name);
     }
     callback();
   };
@@ -320,42 +322,42 @@ GameLogic = {
   }
   
 
-  function checkRespawnsAndUpdateDb(players, player, timeout, callback) {
+  function checkRespawnsAndUpdateDb(players, playerNum, timeout, callback) {
     Meteor.setTimeout(function() {
       var respawned = false;
-      players.forEach(function(playerToUpdate) {
-        if (!Tiles.isPlayerOnBoard(playerToUpdate) || Tiles.isPlayerOnVoid(playerToUpdate,players)) {
-          if (player._id === playerToUpdate._id) {
+      for (var i in players) {
+        if (!Tiles.isPlayerOnBoard(players[i]) || Tiles.isPlayerOnVoid(players[i],players)) {
+          if (players[playerNum]._id === players[i]._id) {
             respawned = true;
           }
-          playerToUpdate.submittedCards = [];
-          playerToUpdate.damage = 2;
-          playerToUpdate.lives--;
-          Players.update(playerToUpdate._id, playerToUpdate);
-          console.log("updating position", playerToUpdate.name);
+          players[i].submittedCards = [];
+          players[i].damage = 2;
+          players[i].lives--;
+          Players.update(players[i]._id, players[i]);
+          console.log("updating position", players[i].name);
 
           Chat.insert({
-            gameId: player.gameId,
-            message: player.name + ' died and got re-assembled! (lives: '+ player.lives +', damage: '+ player.damage +')',
+            gameId: players[playerNum].gameId,
+            message: players[playerNum].name + ' died and got re-assembled! (lives: '+ players[playerNum].lives +', damage: '+ players[playerNum].damage +')',
             submitted: new Date().getTime()
           });
 
-          Meteor.wrapAsync(respawnPlayerWithDelay)(players, playerToUpdate);
+          Meteor.wrapAsync(respawnPlayerWithDelay)(players, playerNum);
         } else {
-          console.log("updating position", playerToUpdate.name);
-          Players.update(playerToUpdate._id, playerToUpdate);
+          console.log("updating position", players[i].name);
+          Players.update(players[i]._id, players[i]);
         }
-      });
+      };
       if (callback) {
         callback(null, respawned);
       }
     }, timeout);
   }
-
-  function respawnPlayerWithDelay(players, player, callback) {
+  
+  function respawnPlayerWithDelay(players, playerNum, callback) {
     Meteor.setTimeout(function() {
       //respawn if player off board or on void-tile
-      var start = Tiles.getStartPosition(players);
+      var start = Tiles.getStartPosition(players,playerNum);
       player.position.x = start.x;
       player.position.y = start.y;
       player.direction = start.direction;

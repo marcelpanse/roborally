@@ -9,20 +9,19 @@ Tiles = {
     
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 16
+  BOARD_DEFAULT: 0,
+  BOARD_TEST_BED_1: 1
 };
 
-(function (scope) {
-  _boards = {
-	DEFAULT: 0,
-	TEST_BED_1: 1,
-  CROSS: 2
-  }
+  (function (scope) {
   var checkpoints = [];
-  
   var _boardCache = [];
-  
 
-  scope.getStartPosition = function(players) {
+  scope.getStartPosition = function(players,playerNum) {
+    var game = Games.findOne(players[playerNum].gameId);
+    var board=Tiles.getBoard(game);
+
+    if (Tiles.isPlayerOnTile(players, board.startsX[playerNum], board.startsY[playerNum]) === null) {
     var game = Games.findOne(players[0].gameId);
     var board = Tiles.getBoard(players.length,game.name);
     console.log("Start tiles"+board.start_tiles[0]);
@@ -47,7 +46,7 @@ Tiles = {
 
   scope.isPlayerOnVoid = function(player,players) {
 	var game = Games.findOne(player.gameId);
-    var a = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name).tileType == Tiles.VOID;
+    var a = Tiles.getBoardTile(player.position.x, player.position.y,game).tileType == Tiles.VOID;
     if (a) {
       console.log("Player fell into the void", player.name);
     }
@@ -73,9 +72,9 @@ Tiles = {
   };
   
 
-  scope.canMove = function(x, y, tx, ty,playerCount,gameName) {
-    var tile = Tiles.getBoardTile(x, y,playerCount,gameName);
-    var targetTile = Tiles.getBoardTile(tx, ty,playerCount,gameName);
+  scope.canMove = function(x, y, tx, ty,game) {
+    var tile = Tiles.getBoardTile(x, y,game);
+    var targetTile = Tiles.getBoardTile(tx, ty,game);
     var tileSide = "na";
     var targetTileSide = "na";
 
@@ -104,24 +103,29 @@ Tiles = {
   };
 
 
-  scope.hasWall = function(x, y, direction, playerCount, gameName) {
-    var tile = Tiles.getBoardTile(x, y, playerCount, gameName);
+  scope.hasWall = function(x, y, direction, game) {
+    var tile = Tiles.getBoardTile(x, y, game);
     return (tile.wall && RegExp(direction).test(tile.wall)); 
   };
 
-  scope.getBoardTile = function(x, y, playerCount, boardName) {
+  scope.getBoardTile = function(x, y, game) {
     if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
       console.log("Invalid board tile", x, y);
       return null;
     }
-    return Tiles.getBoardTiles(playerCount, boardName)[y][x];
+    //$$$DEBUG
+    return Tiles.getBoardTiles(game)[y][x];
   };
   
-  scope.getBoard = function(playerCount, boardName) {
-    if (boardName === 'test_bed_1') {
-  	  return Tiles.getBoardTEST_BED_1(playerCount);
+  scope.getBoardTiles = function(game) {
+	  return Tiles.getBoard(game).tiles;
+  };
+  
+  scope.getBoard = function(game) {
+    if (game.boardId === Tiles.BOARD_TEST_BED_1) {
+  	  return Tiles.getBoardTEST_BED_1();
     } else {
-	    return Tiles.getBoardDefault(playerCount);
+	    return Tiles.getBoardDefault();
     }
   }
   

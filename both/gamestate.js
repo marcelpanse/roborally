@@ -122,6 +122,7 @@ GameState = {
     cardsToPlay = _.sortBy(cardsToPlay, 'priority').reverse();
 
     cardsToPlay.forEach(function(card) {
+      Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
       Meteor.wrapAsync(GameLogic.playCard)(game._id, card.playerId, card);
     });
 
@@ -168,7 +169,7 @@ GameState = {
     var ended = false;
     for (var i in players) {
       var player = players[i];
-      Tiles.checkCheckpoints(player,players.length,game.name);
+      Tiles.checkCheckpoints(player,game);
       if (player.lives <= 0) {
         console.log("Player " + player.name + " ran out of lives and lost the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: i>0 ? players[0].name : players[1].name}});
