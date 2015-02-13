@@ -38,23 +38,21 @@ Template.board.helpers({
   checkpointClasses: function() {
     var players = Template.parentData(2).players;
     var game = Template.parentData(2).game;
-    var cnt = Tiles.getCheckpointCount(game);
+    var nrOfCheckoutpoints = Tiles.getCheckpointCount(game);
+    var checkpoints = [];
     for (var i in this.players) {
       var player = this.players[i];
       if (player.userId === Meteor.userId()) {
-        var ch = {};
-        for (var i=1;i<cnt;++i)  {
-          if (player.visited_checkpoints > i) {
-            ch.push("visited");
+        for (var j = 1; j < nrOfCheckoutpoints; ++j)  {
+          if (player.visited_checkpoints > j) {
+            checkpoints.push("visited");
           } else {
-            ch.push("");
+            checkpoints.push("");
           }
         }
       }
     }
-    
-   
-    return ch;
+    return checkpoints;
   },
   tiles: function() {
     return Tiles.getBoardTiles(this.game);
@@ -69,7 +67,7 @@ function animatePosition(element, x, y) {
   var oldX = newPosition.x;
   var oldY = newPosition.y;
 
-  var position = $(element).position();
+  var position = $("."+element).position();
   if (position) {
     oldX = position.left;
     oldY = position.top;
@@ -78,9 +76,9 @@ function animatePosition(element, x, y) {
       Tracker.afterFlush(function() {
         var deltaX = newPosition.x - oldX;
         var deltaY = newPosition.y - oldY;
-        $(element).stop();
+        $("."+element).stop();
 
-        $(element).animate({
+        $("."+element).animate({
           left: "+=" + deltaX + "px",
           top: "+=" + deltaY + "px"
         }, Math.max(Math.abs(deltaX), Math.abs(deltaY)) * 4);
@@ -98,7 +96,7 @@ function animatePosition(element, x, y) {
 }
 
 function animateRotation(element, direction) {
-  var oldRotation = $(element).css('rotate');
+  var oldRotation = $("."+element).css('rotate');
   var wasUndefined = false;
   if (oldRotation === undefined) {
     oldRotation = 0;
@@ -134,8 +132,8 @@ function animateRotation(element, direction) {
         delta = 90;
       }
 
-      $(element).stop();
-      $(element).transition({
+      $("."+element).stop();
+      $("."+element).transition({
         rotate: '+='+delta+'deg'
       }, 300, 'linear');
     });
