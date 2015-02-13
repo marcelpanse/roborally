@@ -5,45 +5,37 @@ Tiles = {
   CORNER: "corner",
   ROLLER: "roller",
   BOARD_WIDTH: 12,
-  BOARD_HEIGHT: 12
+  BOARD_HEIGHT: 12,
+  BOARD_DEFAULT: 0,
+  BOARD_TEST_BED_1: 1
 };
 
-(function (scope) {
-  _boards = {
-	DEFAULT: 0,
-	TEST_BED_1: 1
-  }
+  (function (scope) {
   
   var _boardCache = [];
 
-  scope.getStartPosition = function(players) {
-    var game = Games.findOne(players[0].gameId);
-    var board = Tiles.getBoardTiles(players.length,game.name);
-    for (var y in board) { //rows
-      var cols = board[y];
-      for (var x in cols) { //cols
-        var tile = cols[x];
-        if (tile.start) {
-          //check if no player is already there
-          if (Tiles.isPlayerOnTile(players, x, y) === null) {
-            return {x: Number(x), y: Number(y), direction: board[y][x].direction};
-          }
-        }
-      }
+  scope.getStartPosition = function(players,playerNum) {
+    var game = Games.findOne(players[playerNum].gameId);
+    var board=Tiles.getBoard(game);
+
+    if (Tiles.isPlayerOnTile(players, board.startsX[playerNum], board.startsY[playerNum]) === null) {
+      return {x: Number(board.startsX[playerNum]), y: Number(board.startsY[playerNum]), direction: board.startsDirection[playerNum]};
+    //TODO: Get collision logic working.
+    } else {
+      return {x: 0, y: 0, direction: 0};
     }
-    return {x: 0, y: 0, direction: 0};
   };
 
-  scope.isPlayerOnFinish = function(player,playerCount,boardName) {
-    return Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).finish;
+  scope.isPlayerOnFinish = function(player,game) {
+    return Tiles.getBoardTile(player.position.x, player.position.y,game).finish;
   };
 
-  scope.checkCheckpoints = function(player,playerCount,boardName) {
-    if (!player.checkpoint1 && Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).checkpoint1) {
+  scope.checkCheckpoints = function(player,game) {
+    if (!player.checkpoint1 && Tiles.getBoardTile(player.position.x, player.position.y,game).checkpoint1) {
       Players.update(player._id, {$set: {checkpoint1: true}});
       return true;
     }
-    if (player.checkpoint1 && !player.checkpoint2 && Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName).checkpoint2) {
+    if (player.checkpoint1 && !player.checkpoint2 && Tiles.getBoardTile(player.position.x, player.position.y,game).checkpoint2) {
       Players.update(player._id, {$set: {checkpoint2: true}});
       return true;
     }
@@ -52,7 +44,7 @@ Tiles = {
 
   scope.isPlayerOnVoid = function(player,players) {
 	var game = Games.findOne(player.gameId);
-    var a = Tiles.getBoardTile(player.position.x, player.position.y,players.length,game.name).tileType == Tiles.VOID;
+    var a = Tiles.getBoardTile(player.position.x, player.position.y,game).tileType == Tiles.VOID;
     if (a) {
       console.log("Player fell into the void", player.name);
     }
@@ -77,9 +69,9 @@ Tiles = {
     return found;
   };
 
-  scope.canMove = function(x, y, tx, ty,playerCount,gameName) {
-    var tile = Tiles.getBoardTile(x, y,playerCount,gameName);
-    var targetTile = Tiles.getBoardTile(tx, ty,playerCount,gameName);
+  scope.canMove = function(x, y, tx, ty,game) {
+    var tile = Tiles.getBoardTile(x, y,game);
+    var targetTile = Tiles.getBoardTile(tx, ty,game);
     var tileSide = "na";
     var targetTileSide = "na";
 
@@ -110,51 +102,51 @@ Tiles = {
   // scope.lineOfSight = (x, y, tx, ty) ->
   //   if x == tx
   //     [minY,maxY] = [y,ty].sort()
-  //     return false if scope.hasWall(x, minY, 'down')
-  //     return false if scope.hasWall(x, maxY, 'up')
+  //     return false if scope.hasWall(x, minY, 'down',game)
+  //     return false if scope.hasWall(x, maxY, 'up',game)
 
   //     for i in [minY+1...maxY]
-  //       return false if scope.hasWall(x, i, 'down|up')
+  //       return false if scope.hasWall(x, i, 'down|up',game)
   //   else if y ==ty
   //     [minX,maxX] = [x, tx]
-  //     return false if scope.hasWall(minX, y, 'right')
-  //     return false if scope.hasWall(maxX, y, 'left')
+  //     return false if scope.hasWall(minX, y, 'right',game)
+  //     return false if scope.hasWall(maxX, y, 'left',game)
 
   //     for i in [minX+1...maxX]
-  //       return false if scope.hasWall(i, y, 'left|right')
+  //       return false if scope.hasWall(i, y, 'left|right',game)
   //   else
   //     return false
   //   true
 
-  // scope.hasWall = (x, y, direction) ->
-  //   tile = Tiles.getBoardTile(x, y, playerCount, gameName)
+  // scope.hasWall = (x, y, direction,game) ->
+  //   tile = Tiles.getBoardTile(x, y, game)
   //   tile.tileType == Tiles.WALL && RegExp(direction).test(tile.elementDirection)
   //TODO: UNUSED
-  scope.lineOfSight = function(x, y, tx, ty, playerCount, gameName) {
+  scope.lineOfSight = function(x, y, tx, ty, game) {
     var i, maxX, maxY, minX, minY, _i, _j, _ref, _ref1, _ref2, _ref3;
     if (x === tx) {
       _ref = [y, ty].sort(), minY = _ref[0], maxY = _ref[1];
-      if (scope.hasWall(x, minY, 'down')) {
+      if (scope.hasWall(x, minY, 'down',game)) {
         return false;
       }
-      if (scope.hasWall(x, maxY, 'up')) {
+      if (scope.hasWall(x, maxY, 'up',game)) {
         return false;
       }
       for (i = _i = _ref1 = minY + 1; _ref1 <= maxY ? _i < maxY : _i > maxY; i = _ref1 <= maxY ? ++_i : --_i) {
-        if (scope.hasWall(x, i, 'down|up')) {
+        if (scope.hasWall(x, i, 'down|up',game)) {
           return false;
         }
       }
     } else if (y === ty) {
       _ref2 = [x, tx], minX = _ref2[0], maxX = _ref2[1];
-      if (scope.hasWall(minX, y, 'right')) {
+      if (scope.hasWall(minX, y, 'right',game)) {
         return false;
       }
-      if (scope.hasWall(maxX, y, 'left')) {
+      if (scope.hasWall(maxX, y, 'left',game)) {
         return false;
       }
       for (i = _j = _ref3 = minX + 1; _ref3 <= maxX ? _j < maxX : _j > maxX; i = _ref3 <= maxX ? ++_j : --_j) {
-        if (scope.hasWall(i, y, 'left|right')) {
+        if (scope.hasWall(i, y, 'left|right',game)) {
           return false;
         }
       }
@@ -164,23 +156,29 @@ Tiles = {
     return true;
   };
 
-  scope.hasWall = function(x, y, direction) {
-    var tile = Tiles.getBoardTile(x, y, playerCount, gameName);
+  scope.hasWall = function(x, y, direction,game) {
+    var tile = Tiles.getBoardTile(x, y, game);
     return tile.tileType === Tiles.WALL && RegExp(direction).test(tile.elementDirection);
   };
 
-  scope.getBoardTile = function(x, y, playerCount, boardName) {
+  scope.getBoardTile = function(x, y, game) {
     if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
       console.log("Invalid board tile", x, y);
       return null;
     }
-    return Tiles.getBoardTiles(playerCount, boardName)[y][x];
+    //$$$DEBUG
+    return Tiles.getBoardTiles(game)[y][x];
   };
-  scope.getBoardTiles = function(playerCount,boardName) {
-    if (boardName === 'test_bed_1') {
-  	  return Tiles.getBoardTEST_BED_1(playerCount).tiles;
+  
+  scope.getBoardTiles = function(game) {
+	  return Tiles.getBoard(game).tiles;
+  };
+  
+  scope.getBoard = function(game) {
+    if (game.boardId === Tiles.BOARD_TEST_BED_1) {
+  	  return Tiles.getBoardTEST_BED_1();
     } else {
-	    return Tiles.getBoardDefault(playerCount).tiles;
+	    return Tiles.getBoardDefault();
     }
   };
   
@@ -188,10 +186,10 @@ Tiles = {
   //        on hard-coded variable names.
   scope.labelBoard = function(gameBoard) {
 	for(var i=0; i<gameBoard.startsX.length; ++i) {
-      console.log('Start '+gameBoard.startsX[i]+','+gameBoard.startsY[i]+','+gameBoard.startsDirection[i]);
-      gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].start=true;
-	  gameBoard.tiles[gameBoard.startsX[i]][gameBoard.startsY[i]].direction = gameBoard.startsDirection[i];
-    }
+    console.log('Start '+gameBoard.startsX[i]+','+gameBoard.startsY[i]+','+gameBoard.startsDirection[i]);
+    gameBoard.tiles[gameBoard.startsY[i]][gameBoard.startsX[i]].start=true;
+	  gameBoard.tiles[gameBoard.startsY[i]][gameBoard.startsX[i]].direction = gameBoard.startsDirection[i];
+  }
 	console.log('There are '+gameBoard.checkpointsX.length+' in this game');
 	if(gameBoard.checkpointsX.length>=2) {
 	  i=0;
@@ -206,10 +204,12 @@ Tiles = {
     gameBoard.tiles[gameBoard.checkpointsX[gameBoard.checkpointsX.length-1]][gameBoard.checkpointsY[gameBoard.checkpointsX.length-1]].finish=true;
   }
   
-  scope.getBoardDefault = function(playerCount) {
-    if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
-      return _boardCache[_boards.DEFAULT];
+  scope.getBoardDefault = function() {
+    if (typeof _boardCache[Tiles.BOARD_DEFAULT]!=='undefined' && _boardCache[Tiles.BOARD_DEFAULT]!==null) {
+      console.log("Board was cached");
+      return _boardCache[Tiles.BOARD_DEFAULT];
     }
+    console.log("Creating Board Default");
     var b = create2DArray(12);
 
     // row 1
@@ -385,23 +385,23 @@ Tiles = {
     var startsDirection=[];
     var checkpointsX=[];
     var checkpointsY=[];
-    startsX[0]=0; startsY[0]=2; startsDirection[0]=GameLogic.DOWN;
-    startsX[1]=2; startsY[1]=0; startsDirection[1]=GameLogic.RIGHT;
+    startsX[0]=2; startsY[0]=0; startsDirection[0]=GameLogic.DOWN;
+    startsX[1]=0; startsY[1]=2; startsDirection[1]=GameLogic.RIGHT;
     checkpointsX[0]=3; checkpointsY[0]=7;
     checkpointsX[1]=8; checkpointsY[1]=1;
     checkpointsX[2]=7; checkpointsY[2]=7;
 
-    _boardCache[_boards.DEFAULT] =
+    _boardCache[Tiles.BOARD_DEFAULT] =
 		{tiles: b,
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
 		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
-    Tiles.labelBoard(_boardCache[_boards.DEFAULT]);
-    return _boardCache[_boards.DEFAULT];
+    Tiles.labelBoard(_boardCache[Tiles.BOARD_DEFAULT]);
+    return _boardCache[Tiles.BOARD_DEFAULT];
   };
 
-  scope.getBoardTEST_BED_1 = function(playerCount) {
-    if (typeof _boardCache[_boards.TEST_BED_1]!=='undefined' && _boardCache[_boards.TEST_BED_1]!==null) {
-      return _boardCache[_boards.TEST_BED_1];
+  scope.getBoardTEST_BED_1 = function() {
+    if (typeof _boardCache[Tiles.BOARD_TEST_BED_1]!=='undefined' && _boardCache[Tiles.BOARD_TEST_BED_1]!==null) {
+      return _boardCache[Tiles.BOARD_TEST_BED_1];
     }
     var b = create2DArray(12);
 
@@ -414,17 +414,17 @@ Tiles = {
     var startsDirection=[];
     var checkpointsX=[];
     var checkpointsY=[];
-    startsX[0]=0; startsY[0]=2; startsDirection[0]=GameLogic.DOWN;
-    startsX[1]=2; startsY[1]=0; startsDirection[1]=GameLogic.RIGHT;
+    startsX[0]=4; startsY[0]=1; startsDirection[0]=GameLogic.LEFT;
+    startsX[1]=3; startsY[1]=1; startsDirection[1]=GameLogic.RIGHT;
     checkpointsX[0]=2; checkpointsY[0]=2;
     checkpointsX[1]=3; checkpointsY[1]=3;
 
-    _boardCache[_boards.TEST_BED_1]=
+    _boardCache[Tiles.BOARD_TEST_BED_1]=
         {tiles: b,
 		 startsX: startsX, startsY: startsY, startsDirection: startsDirection,
 		 checkpointsX: checkpointsX, checkpointsY: checkpointsY};
-    Tiles.labelBoard(_boardCache[_boards.TEST_BED_1]);
-    return _boardCache[_boards.TEST_BED_1];
+    Tiles.labelBoard(_boardCache[Tiles.BOARD_TEST_BED_1]);
+    return _boardCache[Tiles.BOARD_TEST_BED_1];
   };
  
   function create2DArray(rows) {
