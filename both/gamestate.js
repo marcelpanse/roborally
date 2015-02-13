@@ -179,7 +179,7 @@ GameState = {
           submitted: new Date().getTime()
         });
         break;
-      } else if (player.visisted_checkpoints === Tiles.checkpoints.length) {
+      } else if (player.visisted_checkpoints === Tiles.getCheckpointCount(players.length, game.name)) {
         console.log("Player " + player.name + " won the game!!");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         ended = true;

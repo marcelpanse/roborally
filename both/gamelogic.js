@@ -79,11 +79,13 @@ GameLogic = {
 
     Players.update(player._id, {$set: {submittedCards: cards, submitted: true}});
     Cards.update({playerId: player._id}, {$set: {cards: availableCards}});
-
-    if (Players.find({gameId: player.gameId, submitted: true}).count() == 2) {
+    
+    var playerCnt = Players.find({gameId: player.gameId}).count();
+    var readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();
+    if (readyPlayerCnt = playerCnt) {
       Games.update(player.gameId, {$set: {timer: -1}});
       GameState.nextGamePhase(player.gameId);
-    } else {
+    } else if (readyPlayerCnt == playerCnt-1) {
       //start timer
       Games.update(player.gameId, {$set: {timer: 1}});
       Meteor.setTimeout(function() {
@@ -264,11 +266,11 @@ GameLogic = {
     }
     var x = player.position.x;
     var y = player.position.y;
-    while ( x > 0 && y > 0 && x < Tiles.BOARD_WIDTH && y < Tiles.BOARD_HEIGHT &&
-            !Tiles.hasWall(x,y, wallDir[0], playerCount, boardName) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1],playerCount, boardName)) {
+    while (x+stepX > 0 && y+stepY > 0 && x+stepX < Tiles.BOARD_WIDTH && y+stepY < Tiles.BOARD_HEIGHT && 
+          !Tiles.hasWall(x,y, wallDir[0], playerCount, boardName) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1],playerCount, boardName)) {
       x += stepX;
       y += stepY;
-      victim = Tiles.isPlayerOnTile(players,x,y)
+      var victim = Tiles.isPlayerOnTile(players,x,y);
       if (victim) {
         victim.damage += 1;
         checkRespawnsAndUpdateDb(players, victim, _CARD_PLAY_DELAY);

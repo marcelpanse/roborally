@@ -7,6 +7,9 @@ Template.gamePageActions.helpers({
   },
   gameReady: function() {
     return Players.find().fetch().length >= 2;
+  },
+  gameFull: function() {
+    return Players.find().fetch().length >= 8;
   }
 });
 

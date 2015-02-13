@@ -17,9 +17,9 @@ Template.board.helpers({
     var p = [];
     for (var i in this.players) {
       var player = this.players[i];
-      var rclass = "r" + (i+1);
+      var rclass = "r" + i;
       p.push({
-        path: "/robot_"+i.toString()+"_500.png",
+        path: "/robot_"+i.toString()+".png",
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),

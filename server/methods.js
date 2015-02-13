@@ -84,8 +84,8 @@ Meteor.methods({
 
   startGame: function(gameId) {
     var players = Players.find({gameId: gameId}).fetch();
-    if (players.length != 2) {
-      throw new Meteor.Error(401, "Need exactly 2 players to start the game");
+    if (players.length > 8) {
+      throw new Meteor.Error(401, "Too many players.");
     }
 
     for (var i in players) {
