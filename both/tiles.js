@@ -8,35 +8,29 @@ Tiles = {
   OPTION: "option", 
     
   BOARD_WIDTH: 12,
-  BOARD_HEIGHT: 16
+  BOARD_HEIGHT: 16,
   BOARD_DEFAULT: 0,
   BOARD_TEST_BED_1: 1
 };
 
-  (function (scope) {
+(function (scope) {
   var checkpoints = [];
   var _boardCache = [];
 
   scope.getStartPosition = function(players,playerNum) {
     var game = Games.findOne(players[playerNum].gameId);
-    var board=Tiles.getBoard(game);
-
-    if (Tiles.isPlayerOnTile(players, board.startsX[playerNum], board.startsY[playerNum]) === null) {
-    var game = Games.findOne(players[0].gameId);
-    var board = Tiles.getBoard(players.length,game.name);
-    console.log("Start tiles"+board.start_tiles[0]);
-    for (var i in board.start_tiles) {
-      //check if no player is already there
-      var start = board.start_tiles[i];
-      if (Tiles.isPlayerOnTile(players, start.x, start.y) === null) {
-        return start;
-      }
+    var board= Tiles.getBoard(game);
+    var start_tile = board.start_tiles[playerNum];
+    if (Tiles.isPlayerOnTile(players, start_tile.x, start_tile.y) === null) {
+      return start_tile;
+    //TODO: Get collision logic working.
+    } else {
+      return {x: 0, y: 0, direction: 0};
     }
-    return {x: 0, y: 0, direction: 0};
   };
 
-  scope.checkCheckpoints = function(player,playerCount,boardName) {
-    var tile = Tiles.getBoardTile(player.position.x, player.position.y,playerCount,boardName);
+  scope.checkCheckpoints = function(player,game) {
+    var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
     if (tile.checkpoint && tile.checkpoint === player.visited_checkpoints+1) {
       Players.update(player._id, {$set: {visited_checkpoints: tile.checkpoint}});
       return true;
@@ -44,7 +38,7 @@ Tiles = {
     return false;
   };
 
-  scope.isPlayerOnVoid = function(player,players) {
+  scope.isPlayerOnVoid = function(player) {
 	var game = Games.findOne(player.gameId);
     var a = Tiles.getBoardTile(player.position.x, player.position.y,game).tileType == Tiles.VOID;
     if (a) {
@@ -102,10 +96,13 @@ Tiles = {
     return true;
   };
 
-
   scope.hasWall = function(x, y, direction, game) {
     var tile = Tiles.getBoardTile(x, y, game);
     return (tile.wall && RegExp(direction).test(tile.wall)); 
+  };
+  
+  scope.getCheckpointCount = function(game) {
+    return Tiles.getBoard(game).checkpoints.length;
   };
 
   scope.getBoardTile = function(x, y, game) {
@@ -122,32 +119,19 @@ Tiles = {
   };
   
   scope.getBoard = function(game) {
-    if (game.boardId === Tiles.BOARD_TEST_BED_1) {
-  	  return Tiles.getBoardTEST_BED_1();
-    } else {
-	    return Tiles.getBoardDefault();
+    if (typeof _boardCache[game.boardId]!=='undefined' && _boardCache[game.boardID]!==null) {
+      return _boardCache[game.boardID];
     }
-  }
-  
-  scope.getBoardTiles = function(playerCount,boardName) {
-    if (boardName === 'test_bed_1') {
-  	  return Tiles.getBoardTEST_BED_1(playerCount).tiles;
-    } else {
-	    return Tiles.getBoardDefault(playerCount).tiles;
-    }
-  };
-  scope.getCheckpointCount = function(playerCount, boardName) {
-    if (boardName === 'test_bed_1') {
-  	  return Tiles.getBoardTEST_BED_1(playerCount).checkpoints.length;
-    } else {
-	    return Tiles.getBoardDefault(playerCount).checkpoints.length;
-    }
-  }
 
-  scope.getBoardDefault = function(playerCount) {
-    if (typeof _boardCache[_boards.DEFAULT]!=='undefined' && _boardCache[_boards.DEFAULT]!==null) {
-      return _boardCache[_boards.DEFAULT];
+    if (game.boardId === Tiles.BOARD_TEST_BED_1) {
+  	  _boardCache[game.boardID] = Tiles.getBoardTEST_BED_1();
+    } else {
+	    _boardCache[game.boardID] = Tiles.getBoardDefault();
     }
+    return _boardCache[game.boardID];
+  };
+  
+  scope.getBoardDefault = function() {
     var board = BoardBuilder.emptyBoard();
     
     board.setVoid( 9, 2);
@@ -212,25 +196,17 @@ Tiles = {
     board.addCheckpoint(7, 7);
     
     board.addStartArea('simple',0,12);
-    _boardCache[_boards.DEFAULT] = board;
-    return _boardCache[_boards.DEFAULT];
+    return board;
   };
   
 
-  scope.getBoardTEST_BED_1 = function(playerCount) {
-    if (typeof _boardCache[_boards.TEST_BED_1]!=='undefined' && _boardCache[_boards.TEST_BED_1]!==null) {
-      return _boardCache[_boards.TEST_BED_1];
-    }
-    
-    var board = new BoardBuilder.Board();		
+  scope.getBoardTEST_BED_1 = function() {
+    var board = new BoardBuilder.emptyBoard();		
     board.addStart(0, 0, GameLogic.DOWN);
     board.addStart(11, 11, GameLogic.UP);
     board.addCheckpoint(2, 2);
     board.addCheckpoint(3, 3);
-
-    _boardCache[_boards.TEST_BED_1] = board;
-    return _boardCache[_boards.TEST_BED_1];
+    return board;
   };
- 
   
 })(Tiles);

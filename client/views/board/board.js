@@ -38,7 +38,7 @@ Template.board.helpers({
   checkpointClasses: function() {
     var players = Template.parentData(2).players;
     var game = Template.parentData(2).game;
-    var cnt = Tiles.getCheckpointCount(players.length, game.name);
+    var cnt = Tiles.getCheckpointCount(game);
     for (var i in this.players) {
       var player = this.players[i];
       if (player.userId === Meteor.userId()) {
