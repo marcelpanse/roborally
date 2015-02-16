@@ -306,9 +306,11 @@ GameLogic = {
     if (move.x != 0 || move.y != 0) {
       var moving_players = [player];
       var p = player
+      console.log("Try to move player "+p._id);
       while (Tiles.canMove(p.position.x, p.position.y, p.position.x+move.x, p.position.y+move.y, game)) {
         p = Tiles.isPlayerOnTile(players, p.position.x + move.x, p.position.y + move.y);
         if (p !== null) {
+          console.log("Try to push player "+p._id);
           moving_players.push(p);
         }
         else {
@@ -363,7 +365,7 @@ GameLogic = {
       players[playerNum].position.y = start.y;
       players[playerNum].direction = start.direction;
       console.log("respawning player", players[playerNum].name);
-      Players.update(player._id, players[playerNum]);
+      Players.update(players[playerNum]._id, players[playerNum]);
       callback();
     }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
   }

@@ -119,16 +119,19 @@ Tiles = {
   };
   
   scope.getBoard = function(game) {
-    if (typeof _boardCache[game.boardId]!=='undefined' && _boardCache[game.boardID]!==null) {
-      return _boardCache[game.boardID];
+    console.log("Get board"+game.boardId);
+    if (typeof(_boardCache[game.boardId])!=='undefined' && _boardCache[game.boardId]!==null) {
+      console.log("Use cached board");
+      return _boardCache[game.boardId];
     }
 
     if (game.boardId === Tiles.BOARD_TEST_BED_1) {
-  	  _boardCache[game.boardID] = Tiles.getBoardTEST_BED_1();
+  	  _boardCache[game.boardId] = Tiles.getBoardTEST_BED_1();
     } else {
-	    _boardCache[game.boardID] = Tiles.getBoardDefault();
+      console.log("Load default board");
+	    _boardCache[game.boardId] = Tiles.getBoardDefault();
     }
-    return _boardCache[game.boardID];
+    return _boardCache[game.boardId];
   };
   
   scope.getBoardDefault = function() {
