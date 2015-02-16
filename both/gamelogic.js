@@ -34,7 +34,7 @@ GameLogic = {
       cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
     }
     var cards = cardObj.cards || [];
-    var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage);
+    var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage); //for every damage you get a card less
     var nrOfNewCards = maxCards - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
@@ -79,7 +79,7 @@ GameLogic = {
 
     Players.update(player._id, {$set: {submittedCards: cards, submitted: true}});
     Cards.update({playerId: player._id}, {$set: {cards: availableCards}});
-    
+
     var playerCnt = Players.find({gameId: player.gameId}).count();
     var readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();
     if (readyPlayerCnt === playerCnt) {
@@ -127,9 +127,9 @@ GameLogic = {
         Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, playerNum, _CARD_PLAY_DELAY);
       } else {
         var step = Math.min(cardType.position, 1);
-        for (var i = 0; i < Math.abs(cardType.position); i++) {
+        for (var j = 0; j < Math.abs(cardType.position); j++) {
           executeStep(players, players[playerNum], step);
-          var timeout = i+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
+          var timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
           if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, playerNum, timeout)) {
             break; //players[playerNum] respawned, don't continue playing out this card.
           }
@@ -142,7 +142,7 @@ GameLogic = {
   };
 
 
-  scope.tryToMovePlayersOnRollers = function(players, moves) {  
+  scope.tryToMovePlayersOnRollers = function(players, moves) {
     var move_canceled = true;
     while (move_canceled) {  // if a move was canceled we have to check for other conflicts again
       move_canceled = false;
@@ -160,8 +160,7 @@ GameLogic = {
         }
       }
     }
-    for (var i in moves) {
-      var move = moves[i];
+    moves.forEach(function(move) {
       if (!move.canceled) {
         //move player 1 step in roller direction and rotate
         move.player.position.x = move.x;
@@ -170,9 +169,9 @@ GameLogic = {
         move.player.direction %= 4;
         checkRespawnsAndUpdateDb(players, move.player, _CARD_PLAY_DELAY);
       }
-    }
+    });
   };
-  
+
   scope.executeRollers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
     var roller_moves = [];
@@ -188,8 +187,8 @@ GameLogic = {
     scope.tryToMovePlayersOnRollers(players, roller_moves);
     callback();
   };
-  
-  // move players 2nd step in roller direction; 1st step is done by executeRollers, 
+
+  // move players 2nd step in roller direction; 1st step is done by executeRollers,
   scope.executeExpressRollers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
     var roller_moves = [];
@@ -202,8 +201,8 @@ GameLogic = {
     });
     scope.tryToMovePlayersOnRollers(players, roller_moves);
     callback();
-  }
-  
+  };
+
   scope.executeGears = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
@@ -215,8 +214,8 @@ GameLogic = {
       }
     });
     callback();
-  }
-  
+  };
+
   scope.executePushers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
@@ -227,8 +226,8 @@ GameLogic = {
       }
     });
     callback();
-  }
-  
+  };
+
   scope.executeLasers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
@@ -242,8 +241,8 @@ GameLogic = {
       }
     });
     callback();
-  }
-  
+  };
+
   scope.shootRobotLaser = function(players, player, game) {
     var stepY = 0;
     var stepX = 0;
@@ -268,7 +267,7 @@ GameLogic = {
     }
     var x = player.position.x;
     var y = player.position.y;
-    while (x+stepX > 0 && y+stepY > 0 && x+stepX < Tiles.BOARD_WIDTH && y+stepY < Tiles.BOARD_HEIGHT && 
+    while (x+stepX > 0 && y+stepY > 0 && x+stepX < Tiles.BOARD_WIDTH && y+stepY < Tiles.BOARD_HEIGHT &&
           !Tiles.hasWall(x,y, wallDir[0], game) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1], game)) {
       x += stepX;
       y += stepY;
@@ -279,8 +278,8 @@ GameLogic = {
         break;
       }
     }
-  }
-  
+  };
+
   function executeStep(players, player, step) {
     var game = Games.findOne(player.gameId);
     var stepX = 0;
@@ -299,13 +298,13 @@ GameLogic = {
         stepX = -1;
         break;
     }
-    tryToMovePlayer(players, player, {x:stepX, y:stepY}, game)  
+    tryToMovePlayer(players, player, {x:stepX, y:stepY}, game);
   }
-  
+
   function tryToMovePlayer(players, player, move, game) {
-    if (move.x != 0 || move.y != 0) {
+    if (move.x !== 0 || move.y !== 0) {
       var moving_players = [player];
-      var p = player
+      var p = player;
       console.log("Try to move player "+p._id);
       while (Tiles.canMove(p.position.x, p.position.y, p.position.x+move.x, p.position.y+move.y, game)) {
         p = Tiles.isPlayerOnTile(players, p.position.x + move.x, p.position.y + move.y);
@@ -323,7 +322,7 @@ GameLogic = {
       }
     }
   }
-  
+
 
   function checkRespawnsAndUpdateDb(players, playerNum, timeout, callback) {
     Meteor.setTimeout(function() {
@@ -350,13 +349,13 @@ GameLogic = {
           console.log("updating position", players[i].name);
           Players.update(players[i]._id, players[i]);
         }
-      };
+      }
       if (callback) {
         callback(null, respawned);
       }
     }, timeout);
   }
-  
+
   function respawnPlayerWithDelay(players, playerNum, callback) {
     Meteor.setTimeout(function() {
       //respawn if player off board or on void-tile
