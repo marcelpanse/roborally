@@ -48,7 +48,7 @@ GameState = {
     GameLogic.discardCards(game,players);
     GameLogic.makeDeck(game._id);
     for (var i in players) {
-      Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submitted: false}});
+      Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submittedLockedCards: [], submitted: false}});
       GameLogic.dealCards(players[i]);
     }
     Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PROGRAM}});
@@ -95,8 +95,12 @@ GameState = {
     // play 1 card per player
     for (var i in players) {
       var playedCards = players[i].playedCards || [];
-      if (players[i].submittedCards[0]) {
-        playedCards.push(players[i].submittedCards[0]);
+      if (players[i].submittedCards[0] || players[i].submittedLockedCards[0]) {
+        if(players[i].submittedCards[0]) {
+          playedCards.push(players[i].submittedCards[0]);
+        } else {
+          playedCards.push(players[i].submittedLockedCards[0]);
+        }
         Players.update(players[i]._id, {$set: {playedCards: playedCards}});
       }
     }
@@ -110,10 +114,16 @@ GameState = {
     var cardsToPlay = [];
 
     players.forEach(function(player) {
+      var submittedLockedCards = player.submittedLockedCards;
       var submittedCards = player.submittedCards;
-      var card = submittedCards.shift();
+      var card = null;
+      if(submittedCards.length>0) {
+        card = submittedCards.shift();
+      } else {
+        card = submittedLockedCards.shift();
+      }
       if (card) {
-        Players.update(player._id, {$set: {submittedCards: submittedCards}});
+        Players.update(player._id, {$set: {submittedCards: submittedCards, submittedLockedCards: submittedLockedCards}});
         card.playerId = player._id;
         cardsToPlay.push(card);
       }

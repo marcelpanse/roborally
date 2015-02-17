@@ -22,6 +22,8 @@ Meteor.methods({
     });
     if(game.name==='test_bed_1')
       game.boardId=Tiles.BOARD_TEST_BED_1;
+    else if(game.name==='test_bed_2')
+      game.boardId=Tiles.BOARD_TEST_BED_2;
     var gameId = Games.insert(game);
 
     Chat.insert({

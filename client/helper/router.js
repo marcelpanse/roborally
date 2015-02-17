@@ -95,7 +95,7 @@ Router.route('/board/:_id', {
       to: 'rightPanel',
       data: function() {
         var c = Cards.findOne();
-        return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], players: Players.find()};
+        return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], lockedCards: c ? c.lockedCards : [], players: Players.find()};
       }
     });
     this.render('chat', {

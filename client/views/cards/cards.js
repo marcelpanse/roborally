@@ -9,6 +9,10 @@ Template.cards.helpers({
 
     return addUIData(this.cards, true);
   },
+  lockedCardsHtml: function() {
+    console.log("Locked Cards: "+this.lockedCards);
+    return addUIData(this.lockedCards || [], false);
+  },
   playedCardsHtml: function() {
     return addUIData(this.playedCards || [], false);
   },
@@ -76,18 +80,22 @@ Template.cards.helpers({
 
 Template.card.events({
   'click .available': function(e) {
-    if (!Players.findOne({userId: Meteor.userId()}).submitted) {
+    var player = Players.findOne({userId: Meteor.userId()});
+    //TODO: Avoid this call, probably higher overhead than needed.
+    var playerCards = Cards.findOne({playerId: player._id});
+    if (!player.submitted) {
       var chosenCards = Session.get("chosenCards") || [];
-      if (chosenCards.length < 5) {
+      if (chosenCards.length < 5 - playerCards.lockedCards.length) {
         chosenCards.push(this);
         $(e.currentTarget).hide();
       }
       Session.set("chosenCards", chosenCards);
-      $(".playBtn").toggleClass("disabled", chosenCards.length != 5);
+      $(".playBtn").toggleClass("disabled", chosenCards.length != 5 - playerCards.lockedCards.length);
     }
   },
   'click .played': function(e) {
-    if (!Players.findOne({userId: Meteor.userId()}).submitted) {
+    var player = Players.findOne({userId: Meteor.userId()});
+    if (!player.submitted) {
       var cardId = this.cardId;
       var chosenCards = Session.get("chosenCards") || [];
       chosenCards = _.filter(chosenCards, function(item) {
@@ -96,7 +104,7 @@ Template.card.events({
       Session.set("chosenCards", chosenCards);
 
       $('.available.' + this.cardId).show();
-      $(".playBtn").toggleClass("disabled", chosenCards.length != 5);
+      $(".playBtn").toggleClass("disabled", chosenCards.length != 5 - playerCards.lockedCards.length);
     }
   }
 });

@@ -25,13 +25,29 @@ GameLogic = {
     var deck = Deck.findOne({gameId: game._id});
     if(typeof deck !== "undefined") {
       for (var i in players) {
-        var playerCards=Cards.findOne({playerId: players[i]._id}).cards;
+        var playerCards=Cards.findOne({playerId: players[i]._id});
+        var unusedCards=playerCards.cards;
+        var origLockedCnt=playerCards.lockedCards.length;
+        var lockedCards=[];
         console.log("Returning cards to deck"+deck.discards.length);
-        for(var j in playerCards) {
-          deck.discards.push({priority: playerCards[j].priority, cardType: playerCards[j].cardType});
+        for(var j in unusedCards) {
+          deck.discards.push({priority: unusedCards[j].priority, cardType: unusedCards[j].cardType});
         }
-        for(var j in players[i].playedCards) {
+        //Are there supposed to be locked cards?
+        if(_MAX_NUMBER_OF_CARDS - players[i].damage < GameLogic.CARD_SLOTS) {
+          for(var lockPtr = _MAX_NUMBER_OF_CARDS - players[i].damage; lockPtr<GameLogic.CARD_SLOTS; ++lockPtr) {
+            lockedCards.push(players[i].playedCards[lockPtr]);
+          }
+        } else if(lockedCards.length>0){
+          lockedCards=[];
+        }
+        for(var j=0;j<GameLogic.CARD_SLOTS && j<_MAX_NUMBER_OF_CARDS - players[i].damage; ++j) {
           deck.discards.push({priority: players[i].playedCards[j].priority, cardType: players[i].playedCards[j].cardType});
+        }
+        //Update the player's locked card count, skip the step if unchanged (Micro-optimization)
+        if(lockedCards.length!=origLockedCnt) {
+          playerCards.lockedCards=lockedCards;
+          Cards.upsert({playerId: players[i]._id}, playerCards);
         }
         console.log("Returned cards to deck"+deck.discards.length);
       }
@@ -54,10 +70,10 @@ GameLogic = {
 
   scope.dealCards = function(player) {
     var deck = Deck.findOne({gameId: player.gameId});
-    var cardObj = Cards.findOne({playerId: player._id});
+    var playerCards = Cards.findOne({playerId: player._id});
     
-    if (!cardObj) {
-      cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
+    if (!playerCards) {
+      playerCards = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: [], lockedCards: []};
     }
     //Rule note: You do not keep un-used cards from prior turn.
     var cards = [];
@@ -74,9 +90,9 @@ GameLogic = {
       var cardFromDeck = deck.cards.splice(0, 1)[0]; //grab card from deck, so it can't be handed out twice
       cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
     }
-    cardObj.cards=cards;
+    playerCards.cards=cards;
 
-    Cards.upsert({playerId: player._id}, cardObj);
+    Cards.upsert({playerId: player._id}, playerCards);
     Deck.update(deck._id, deck);
   };
 
@@ -84,7 +100,11 @@ GameLogic = {
     console.log('player ' + player.name + ' submitted cards: ' + cards);
 
     //check if all played cards are available from original hand...
-    var availableCards = Cards.findOne({playerId: player._id}).cards;
+    //Except locked cards, those are not in the hand.
+    var playerCards = Cards.findOne({playerId: player._id});
+    var availableCards = playerCards.cards;
+    var lockedCards = playerCards.lockedCards;
+    
     for (var i = cards.length-1; i >= 0; i--) {
       var found = false;
       for (var j = 0; j < availableCards.length; j++) {
@@ -100,9 +120,9 @@ GameLogic = {
       }
     }
 
-    if (cards.length < GameLogic.CARD_SLOTS) {
+    if (cards.length + lockedCards.length < GameLogic.CARD_SLOTS) {
       console.log("Not enough cards submitted");
-      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length;
+      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length - lockedCards.length;
       for (var q = 0; q < nrOfNewCards; q++) {
         var cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]; //grab card from hand
         console.log("Handing out random card", cardFromHand);
@@ -110,8 +130,8 @@ GameLogic = {
       }
     }
 
-    Players.update(player._id, {$set: {submittedCards: cards, submitted: true}});
-    Cards.update({playerId: player._id}, {$set: {cards: availableCards}});
+    Players.update(player._id, {$set: {submittedCards: cards, submittedLockedCards: lockedCards, submitted: true}});
+    Cards.update({playerId: player._id}, {$set: {cards: availableCards, lockedCards: lockedCards}});
 
     var playerCnt = Players.find({gameId: player.gameId}).count();
     var readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();

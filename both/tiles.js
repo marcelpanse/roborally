@@ -10,7 +10,8 @@ Tiles = {
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 16,
   BOARD_DEFAULT: 0,
-  BOARD_TEST_BED_1: 1
+  BOARD_TEST_BED_1: 1,
+  BOARD_TEST_BED_2: 2
 };
 
 (function (scope) {
@@ -110,7 +111,6 @@ Tiles = {
       console.log("Invalid board tile", x, y);
       return null;
     }
-    //$$$DEBUG
     return Tiles.getBoardTiles(game)[y][x];
   };
 
@@ -125,6 +125,8 @@ Tiles = {
 
     if (game.boardId === Tiles.BOARD_TEST_BED_1) {
   	  _boardCache[game.boardID] = Tiles.getBoardTEST_BED_1();
+    } else if (game.boardId === Tiles.BOARD_TEST_BED_2) {
+  	  _boardCache[game.boardID] = Tiles.getBoardTEST_BED_2();
     } else {
 	    _boardCache[game.boardID] = Tiles.getBoardDefault();
     }
@@ -202,6 +204,19 @@ Tiles = {
 
   scope.getBoardTEST_BED_1 = function() {
     var board = new BoardBuilder.emptyBoard();
+    board.addStart(0, 0, GameLogic.DOWN);
+    board.addStart(11, 11, GameLogic.UP);
+    board.addCheckpoint(2, 2);
+    board.addCheckpoint(3, 3);
+    return board;
+  };
+  
+    scope.getBoardTEST_BED_2 = function() {
+    var board = new BoardBuilder.emptyBoard();
+    board.addLaser(0, 1, "r", 12);
+    board.addLaser(0, 4, "r", 12);
+    board.addLaser(0, 7, "r", 12);
+    board.addLaser(0, 10, "r", 12);
     board.addStart(0, 0, GameLogic.DOWN);
     board.addStart(11, 11, GameLogic.UP);
     board.addCheckpoint(2, 2);
