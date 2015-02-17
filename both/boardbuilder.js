@@ -109,7 +109,7 @@ BoardBuilder = {
 
 
     this.addStart = function(x,y,direction) {
-      console.log('Start '+x+','+y+','+direction);
+//      console.log('Start '+x+','+y+','+direction);
       this.start_tiles.push( {x:Number(x), y:Number(y), direction:direction} );
 
       this.tiles[y][x].start = true;     //TODO remove 'start' and 'direction' and use start_tiles in getStartPosition
@@ -125,7 +125,7 @@ BoardBuilder = {
       this.checkpoints.push({x:x,y:y,number:cnt});
       this.tiles[y][x].checkpoint = cnt;
       this.tiles[y][x].finish = true;
-      console.log('Checkpoint '+cnt+' located at '+x+','+y);
+//      console.log('Checkpoint '+cnt+' located at '+x+','+y);
     };
 
 

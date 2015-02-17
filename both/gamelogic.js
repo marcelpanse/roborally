@@ -20,29 +20,62 @@ GameLogic = {
     5: {direction: 0, position: 2, name: "STEP_FORWARD_2"},
     6: {direction: 0, position: 3, name: "STEP_FORWARD_3"}
   };
+  
+  scope.discardCards = function(game,players) {
+    var deck = Deck.findOne({gameId: game._id});
+    if(typeof deck !== "undefined") {
+      for (var i in players) {
+        var playerCards=Cards.findOne({playerId: players[i]._id}).cards;
+        console.log("Returning cards to deck"+deck.discards.length);
+        for(var j in playerCards) {
+          deck.discards.push({priority: playerCards[j].priority, cardType: playerCards[j].cardType});
+        }
+        for(var j in players[i].playedCards) {
+          deck.discards.push({priority: players[i].playedCards[j].priority, cardType: players[i].playedCards[j].cardType});
+        }
+        console.log("Returned cards to deck"+deck.discards.length);
+      }
+      Deck.upsert({gameId: game._id}, deck);
+    }
+  }
 
-  scope.makeDeck = function(game) {
-    var current = Deck.findOne({gameId: game._id});
+  scope.makeDeck = function(gameId) {
+    var deck = Deck.findOne({gameId: gameId});
     //create/shuffle new deck (cards are returned from hands)
-    Deck.upsert({gameId: game._id}, {$set: {cards: _.shuffle(_deck)}});
+    if(typeof deck === "undefined") {
+      Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck), discards: []}});
+    } else if(deck.cards.length==0) {
+      deck.cards=_.shuffle(deck.discards);
+      deck.discards=[];
+      Deck.upsert({gameId: gameId}, deck);
+    }
+    return deck;
   };
 
   scope.dealCards = function(player) {
     var deck = Deck.findOne({gameId: player.gameId});
     var cardObj = Cards.findOne({playerId: player._id});
+    
     if (!cardObj) {
       cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
     }
-    var cards = cardObj.cards || [];
+    //Rule note: You do not keep un-used cards from prior turn.
+    var cards = [];
     var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage); //for every damage you get a card less
     var nrOfNewCards = maxCards - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
-      var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0]; //grab card from deck, so it can't be handed out twice
+      //Remake the deck if it's out of cards.
+      //Warning, could crash if discard deck runs out.  But there's more then 9*8=72 cards right?
+      if(deck.cards.length==0) {
+        Deck.update(deck._id, deck);
+        deck=GameLogic.makeDeck(player.gameId);
+      }
+      var cardFromDeck = deck.cards.splice(0, 1)[0]; //grab card from deck, so it can't be handed out twice
       cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
     }
+    cardObj.cards=cards;
 
-    console.log('player ' + player.name + ' has new cards', cards);
     Cards.upsert({playerId: player._id}, cardObj);
     Deck.update(deck._id, deck);
   };
@@ -286,16 +319,16 @@ GameLogic = {
     var stepY = 0;
     switch (player.direction) {
       case GameLogic.UP:
-        stepY = -1;
+        stepY = -step;
         break;
       case GameLogic.RIGHT:
-        stepX = 1;
+        stepX = step;
         break;
       case GameLogic.DOWN:
-        stepY = 1;
+        stepY = step;
         break;
       case GameLogic.LEFT:
-        stepX = -1;
+        stepX = -step;
         break;
     }
     tryToMovePlayer(players, player, {x:stepX, y:stepY}, game);
@@ -362,7 +395,7 @@ GameLogic = {
       players[playerNum].position.y = start.y;
       players[playerNum].direction = start.direction;
       console.log("respawning player", players[playerNum].name);
-      Players.update(player._id, players[playerNum]);
+      Players.update(players[playerNum]._id, players[playerNum]);
       callback();
     }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
   }

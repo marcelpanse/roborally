@@ -44,9 +44,9 @@ GameState = {
   };
 
   function playDealPhase(game) {
-    GameLogic.makeDeck(game);
-
     var players = Players.find({gameId: game._id}).fetch();
+    GameLogic.discardCards(game,players);
+    GameLogic.makeDeck(game._id);
     for (var i in players) {
       Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submitted: false}});
       GameLogic.dealCards(players[i]);
