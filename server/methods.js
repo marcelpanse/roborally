@@ -71,11 +71,15 @@ Meteor.methods({
     var author = getUsername(user);
     console.log('User ' + author + ' leaving game ' + gameId);
 
+
+    Players.remove({gameId: game._id, userId: user._id});
     if (game.started) {
-      var player = Players.findOne({gameId: game._id, userId: { $ne: Meteor.userId() }});
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
-    } else {
-      Players.remove({gameId: game._id, userId: user._id});
+      var players = Players.find({gameId: game._id});
+      if (players.length === 1) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
+      } else if (players.length === 0) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+      }
     }
 
     Chat.insert({
