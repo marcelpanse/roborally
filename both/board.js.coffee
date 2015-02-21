@@ -14,7 +14,7 @@ class @Board
         @tiles[y][x] = new Tile
 
   getTile: (x,y) ->
-    if (x < 0 || y < 0 || x >= @width || y >= @height)
+    if x < 0 || y < 0 || x >= @width || y >= @height
       console.log "Invalid board tile (#{x},#{y})"
       return null
     @tiles[y][x]
@@ -25,14 +25,15 @@ class @Board
   addStartArea: (name, x_offset=0, y_offset=12, orientation=0) ->
     @addArea(Area.start[name], x_offset, y_offset, orientation, 12, 4)
 
-             
   addArea: (build_area, x_offset, y_offset, orientation, width, height) ->
     @x_offset = x_offset
     @y_offset = y_offset
     @orientation = orientation
     @area_height = height
     @area_width = width
-    build_area.call(this)
+
+    build_area.call(@)
+    
     @x_offset = 0
     @y_offset = 0
     @orientation = 0
@@ -49,7 +50,7 @@ class @Board
       when 0 then x
       when 90 then y
       when 180 then @area_width-1-x
-      when 270 then @area_height-1-y
+      when 270 then y
 
   row: (x,y) ->
     x += @x_offset
@@ -74,7 +75,7 @@ class @Board
     last_dir = cur_dir
     for cur_dir in route[1..-1]
       # not the curved conveyor belt but the previous one rotates the robot
-      if (last_dir != cur_dir)
+      if last_dir != cur_dir
         rot = str_to_dir(cur_dir) - str_to_dir(last_dir)
         if (rot == -1 || rot == 3)
           @tile(x,y).rotate = -1
@@ -124,7 +125,11 @@ class @Board
 
   addStart: (x,y,direction) ->
     console.log("Start #{x},#{y},#{direction}")
-    @start_tiles.push( {x:Number(@col(x,y)), y:Number(@row(x,y)), direction:direction} )
+    @start_tiles.push
+      x: Number(@col(x,y)), 
+      y: Number(@row(x,y)), 
+      direction: str_to_dir(direction)
+
     @tile(x,y).start = true
 
   addCheckpoint: (x,y) ->
@@ -171,13 +176,15 @@ class @Board
 
   
 
-  
+  #~~~~~~ helper methods
 
   setType: (x,y,type) ->
     @tile(x,y).type = type
     @tile(x,y).description = switch type
       when Tiles.ROLLER
-        "This is a converyor belt. You will move 1 space in the direction of the arrow when ending here after a card has been played."
+        "This is a converyor belt. \
+         You will move 1 space in the direction of the arrow \
+         when ending here after a card has been played."
       when Tiles.VOID
         "Don't fall in this giant hole in the ground or you'll die."
       when Tiles.EMPTY
@@ -186,8 +193,8 @@ class @Board
 
   setRollerTileProp: (x,y, roller_type, direction, speed) ->
     @tile(x,y).direction = str_to_dir(direction)
-    @tile(x,y).move = step(direction)
-    @tile(x,y).speed = speed
+    @tile(x,y).move      = step(direction)
+    @tile(x,y).speed     = speed
 
     if @tile(x,y).type == Tiles.ROLLER && @tile(x,y).roller_type != roller_type
       t = @tile(x,y).roller_type.split('-')
@@ -200,8 +207,6 @@ class @Board
     @tile(x,y).roller_type = roller_type
     @setType(x,y,Tiles.ROLLER)
 
-
-  # helper methods
 
   create2DArray = (rows) ->
     arr = []
@@ -226,7 +231,8 @@ class @Board
       return 0
 
   step = (dir) ->
-    {x: stepX(dir), y: stepY(dir)}
+    x: stepX(dir),
+    y: stepY(dir)
 
   nextX = (x, direction) ->
     x + stepX(direction)
@@ -238,7 +244,10 @@ class @Board
     "transform: rotate(#{90*direction}deg);"
 
   str_to_dir = (str) ->
-    GameLogic[long_dir[str].toUpperCase()]
+    if typeof str is 'number'
+      str % 4
+    else
+      GameLogic[long_dir[str].toUpperCase()]
 
   long_dir = {r:'right',     l:'left',   u:'up', d:'down', \
               right:'right', left:'left',up:'up',down:'down'  }
@@ -283,7 +292,8 @@ class @Board
       return p
 
     addItem: (type, direction) ->
-      @items.push(new Item(type,direction-@direction))  # the items are inside of the tile span so the
-                                                        # direction has to be relative to the tile orientation
+      # the items are inside of the tile span so the
+      # direction has to be relative to the tile orientation
+      @items.push(new Item(type,direction-@direction))
 
 

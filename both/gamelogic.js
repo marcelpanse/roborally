@@ -223,6 +223,7 @@ GameLogic = {
 
   scope.executeLasers = function(players, callback) {
     var game = Games.findOne(players[0].gameId);
+    var victims = [];
     players.forEach(function(player) {
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
       if (tile.damage > 0) {
@@ -231,9 +232,14 @@ GameLogic = {
         checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
       }
       if (!player.powered_down) {
-
-        scope.shootRobotLaser(players, player, game);
+        victims.push(scope.shootRobotLaser(players, player, game));
       }
+    });
+    victims.forEach(function(victim) {
+      if (victim) {
+        victim.damage++;
+        checkRespawnsAndUpdateDb(players, victim, _CARD_PLAY_DELAY);
+      }        
     });
     callback();
   };
@@ -276,20 +282,17 @@ GameLogic = {
     var x = player.position.x;
     var y = player.position.y;
 
-    console.log(player.name + "on " + player.position.x + "," + player.position.y);
     while (x+stepX > 0 && y+stepY > 0 && x+stepX < Tiles.BOARD_WIDTH && y+stepY < Tiles.BOARD_HEIGHT &&
           !Tiles.hasWall(x,y, wallDir[0], game) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1], game)) {
       x += stepX;
       y += stepY;
-      console.log("Check " + x + "," + y + " Step:" + stepX + "," + stepY);
       var victim = Tiles.isPlayerOnTile(players,x,y);
       if (victim) {
         console.log(victim.name + " was shot on ("+ x + ","+y+") by " + player.name + " on (" + player.position.x +","+player.position.y+")");
-        victim.damage++;
-        checkRespawnsAndUpdateDb(players, victim, _CARD_PLAY_DELAY);
-        break;
+        return victim;
       }
     }
+    return false;
   };
 
   function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
