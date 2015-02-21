@@ -7,11 +7,29 @@ Tiles = {
   REPAIR: "repair",
   OPTION: "option",
 
-  BOARD_WIDTH: 12,
-  BOARD_HEIGHT: 16,
-  BOARD_DEFAULT: 0,
-  BOARD_TEST_BED_1: 1,
-  BOARD_VAULT: 2,
+  BOARD_NAMES: [ 'default', 'vault' ],
+
+  boards: {
+    default: function() {
+      var board = new Board(1);
+      board.addRallyArea('default');
+      board.addStartArea('simple');
+      board.addCheckpoint(7, 3);
+      board.addCheckpoint(1, 8);
+      board.addCheckpoint(7, 7);
+      return board;
+    },
+    vault: function() {
+      var board = new Board();
+      board.addRallyArea('vault');
+      board.addStartArea('roller');
+      board.addCheckpoint(3, 5);
+      board.addCheckpoint(9, 1);
+      board.addCheckpoint(5, 8);
+      board.addCheckpoint(2, 0);
+      return board;
+    }
+  }
 };
 
 (function (scope) {
@@ -32,24 +50,29 @@ Tiles = {
 
   scope.checkCheckpoints = function(player,game) {
     var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-    if (tile.checkpoint && tile.checkpoint === player.visited_checkpoints+1) {
-      Players.update(player._id, {$set: {visited_checkpoints: tile.checkpoint}});
+    if (tile.checkpoint) {
+      player.start.x = player.position.x;
+      player.start.y = player.position.y;
+      if (tile.checkpoint === player.visited_checkpoints+1) {
+        player.visited_checkpoints++;
+      }
+      Players.update(player._id, player);
       return true;
     }
     return false;
   };
 
-  scope.isPlayerOnVoid = function(player) {
-	var game = Games.findOne(player.gameId);
-    var a = Tiles.getBoardTile(player.position.x, player.position.y,game).type == Tiles.VOID;
+  scope.isPlayerOnVoid = function(player, game) {
+    var a = Tiles.getBoardTile(player.position.x, player.position.y, game).type == Tiles.VOID;
     if (a) {
       console.log("Player fell into the void", player.name);
     }
     return a;
   };
 
-  scope.isPlayerOnBoard = function(player) {
-    var a = player.position.x >= 0 && player.position.y >= 0 && player.position.x < Tiles.BOARD_WIDTH && player.position.y < Tiles.BOARD_HEIGHT;
+  scope.isPlayerOnBoard = function(player, game) {
+    var board = Tiles.getBoard(game);
+    var a = player.position.x >= 0 && player.position.y >= 0 && player.position.x < board.width && player.position.y < board.height;
     if (!a) {
       console.log("Player fell off the board", player.name);
     }
@@ -107,12 +130,7 @@ Tiles = {
   };
 
   scope.getBoardTile = function(x, y, game) {
-    if (x < 0 || y < 0 || x >= Tiles.BOARD_WIDTH || y >= Tiles.BOARD_HEIGHT) {
-      console.log("Invalid board tile", x, y);
-      return null;
-    }
-    //$$$DEBUG
-    return Tiles.getBoardTiles(game)[y][x];
+    return Tiles.getBoard(game).getTile(x,y);
   };
 
   scope.getBoardTiles = function(game) {
@@ -120,170 +138,13 @@ Tiles = {
   };
 
   scope.getBoard = function(game) {
-    console.log("Get board"+game.boardId);
-    if (typeof(_boardCache[game.boardId])!=='undefined' && _boardCache[game.boardId]!==null) {
-      console.log("Use cached board");
-      return _boardCache[game.boardId];
-    }
-
-    if (game.boardId === Tiles.BOARD_TEST_BED_1) {
-  	  _boardCache[game.boardId] = Tiles.getBoardTEST_BED_1();
-    } else if (game.boardId === Tiles.BOARD_VAULT) {
-      _boardCache[game.boardId] = Tiles.getBoardVault();
-    } else {
-      console.log("Load default board");
-	    _boardCache[game.boardId] = Tiles.getBoardDefault();
+    if (typeof(_boardCache[game.boardId])==='undefined' || _boardCache[game.boardId]===null) {
+      var board_name = Tiles.BOARD_NAMES[game.boardId];
+      console.log("Load "+board_name+" board");
+      _boardCache[game.boardId] = Tiles.boards[board_name]();
     }
     return _boardCache[game.boardId];
   };
 
-  scope.getBoardDefault = function() {
-    var board = BoardBuilder.emptyBoard();
-
-    board.setVoid( 9, 2);
-    board.setVoid( 1, 4);
-    board.setVoid( 2, 4);
-    board.setVoid( 5, 4);
-    board.setVoid( 4, 5);
-    board.setVoid( 5, 5);
-    board.setVoid( 6, 5);
-    board.setVoid( 5, 6);
-    board.setVoid( 9, 8);
-    board.setVoid( 2,10);
-    board.setVoid( 0,11);
-
-    board.setRoller( 1, 0,"drrrrddldldllll");
-    board.setRoller( 5, 0,"dd");
-    board.setRoller(11, 1,"luu");
-    board.setRoller(11, 5,"lllluluuuuu");
-    board.setRoller( 0, 6,"rrrrdrddddd");
-    board.setRoller( 0, 10,"rdd");
-    board.setRoller(10,11,"ulllluuuurrrrrr");
-    board.setRoller( 6,11,"uu");
-
-    board.setRepair(11, 0);
-    board.setRepair( 0, 9);
-
-    board.setOption( 2, 3);
-    board.setOption( 9, 7);
-
-    board.addWall( 2, 0, "up");
-    board.addWall( 7, 0, "up");
-    board.addWall( 9, 0, "up");
-    board.addWall( 0, 2, "left");
-    board.addWall(11 ,2, "right");
-    board.addWall( 1, 3, "right-down");
-    board.addWall( 3, 3, "right");
-    board.addWall( 7, 3, "left-down");
-    board.addWall( 0, 4, "left");
-    board.addWall( 9, 4, "down");
-    board.addWall(11, 4, "right");
-    board.addWall( 0, 7, "left-down");
-    board.addWall( 7, 7, "left-up");
-    board.addWall(10, 7, "up");
-    board.addWall(11, 7, "right");
-    board.addWall( 4, 8, "up");
-    board.addWall( 0, 9, "left");
-    board.addWall( 2, 9, "right");
-    board.addWall( 9,11, "right");
-    board.addWall( 2,11, "down");
-    board.addWall( 4,11, "down");
-    board.addWall( 7,11, "right-down");
-    board.addWall( 9,11, "down");
-
-    board.addLaser(4, 0, "d", 3);
-    board.addLaser(2, 8, "r", 2);
-    board.addLaser(7, 8, "r", 2);
-
-    board.addDoubleLaser(8, 1, "d", 3);
-
-    board.addCheckpoint(7, 3);
-    board.addCheckpoint(1, 8);
-    board.addCheckpoint(7, 7);
-
-    board.addStartArea('simple',0,12);
-    return board;
-  };
-
-
-  scope.getBoardVault = function() {
-    var board = BoardBuilder.emptyBoard();
-
-    board.setVoid( 2, 3);
-    board.setVoid( 9, 3);
-    board.setVoid( 2, 8);
-    board.setVoid( 9, 8);
-
-    board.setRoller(1, 0,"dll");
-    board.setRoller(3, 0,"u");
-    board.setRoller(9, 0,"ldlllll");
-    board.setRoller(8, 0,"d");
-    board.setRoller(0, 6,"rddddrrrrdd");
-    board.setRoller(8,10,"rrrr");
-    
-    board.setExpressRoller( 10, 1,"ddrr");
-    board.setExpressRoller( 10, 6,"rr");
-
-    board.setRepair( 0, 11);
-    board.setRepair(11, 0);
-
-    board.setOption( 5, 5);
-    board.setOption( 5, 6);
-    board.setOption( 6, 5);
-    board.setOption( 6, 6);
-
-    board.setGear( 3, 1, "cw");
-    board.setGear(10, 0, "cw");
-
-    board.setPusher( 5, 2, "up", "odd");
-    board.setPusher(10, 5, "down", "even");
-    board.setPusher( 2, 6, "left", "odd");
-    board.setPusher( 9, 6, "right", "odd");
-    board.setPusher( 5, 9, "down", "even");
-    board.setPusher( 6, 9, "down", "odd");
-
-    board.addWall( 2, 0, "up");
-    board.addWall( 9, 0, "up");
-    board.addWall( 6, 2, "down");
-    board.addWall(11, 2, "right");
-    board.addWall( 0 ,4, "left");
-    board.addWall( 4, 4, "left");
-    board.addWall( 7, 4, "right");
-    board.addWall(11, 4, "right");
-    board.addWall( 2, 5, "right");
-    board.addWall( 9, 5, "left");
-    board.addWall( 0, 7, "left");
-    board.addWall( 3, 7, "left");
-    board.addWall( 7, 7, "right");
-    board.addWall(11, 7, "right");
-    board.addWall( 0, 9, "left");
-    board.addWall(11, 9, "right");
-    board.addWall( 2,11, "down");
-    board.addWall( 9,11, "down");
-
-    board.addLaser(4, 0, "d", 4);
-    board.addLaser(7, 0, "d", 4);
-    board.addLaser(0, 2, "r", 4);
-    board.addLaser(4, 8, "d", 4);
-    board.addLaser(7, 8, "d", 4);
-
-    board.addCheckpoint(3, 5);
-    board.addCheckpoint(9, 1);
-    board.addCheckpoint(5, 8);
-    board.addCheckpoint(2, 0);
-
-    board.addStartArea('roller',0,12);
-    return board;
-  };
-
-
-  scope.getBoardTEST_BED_1 = function() {
-    var board = new BoardBuilder.emptyBoard();
-    board.addStart(0, 0, GameLogic.DOWN);
-    board.addStart(11, 11, GameLogic.UP);
-    board.addCheckpoint(2, 2);
-    board.addCheckpoint(3, 3);
-    return board;
-  };
 
 })(Tiles);
