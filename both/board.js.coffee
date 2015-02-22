@@ -273,6 +273,8 @@ class @Board
       @wall = false
       @items = []
       @damage = 0
+      @rotate = 0
+      @move = {x:0, y:0}
       @direction = GameLogic.UP
       @roller_type = ''
 

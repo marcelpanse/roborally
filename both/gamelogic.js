@@ -4,7 +4,7 @@ GameLogic = {
   DOWN: 2,
   LEFT: 3,
   TIMER: 30,
-  CARD_SLOTS: 5,
+  CARD_SLOTS: 5
 };
 
 (function (scope) {
@@ -108,8 +108,8 @@ GameLogic = {
     }
   };
 
-  scope.playCard = function(card, callback) {
-    var player = Players.findOne(card.playerID);
+  scope.playCard = function(players, card, callback) {
+    var player = Players.findOne(card.playerId);
     
     console.log("trying to play next card for player " + player.name);
 
@@ -319,16 +319,16 @@ GameLogic = {
     if (step.x !== 0 || step.y !== 0) {
       var moving_players = [player];
       var p = player;
-      console.log("Try to move player "+p._id);
+      console.log("Try to move player "+p.name);
       while (Tiles.canMove(p.position.x, p.position.y, p.position.x+step.x, p.position.y+step.y, game)) {
         p = Tiles.isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
         if (p !== null) {
-          console.log("Try to push player "+p._id);
+          console.log("Try to push player "+p.name);
           moving_players.push(p);
         } else {
-          moving_players.forEach(function(mp) {
-            movePlayer(mp, step);
-          });
+          for (var i in moving_players) {
+            movePlayer(moving_players[i], step);
+          }
           break;
         }
       }
@@ -342,14 +342,13 @@ GameLogic = {
 
   function rotatePlayer(player, rotation) {
     player.direction += rotation + 4;
-    player.direciton %= 4;
+    player.direction %= 4;
   }
 
 
 
   function checkRespawnsAndUpdateDb(players, player, timeout, callback) {
     Meteor.setTimeout(function() {
-      var player = players[playerNum];
       var game = Games.findOne(player.gameId);
       var respawned = false;
       if (!Tiles.isPlayerOnBoard(player, game) || Tiles.isPlayerOnVoid(player, game)) {
@@ -366,7 +365,7 @@ GameLogic = {
           submitted: new Date().getTime()
         });
 
-        Meteor.wrapAsync(respawnPlayerWithDelay)(players, playerNum);
+        Meteor.wrapAsync(respawnPlayerWithDelay)(players, player);
       } else {
         console.log("updating position", player.name);
         Players.update(player._id, player);
@@ -384,7 +383,7 @@ GameLogic = {
       player.position.x = player.start.x;
       player.position.y = player.start.y;
       player.direction = player.start.direction;
-      console.log("respawning player", players[playerNum].name);
+      console.log("respawning player", players.name);
       Players.update(player._id, player);
       callback();
     }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void

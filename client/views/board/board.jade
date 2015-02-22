@@ -5,7 +5,7 @@ template(name="board")
       hr.star-well
       h4 #{game.winner} has won the game!
   else
-    #board
+    div(id="board", style="width: #{boardWidth}px; height: #{boardHeight}px;")
       each tiles
         each this
           span.tile(style="background-image: url('#{this.path}'); #{this.orientation_css}" data-toggle="tooltip" data-placement="left" data-container="body" title= description)

@@ -59,6 +59,12 @@ Template.board.helpers({
   },
   gameEnded: function() {
     return this.game.gamePhase == GameState.PHASE.ENDED;
+  },
+  boardWidth: function() {
+    return Tiles.getBoard(this.game).width * 50;
+  },
+  boardHeight: function() {
+    return Tiles.getBoard(this.game).height * 50;
   }
 });
 
