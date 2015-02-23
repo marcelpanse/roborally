@@ -10,7 +10,8 @@ Tiles = {
   BOARD_WIDTH: 12,
   BOARD_HEIGHT: 16,
   BOARD_DEFAULT: 0,
-  BOARD_TEST_BED_1: 1
+  BOARD_TEST_BED_1: 1,
+  BOARD_VAULT: 2,
 };
 
 (function (scope) {
@@ -40,7 +41,7 @@ Tiles = {
 
   scope.isPlayerOnVoid = function(player) {
 	var game = Games.findOne(player.gameId);
-    var a = Tiles.getBoardTile(player.position.x, player.position.y,game).tileType == Tiles.VOID;
+    var a = Tiles.getBoardTile(player.position.x, player.position.y,game).type == Tiles.VOID;
     if (a) {
       console.log("Player fell into the void", player.name);
     }
@@ -119,16 +120,21 @@ Tiles = {
   };
 
   scope.getBoard = function(game) {
-    if (typeof _boardCache[game.boardId]!=='undefined' && _boardCache[game.boardID]!==null) {
-      return _boardCache[game.boardID];
+    console.log("Get board"+game.boardId);
+    if (typeof(_boardCache[game.boardId])!=='undefined' && _boardCache[game.boardId]!==null) {
+      console.log("Use cached board");
+      return _boardCache[game.boardId];
     }
 
     if (game.boardId === Tiles.BOARD_TEST_BED_1) {
-  	  _boardCache[game.boardID] = Tiles.getBoardTEST_BED_1();
+  	  _boardCache[game.boardId] = Tiles.getBoardTEST_BED_1();
+    } else if (game.boardId === Tiles.BOARD_VAULT) {
+      _boardCache[game.boardId] = Tiles.getBoardVault();
     } else {
-	    _boardCache[game.boardID] = Tiles.getBoardDefault();
+      console.log("Load default board");
+	    _boardCache[game.boardId] = Tiles.getBoardDefault();
     }
-    return _boardCache[game.boardID];
+    return _boardCache[game.boardId];
   };
 
   scope.getBoardDefault = function() {
@@ -196,6 +202,77 @@ Tiles = {
     board.addCheckpoint(7, 7);
 
     board.addStartArea('simple',0,12);
+    return board;
+  };
+
+
+  scope.getBoardVault = function() {
+    var board = BoardBuilder.emptyBoard();
+
+    board.setVoid( 2, 3);
+    board.setVoid( 9, 3);
+    board.setVoid( 2, 8);
+    board.setVoid( 9, 8);
+
+    board.setRoller(1, 0,"dll");
+    board.setRoller(3, 0,"u");
+    board.setRoller(9, 0,"ldlllll");
+    board.setRoller(8, 0,"d");
+    board.setRoller(0, 6,"rddddrrrrdd");
+    board.setRoller(8,10,"rrrr");
+    
+    board.setExpressRoller( 10, 1,"ddrr");
+    board.setExpressRoller( 10, 6,"rr");
+
+    board.setRepair( 0, 11);
+    board.setRepair(11, 0);
+
+    board.setOption( 5, 5);
+    board.setOption( 5, 6);
+    board.setOption( 6, 5);
+    board.setOption( 6, 6);
+
+    board.setGear( 3, 1, "cw");
+    board.setGear(10, 0, "cw");
+
+    board.setPusher( 5, 2, "up", "odd");
+    board.setPusher(10, 5, "down", "even");
+    board.setPusher( 2, 6, "left", "odd");
+    board.setPusher( 9, 6, "right", "odd");
+    board.setPusher( 5, 9, "down", "even");
+    board.setPusher( 6, 9, "down", "odd");
+
+    board.addWall( 2, 0, "up");
+    board.addWall( 9, 0, "up");
+    board.addWall( 6, 2, "down");
+    board.addWall(11, 2, "right");
+    board.addWall( 0 ,4, "left");
+    board.addWall( 4, 4, "left");
+    board.addWall( 7, 4, "right");
+    board.addWall(11, 4, "right");
+    board.addWall( 2, 5, "right");
+    board.addWall( 9, 5, "left");
+    board.addWall( 0, 7, "left");
+    board.addWall( 3, 7, "left");
+    board.addWall( 7, 7, "right");
+    board.addWall(11, 7, "right");
+    board.addWall( 0, 9, "left");
+    board.addWall(11, 9, "right");
+    board.addWall( 2,11, "down");
+    board.addWall( 9,11, "down");
+
+    board.addLaser(4, 0, "d", 4);
+    board.addLaser(7, 0, "d", 4);
+    board.addLaser(0, 2, "r", 4);
+    board.addLaser(4, 8, "d", 4);
+    board.addLaser(7, 8, "d", 4);
+
+    board.addCheckpoint(3, 5);
+    board.addCheckpoint(9, 1);
+    board.addCheckpoint(5, 8);
+    board.addCheckpoint(2, 0);
+
+    board.addStartArea('roller',0,12);
     return board;
   };
 

@@ -12,7 +12,8 @@ GameState = {
     MOVE_BOTS: "move bots",
     MOVE_BOARD: "move board",
     LASERS: "lasers",
-    CHECKPOINTS: "checkpoints"
+    CHECKPOINTS: "checkpoints",
+    REPAIRS: "repairs"
   }
 };
 
@@ -157,41 +158,64 @@ GameState = {
         GameState.nextPlayPhase(game._id);
       } else {
         Games.update(game._id,
-          { $set: {playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0} }
+          { $set: {playPhase: GameState.PLAY_PHASE.REPAIRS, playPhaseCount: 0} }
         );
         GameState.nextGamePhase(game._id);
       }
     }
   }
 
+  function playRepairs(game) {
+    var players = Players.find({gameId: game._id}).fetch();
+    Meteor.wrapAsync(GameLogic.executeRepairs)(players);
+    Games.update(game._id,
+      { $set: {playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0} }
+    );
+    GameState.nextGamePhase(game._id);
+  }
+
   function checkIfWeHaveAWinner(game) {
     var players = Players.find({gameId: game._id}).fetch();
     var ended = false;
+    var lastManStanding = false;
+    var livingPlayers = 0;
+    var messages = [];
+
     for (var i in players) {
       var player = players[i];
       Tiles.checkCheckpoints(player,game);
-      if (player.lives <= 0) {
-        console.log("Player " + player.name + " ran out of lives and lost the game!!");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: i>0 ? players[0].name : players[1].name}});
-        ended = true;
-        Chat.insert({
-          gameId: player.gameId,
-          message: 'Player ' + player.name + ' ran out of lives and lost the game',
-          submitted: new Date().getTime()
-        });
-        break;
-      } else if (player.visisted_checkpoints === Tiles.getCheckpointCount(game)) {
-        console.log("Player " + player.name + " won the game!!");
+      if (player.lives > 0) {
+        livingPlayers++;
+        lastManStanding = player;
+      } else {
+        messages.push('Player ' + player.name + ' ran out of lives');
+      }
+
+      if (player.visisted_checkpoints === Tiles.getCheckpointCount(game)) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
+        messages.push("Player " + player.name + " won the game!!");
         ended = true;
-        Chat.insert({
-          gameId: player.gameId,
-          message: 'Player ' + player.name + ' won the game',
-          submitted: new Date().getTime()
-        });
         break;
       }
     }
+
+    if (livingPlayers === 0) {
+      messages.push("All robots are dead");
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+      ended = true;
+    } else if (livingPlayers < GameLogic.MIN_PLAYERS) {
+      messages.push("Player " + lastManStanding.name + " won the game!!");
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
+      ended = true;
+    }
+    messages.forEach(function(msg) {
+      console.log(msg);
+      Chat.insert({
+        gameId: game._id,
+        message: msg,
+        submitted: new Date().getTime()
+      });
+    });
     return ended;
   }
 

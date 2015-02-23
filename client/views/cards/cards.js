@@ -67,6 +67,8 @@ Template.cards.helpers({
             return "Shooting lasers";
           case GameState.PLAY_PHASE.CHECKPOINTS:
             return "Checkpoints";
+          case GameState.PLAY_PHASE.REPAIRS:
+            return "Repairing bots";
         }
     }
     console.log(this.game.gamePhase, this.game.playPhase);

@@ -4,7 +4,8 @@ GameLogic = {
   DOWN: 2,
   LEFT: 3,
   TIMER: 30,
-  CARD_SLOTS: 5
+  CARD_SLOTS: 5,
+  MIN_PLAYERS: 1
 };
 
 (function (scope) {
@@ -178,7 +179,7 @@ GameLogic = {
     players.forEach(function(player) {
       //check if is on roller
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.tileType === Tiles.ROLLER) {
+      if (tile.type === Tiles.ROLLER) {
         roller_moves.push({player: player, x: player.position.x+tile.move.x, y: player.position.y+tile.move.y, tile: tile, canceled: false});
       } else {
         roller_moves.push({player: player, x: player.position.x, y: player.position.y, canceled: true});  // to detect conflicts add non-moving players
@@ -195,7 +196,7 @@ GameLogic = {
     players.forEach(function(player) {
       //check if is on roller
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.tileType === Tiles.ROLLER && tile.speed === 2) {
+      if (tile.type === Tiles.ROLLER && tile.speed === 2) {
         GameLogic.movePlayerWithRoller(player, players, tile);
       }
     });
@@ -207,7 +208,7 @@ GameLogic = {
     var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.tileType === Tiles.GEAR) {
+      if (tile.type === Tiles.GEAR) {
         player.direction = tile.rotate;
         player.direction %= 4;
         checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
@@ -220,7 +221,7 @@ GameLogic = {
     var game = Games.findOne(players[0].gameId);
     players.forEach(function(player) {
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.tileType === Tiles.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
+      if (tile.type === Tiles.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
         tryToMovePlayer(players, player, tile.move, game);
         checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
       }
@@ -238,6 +239,17 @@ GameLogic = {
       }
       if (!player.powered_down) {
         scope.shootRobotLaser(players, player, game);
+      }
+    });
+    callback();
+  };
+
+  scope.executeRepairs = function(players, callback) {
+    var game = Games.findOne(players[0].gameId);
+    players.forEach(function(player) {
+      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
+      if (tile.repair) {
+        player.damage--;
       }
     });
     callback();
@@ -305,9 +317,11 @@ GameLogic = {
     if (move.x !== 0 || move.y !== 0) {
       var moving_players = [player];
       var p = player;
+      console.log("Try to move player "+p._id);
       while (Tiles.canMove(p.position.x, p.position.y, p.position.x+move.x, p.position.y+move.y, game)) {
         p = Tiles.isPlayerOnTile(players, p.position.x + move.x, p.position.y + move.y);
         if (p !== null) {
+          console.log("Try to push player "+p._id);
           moving_players.push(p);
         }
         else {
@@ -362,7 +376,7 @@ GameLogic = {
       players[playerNum].position.y = start.y;
       players[playerNum].direction = start.direction;
       console.log("respawning player", players[playerNum].name);
-      Players.update(player._id, players[playerNum]);
+      Players.update(players[playerNum]._id, players[playerNum]);
       callback();
     }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
   }

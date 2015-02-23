@@ -4,21 +4,21 @@
 BoardBuilder = {
   startArea: {
     simple: function(board,startX,startY) {
-      board.addWall(startX+2, startY+0,"up");
-      board.addWall(startX+4, startY+0,"up");
-      board.addWall(startX+7, startY+0,"up");
-      board.addWall(startX+9, startY+0,"up");
-      board.addWall(startX+1, startY+2,"left");
-      board.addWall(startX+3, startY+2,"left");
-      board.addWall(startX+5, startY+2,"left");
-      board.addWall(startX+6, startY+2,"left");
-      board.addWall(startX+8, startY+2,"left");
-      board.addWall(startX+10,startY+2,"left");
-      board.addWall(startX+11,startY+2,"left");
-      board.addWall(startX+2, startY+3,"down");
-      board.addWall(startX+4, startY+3,"down");
-      board.addWall(startX+7, startY+3,"down");
-      board.addWall(startX+9, startY+3,"down");
+      board.addWall(startX+2, startY+0, "up");
+      board.addWall(startX+4, startY+0, "up");
+      board.addWall(startX+7, startY+0, "up");
+      board.addWall(startX+9, startY+0, "up");
+      board.addWall(startX+1, startY+2, "left");
+      board.addWall(startX+3, startY+2, "left");
+      board.addWall(startX+5, startY+2, "left");
+      board.addWall(startX+6, startY+2, "left");
+      board.addWall(startX+8, startY+2, "left");
+      board.addWall(startX+10,startY+2, "left");
+      board.addWall(startX+11,startY+2, "left");
+      board.addWall(startX+2, startY+3, "down");
+      board.addWall(startX+4, startY+3, "down");
+      board.addWall(startX+7, startY+3, "down");
+      board.addWall(startX+9, startY+3, "down");
 
       board.addStart(startX+5, startY+2, GameLogic.UP);
       board.addStart(startX+6, startY+2, GameLogic.UP);
@@ -28,6 +28,34 @@ BoardBuilder = {
       board.addStart(startX+10,startY+2, GameLogic.UP);
       board.addStart(startX+0, startY+2, GameLogic.UP);
       board.addStart(startX+11,startY+2, GameLogic.UP);
+    },
+    roller: function(board, startX, startY) {
+      board.setRoller(startX+0, startY+2, "rrdrrr");
+      board.setRoller(startX+11, startY+2, "lldlll");
+
+      board.addWall(startX+2, startY+0, "up");
+      board.addWall(startX+4, startY+0, "up");
+      board.addWall(startX+7, startY+0, "up");
+      board.addWall(startX+9, startY+0, "up");
+      board.addWall(startX+4, startY+0, "left");
+      board.addWall(startX+7, startY+0, "right");
+
+      board.addWall(startX+1, startY+1, "left");
+      board.addWall(startX+2, startY+1, "left");
+      board.addWall(startX+10, startY+1, "left");
+      board.addWall(startX+11, startY+1, "left");
+      board.addWall(startX+8, startY+2, "left");
+      board.addWall(startX+6,startY+2, "left");
+      board.addWall(startX+6,startY+3, "left");
+
+      board.addStart(startX+5, startY+3, GameLogic.UP);
+      board.addStart(startX+6, startY+3, GameLogic.UP);
+      board.addStart(startX+3, startY+2, GameLogic.UP);
+      board.addStart(startX+8, startY+2, GameLogic.UP);
+      board.addStart(startX+1, startY+1, GameLogic.UP);
+      board.addStart(startX+10,startY+1, GameLogic.UP);
+      board.addStart(startX+0, startY+0, GameLogic.UP);
+      board.addStart(startX+11,startY+0, GameLogic.UP);
     }
   }
 };
@@ -86,26 +114,42 @@ BoardBuilder = {
     };
 
     this.setExpressRoller = function(startX, startY, route) {
-      this.addRoller(startX, startY, route, 2);
+      this.setRoller(startX, startY, route, 2);
     };
 
     this.setRepair = function(x,y) {
-      this.repair = true;
+      this.tiles[y][x].repair = true;
+      this.setType(x, y, Tiles.REPAIR);
     };
+
     this.setOption = function(x,y) {
       this.tiles[y][x].repair = true;
       this.tiles[y][x].option = true;
+      this.setType(x, y, Tiles.OPTION);
+    };
+
+    this.setGear = function(x,y,gear_type) {
+      this.setType(x,y, Tiles.GEAR);
+      this.tiles[y][x].gear_type = gear_type;
+      if (gear_type === 'cw') {
+        this.tiles[y][x].rotate = -1;
+      } else {
+        this.tiles[y][x].rotate = 1;
+      }
     };
 
     this.setPusher = function(x,y, direction, pusher_type) {
-      this.setType(y,x, Tiles.PUSHER);
+      this.setType(x,y, Tiles.PUSHER);
       this.tiles[y][x].move = step(direction);
-      if (active == 'even') {
+      this.tiles[y][x].direction = str_to_dir(direction);
+      if (pusher_type === 'even') {
         this.tiles[y][x].pusher_type = 0;
       } else {
         this.tiles[y][x].pusher_type = 1;
       }
+      this.addWall(x,y,opp_dir[direction]);
     };
+
 
 
     this.addStart = function(x,y,direction) {
@@ -125,6 +169,7 @@ BoardBuilder = {
       this.checkpoints.push({x:x,y:y,number:cnt});
       this.tiles[y][x].checkpoint = cnt;
       this.tiles[y][x].finish = true;
+      this.tiles[y][x].repair = true;
       console.log('Checkpoint '+cnt+' located at '+x+','+y);
     };
 
@@ -171,7 +216,6 @@ BoardBuilder = {
 
     this.setType = function(x,y,type) {
       this.tiles[y][x].type = type;
-      this.tiles[y][x].tileType = type;
       switch(type) {
         case Tiles.ROLLER:
           this.tiles[y][x].description = "This is a converyor belt. You will move 1 space in the direction of the arrow when ending here after a card has been played.";
@@ -196,6 +240,9 @@ BoardBuilder = {
         var t = this.tiles[y][x].roller_type.split('-');
         t.push(roller_type);
         roller_type = t.sort().join('-');
+      }
+      if ( (speed === 2) && !(RegExp('express').test(roller_type)) ) {
+        roller_type = 'express-' + roller_type;
       }
       this.tiles[y][x].roller_type = roller_type;
       this.setType(x,y,Tiles.ROLLER);
@@ -223,7 +270,6 @@ BoardBuilder = {
       tile_type = Tiles.EMPTY;
     }
     this.type = tile_type;
-    this.tileType = tile_type;
     this.wall = false;
     this.items = [];
     this.damage = 0;
@@ -236,23 +282,26 @@ BoardBuilder = {
 
     this.path = function() {
       var p = "/tiles/";
+      p += this.type;
       switch(this.type) {
       case 'empty':
-      case 'repair':
-      case 'option':
+        p += '-1';
+        break;
       case 'gear':
+        p += '-' + this.gear_type;
+        break;
       case 'pusher':
-        p += 'empty-1';
+        if (this.pusher_type === 0) {
+          p += '-even';
+        } else {
+          p += '-odd';
+        }
         break;
       case 'roller':
-        p += 'roller-' + this.roller_type;
-
+        p += '-' + this.roller_type;
         break;
       case 'void':
-        p += 'void-square';
-        break;
-      default:
-        p += 'empty-2';
+        p += '-square';
         break;
       }
       p += '.jpg';

@@ -6,7 +6,7 @@ Template.gamePageActions.helpers({
     return Players.findOne({gameId: this._id, userId: Meteor.userId()});
   },
   gameReady: function() {
-    return Players.find().fetch().length >= 2;
+    return Players.find().fetch().length >= GameLogic.MIN_PLAYERS;
   },
   gameFull: function() {
     return Players.find().fetch().length >= 8;
