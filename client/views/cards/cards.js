@@ -15,6 +15,7 @@ Template.cards.helpers({
   showCards: function() {
     var cards = this.cards || [];
     return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0 &&
+      Players.findOne({userId: Meteor.userId()}) && 
       !Players.findOne({userId: Meteor.userId()}).submitted;
   },
   showPlayButton: function() {

@@ -44,7 +44,7 @@ Meteor.startup(function () {
       });
       if (playersOnline === 0) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Noboday"}});
-      } else if (playersOnline < GameLogic.MIN_PLAYERS) {
+      } else if (playersOnline < game.min_player) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       }
 

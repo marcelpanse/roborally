@@ -18,7 +18,7 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 500;
+  var _NEXT_PHASE_DELAY = 1500;
 
   // game phases:
 
@@ -56,7 +56,7 @@ GameState = {
   }
 
   function playProgramCardsSubmitted(game) {
-    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY}});
+    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY, playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0}});
     GameState.nextPlayPhase(game._id);
   }
 
@@ -84,6 +84,9 @@ GameState = {
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
           playCheckpoints(game);
+          break;
+        case GameState.PLAY_PHASE.REPAIRS:
+          playRepairs(game);
           break;
       }
     }, _NEXT_PHASE_DELAY);
@@ -124,7 +127,7 @@ GameState = {
 
     cardsToPlay.forEach(function(card) {
       Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
-      Meteor.wrapAsync(GameLogic.playCard)(game._id, card.playerId, card);
+      Meteor.wrapAsync(GameLogic.playCard)(players, card);
     });
 
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOARD}});
@@ -158,9 +161,9 @@ GameState = {
         GameState.nextPlayPhase(game._id);
       } else {
         Games.update(game._id,
-          { $set: {playPhase: GameState.PLAY_PHASE.REPAIRS, playPhaseCount: 0} }
+          { $set: {playPhase: GameState.PLAY_PHASE.REPAIRS} }
         );
-        GameState.nextGamePhase(game._id);
+        GameState.nextPlayPhase(game._id);
       }
     }
   }
@@ -168,9 +171,6 @@ GameState = {
   function playRepairs(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeRepairs)(players);
-    Games.update(game._id,
-      { $set: {playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0} }
-    );
     GameState.nextGamePhase(game._id);
   }
 
@@ -203,7 +203,7 @@ GameState = {
       messages.push("All robots are dead");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       ended = true;
-    } else if (livingPlayers < GameLogic.MIN_PLAYERS) {
+    } else if (livingPlayers < Tiles.getBoard(game).min_player) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       ended = true;
