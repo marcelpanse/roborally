@@ -33,7 +33,7 @@ class @Board
     @area_width = width
 
     build_area.call(@)
-    
+
     @x_offset = 0
     @y_offset = 0
     @orientation = 0
@@ -62,8 +62,8 @@ class @Board
       when 180 then @area_height-1-y
       when 270 then @area_width-1-x
 
-  
-  
+
+
   setVoid: (x,y) ->
     @setType(x,y,Tiles.VOID)
 
@@ -85,11 +85,11 @@ class @Board
           roller_type = 'cw'
       else
         roller_type = 'straight'
-      
+
       x = nextX(x, last_dir)
       y = nextY(y, last_dir)
       @setRollerTileProp(x, y, roller_type, cur_dir, speed)
-      
+
       last_dir = cur_dir
 
   setExpressRoller: (x, y, route) ->
@@ -98,7 +98,7 @@ class @Board
   setRepair: (x,y) ->
     @tile(x,y).repair = true
     @setType(x,y, Tiles.REPAIR)
-  
+
   setOption: (x,y) ->
     @tile(x,y).repair
     @tile(x,y).repair = true
@@ -112,7 +112,7 @@ class @Board
       @tile(x,y).rotate = -1
     else
       @tile(x,y).rotate = 1
-    
+
   setPusher: (x,y, direction, pusher_type) ->
     @setType(x,y, Tiles.PUSHER)
     @tile(x,y).move = step(direction)
@@ -126,8 +126,8 @@ class @Board
   addStart: (x,y,direction) ->
     console.log("Start #{x},#{y},#{direction}")
     @start_tiles.push
-      x: Number(@col(x,y)), 
-      y: Number(@row(x,y)), 
+      x: Number(@col(x,y)),
+      y: Number(@row(x,y)),
       direction: str_to_dir(direction)
 
     @tile(x,y).start = true
@@ -137,20 +137,20 @@ class @Board
     if cnt > 0
       last_cp = @checkpoints[cnt-1]
       @tile(last_cp.x,last_cp.y).finish = false
-  
+
     cnt += 1
     @checkpoints.push({x:x,y:y,number:cnt})
     @tile(x,y).checkpoint = cnt
     @tile(x,y).finish = true
     @tile(x,y).repair = true
     console.log("Checkpoint #{cnt} located at #{x},#{y}")
-  
+
   addWall: (x,y,direction) ->
     if @tile(x,y).wall
       @tile(x,y).wall += '-' + direction
     else
       @tile(x,y).wall = direction
-    
+
     for d in direction.split('-')
       @tile(x,y).addItem('wall', str_to_dir(d))
 
@@ -162,7 +162,7 @@ class @Board
       when 3 then 'triplelaser'
       when 2 then 'doublelaser'
       else 'laser'
-    
+
     for i in [1..length]
       @tile(x,y).damage = strength
       @tile(x,y).addItem(laser_type, str_to_dir(direction))
@@ -170,11 +170,11 @@ class @Board
         @addWall(x,y,long_dir[opp_dir[direction]])
       else if i == length
         @addWall(x,y,long_dir[direction])
-      
+
       y = nextY(y,direction)
       x = nextX(x,direction)
 
-  
+
 
   #~~~~~~ helper methods
 
@@ -200,10 +200,10 @@ class @Board
       t = @tile(x,y).roller_type.split('-')
       t.push(roller_type)
       roller_type = t.sort().join('-')
-    
+
     if (speed == 2) && !(RegExp('express').test(roller_type))
       roller_type = 'express-' + roller_type
-    
+
     @tile(x,y).roller_type = roller_type
     @setType(x,y,Tiles.ROLLER)
 
@@ -297,5 +297,3 @@ class @Board
       # the items are inside of the tile span so the
       # direction has to be relative to the tile orientation
       @items.push(new Item(type,direction-@direction))
-
-
