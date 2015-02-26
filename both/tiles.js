@@ -12,6 +12,7 @@ Tiles = {
   boards: {
     default: function() {
       var board = new Board(1);
+      board.name = 'default';
       board.addRallyArea('default');
       board.addStartArea('simple');
       board.addCheckpoint(7, 3);
@@ -21,6 +22,7 @@ Tiles = {
     },
     vault: function() {
       var board = new Board();
+      board.name = 'vault';
       board.addRallyArea('vault');
       board.addStartArea('roller');
       board.addCheckpoint(3, 5);

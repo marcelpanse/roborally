@@ -22,7 +22,7 @@ Meteor.methods({
       boardId: 0
     });
     
-    var board_id = Tiles.BOARD_NAMES.indexOf(game.name)
+    var board_id = Tiles.BOARD_NAMES.indexOf(game.name);
     if (board_id >= 0) 
       game.boardId=board_id;
 
@@ -91,6 +91,27 @@ Meteor.methods({
     Chat.insert({
       gameId: gameId,
       message: author + ' left the game',
+      submitted: new Date().getTime()
+    });
+  },
+
+  selectBoard: function(boardName, gameId) {
+    var user = Meteor.user();
+    var game = Games.findOne(gameId);
+    if (!game)
+      throw new Meteor.Error(401, "Game id not found!");
+
+    var board_id = Tiles.BOARD_NAMES.indexOf(boardName);
+    if (board_id < 0) 
+      throw new Meteor.Error(401, "Board " + boardName + " not found!" );
+
+    Games.update(game._id, {$set: {boardId: board_id}});
+
+    var author = getUsername(user);
+    console.log('User ' + author + ' selected' + boardName + " for game " + gameId);
+    Chat.insert({
+      gameId: gameId,
+      message: author + ' selected board ' + boardName,
       submitted: new Date().getTime()
     });
   },

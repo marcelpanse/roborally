@@ -24,3 +24,9 @@ template(name="players")
   else
     p nobody joined yet :-(
   p Two players needed to start the game
+
+template(name="selectedBoard")
+  h3 Board
+  .preview
+    +thumbnail
+  a.btn.btn-default.select.action-button(href="#") Select board

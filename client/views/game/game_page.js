@@ -46,5 +46,12 @@ Template.gamePageActions.events({
         return alert(error.reason);
       analytics.track("game-started");
     });
+  },
+});
+
+Template.selectedBoard.events({
+ 'click .select': function(e) {
+    e.preventDefault();
+    Router.go('boardselect.page', {_id: this.game._id});
   }
 });
