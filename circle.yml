@@ -1,0 +1,15 @@
+dependencies:
+  pre:
+    - curl https://install.meteor.com | /bin/sh
+test:
+  override:
+    - laika
+deployment:
+  production:
+    branch: production
+    commands:
+      - meteor deploy www.roborally.com
+  staging:
+    branch: master
+    commands:
+      - meteor deploy staging.roborally.com
