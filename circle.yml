@@ -1,7 +1,7 @@
 dependencies:
   pre:
     - curl https://install.meteor.com | /bin/sh
-    - sudo npm install -g laika
+    - npm install -g laika
 test:
   pre:
     - mongod
