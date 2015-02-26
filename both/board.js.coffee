@@ -126,8 +126,8 @@ class @Board
   addStart: (x,y,direction) ->
     console.log("Start #{x},#{y},#{direction}")
     @start_tiles.push
-      x: Number(@col(x,y)), 
-      y: Number(@row(x,y)), 
+      x: Number(@col(x,y)),
+      y: Number(@row(x,y)),
       direction: str_to_dir(direction)
 
     @tile(x,y).start = true
@@ -286,7 +286,11 @@ class @Board
       p += switch @type
         when 'empty'  then "-1"
         when 'gear'   then "-#{@gear_type}"
-        when 'pusher' then @pusher_type == 0 ? '-even' : '-odd'
+        when 'pusher'
+          if @pusher_type == 0 
+            '-even' 
+          else 
+            '-odd'
         when 'roller' then "-#{@roller_type}"
         when 'void'   then '-square'
         else ''
