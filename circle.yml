@@ -4,11 +4,10 @@ dependencies:
     - npm install -g laika
 test:
   pre:
-    - mkdir /data
-    - mkdir /data/db
-    - mongod
+    - mkdir ~/db
+    - mongod --dbpath=~/db
   override:
-    - laika
+    - laika -V
 deployment:
   production:
     branch: production
