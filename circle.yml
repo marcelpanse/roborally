@@ -2,12 +2,6 @@ dependencies:
   pre:
     - curl https://install.meteor.com | /bin/sh
     - npm install -g laika
-test:
-  pre:
-    - mkdir ~/db
-    - mongod --dbpath=~/db
-  override:
-    - laika -V
 deployment:
   production:
     branch: production
