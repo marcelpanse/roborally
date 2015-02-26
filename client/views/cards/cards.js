@@ -19,6 +19,7 @@ Template.cards.helpers({
   showCards: function() {
     var cards = this.cards || [];
     return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0 &&
+      Players.findOne({userId: Meteor.userId()}) && 
       !Players.findOne({userId: Meteor.userId()}).submitted;
   },
   showPlayButton: function() {
@@ -71,6 +72,8 @@ Template.cards.helpers({
             return "Shooting lasers";
           case GameState.PLAY_PHASE.CHECKPOINTS:
             return "Checkpoints";
+          case GameState.PLAY_PHASE.REPAIRS:
+            return "Repairing bots";
         }
     }
     console.log(this.game.gamePhase, this.game.playPhase);

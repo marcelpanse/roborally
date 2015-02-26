@@ -10,6 +10,7 @@ Meteor.methods({
     }
     var author = getUsername(user);
     // pick out the whitelisted keys
+    
     var game = _.extend(_.pick(postAttributes, 'name'), {
       userId: user._id,
       author: author,
@@ -18,14 +19,15 @@ Meteor.methods({
       gamePhase: GameState.PHASE.IDLE,
       playPhase: GameState.PLAY_PHASE.IDLE,
       playPhaseCount: 0,
-      boardId: Tiles.BOARD_DEFAULT
+      boardId: 0
     });
-    if(game.name==='test_bed_1')
-      game.boardId=Tiles.BOARD_TEST_BED_1;
-    else if(game.name==='test_bed_2')
-      game.boardId=Tiles.BOARD_TEST_BED_2;
+    var board_id = Tiles.BOARD_NAMES.indexOf(game.name)
+    if (board_id >= 0) 
+      game.boardId=board_id;
+    game.min_player = Tiles.getBoard(game).min_player;
+    game.max_player = Tiles.getBoard(game).max_player;
     var gameId = Games.insert(game);
-
+    
     Chat.insert({
       gameId: gameId,
       message: 'Game created',
@@ -73,11 +75,15 @@ Meteor.methods({
     var author = getUsername(user);
     console.log('User ' + author + ' leaving game ' + gameId);
 
+
+    Players.remove({gameId: game._id, userId: user._id});
     if (game.started) {
-      var player = Players.findOne({gameId: game._id, userId: { $ne: Meteor.userId() }});
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
-    } else {
-      Players.remove({gameId: game._id, userId: user._id});
+      var players = Players.find({gameId: game._id});
+      if (players.length === 1) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
+      } else if (players.length === 0) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+      }
     }
 
     Chat.insert({
@@ -99,6 +105,7 @@ Meteor.methods({
       player.position.x = start.x;
       player.position.y = start.y;
       player.direction = start.direction;
+      player.start = start;
       Players.update(player._id, player);
     }
 

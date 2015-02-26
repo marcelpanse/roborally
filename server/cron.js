@@ -19,6 +19,8 @@ Meteor.startup(function () {
     var liveGames = Games.find({started: true, winner: {$exists: false}}).fetch();
     liveGames.forEach(function(game) {
       var players = Players.find({gameId: game._id}).fetch();
+      var playersOnline = 0;
+      var lastManStanding = false;
       players.forEach(function(player) {
         if (!Meteor.users.findOne(player.userId).status.online) {
           //wait couple of seconds and re-check before deleting the game, to make sure it wasn't a refresh or temporary.
@@ -27,8 +29,6 @@ Meteor.startup(function () {
             if (!Meteor.users.findOne(player.userId).status.online) {
               console.log("Forfeitting game with disconnected player: " + game._id);
 
-              var winner = Players.findOne({gameId: game._id, userId: { $ne: player.userId }});
-              Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: winner.name}});
               Chat.insert({
                 gameId: game._id,
                 message: player.name + ' disconnected and left the game',
@@ -36,8 +36,18 @@ Meteor.startup(function () {
               });
             }
           }, 5000);
+        } else {
+          lastManStanding = player;
+          playersOnline++;
         }
+
       });
+      if (playersOnline === 0) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Noboday"}});
+      } else if (playersOnline < game.min_player) {
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
+      }
+
     });
   }, {});
 });
