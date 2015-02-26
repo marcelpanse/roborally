@@ -4,6 +4,8 @@ dependencies:
     - npm install -g laika
 test:
   pre:
+    - mkdir /data
+    - mkdir /data/db
     - mongod
   override:
     - laika
