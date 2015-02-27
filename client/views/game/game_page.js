@@ -49,6 +49,21 @@ Template.gamePageActions.events({
   },
 });
 
+Template.players.helpers({
+  minPlayer: function() {
+    if (this.game.min_player > 1) {
+      return '' + this.game.min_player + ' players';
+    } else {
+      return 'One player';
+    }
+  }
+});
+
+Template.selectedBoard.helpers({
+  ownGame: function() {
+    return this.game.userId == Meteor.userId();
+  }
+})
 Template.selectedBoard.events({
  'click .select': function(e) {
     e.preventDefault();

@@ -203,7 +203,7 @@ GameLogic = {
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
       if (tile.type === Tiles.GEAR) {
         rotatePlayer(player, tile.rotate);
-        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
+        Players.update(player._id, player);
       }
     });
     callback();
@@ -249,9 +249,9 @@ GameLogic = {
     players.forEach(function(player) {
       var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
       if (tile.repair) {
-        player.start.x = player.position.x;
-        player.start.y = player.position.y;
+        Tiles.updateStartPosition(player, game);
         player.damage--;
+        Players.update(player._id, player);
       }
     });
     callback();

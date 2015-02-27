@@ -7,12 +7,13 @@ Tiles = {
   REPAIR: "repair",
   OPTION: "option",
 
-  BOARD_NAMES: [ 'default', 'vault' ],
+  BOARD_NAMES: [ 'default', 'vault', 'moving_targets' ],
 
   boards: {
     default: function() {
       var board = new Board(1);
       board.name = 'default';
+      board.title = 'Default';
       board.addRallyArea('default');
       board.addStartArea('simple');
       board.addCheckpoint(7, 3);
@@ -21,8 +22,9 @@ Tiles = {
       return board;
     },
     vault: function() {
-      var board = new Board();
+      var board = new Board(1);
       board.name = 'vault';
+      board.title = 'Option World';
       board.addRallyArea('vault');
       board.addStartArea('roller');
       board.addCheckpoint(3, 5);
@@ -30,7 +32,20 @@ Tiles = {
       board.addCheckpoint(5, 8);
       board.addCheckpoint(2, 0);
       return board;
+    },
+    moving_targets: function() {
+      var board = new Board(2,8);
+      board.name = 'moving_targets';
+      board.title = 'Moving Targets';
+      board.addRallyArea('maelstrom');
+      board.addStartArea('simple');
+      board.addCheckpoint(1,0);
+      board.addCheckpoint(10,11);
+      board.addCheckpoint(11,5);
+      board.addCheckpoint(0,6);
+      return board;
     }
+
   }
 };
 
@@ -49,12 +64,15 @@ Tiles = {
       return {x: 0, y: 0, direction: 0};
     }
   };
+  
+  scope.updateStartPosition = function(player, game) {
+    player.start = {x: player.position.x, y:player.position.y};
+  };
 
   scope.checkCheckpoints = function(player,game) {
     var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
     if (tile.checkpoint) {
-      player.start.x = player.position.x;
-      player.start.y = player.position.y;
+      Tiles.updateStartPosition(player, game);
       if (tile.checkpoint === player.visited_checkpoints+1) {
         player.visited_checkpoints++;
       }
@@ -63,6 +81,8 @@ Tiles = {
     }
     return false;
   };
+
+
 
   scope.isPlayerOnVoid = function(player, game) {
     var a = Tiles.getBoardTile(player.position.x, player.position.y, game).type == Tiles.VOID;

@@ -105,10 +105,12 @@ Meteor.methods({
     if (board_id < 0) 
       throw new Meteor.Error(401, "Board " + boardName + " not found!" );
 
-    Games.update(game._id, {$set: {boardId: board_id}});
+    var min = Tiles.getBoard(game).min_player;
+    var max = Tiles.getBoard(game).max_player;
+    Games.update(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
 
     var author = getUsername(user);
-    console.log('User ' + author + ' selected' + boardName + " for game " + gameId);
+    console.log('User ' + author + ' selected ' + boardName + " for game " + gameId);
     Chat.insert({
       gameId: gameId,
       message: author + ' selected board ' + boardName,
@@ -118,6 +120,7 @@ Meteor.methods({
 
   startGame: function(gameId) {
     var players = Players.find({gameId: gameId}).fetch();
+    var game = Games.findOne(gameId);
     if (players.length > 8) {
       throw new Meteor.Error(401, "Too many players.");
     }
@@ -128,8 +131,11 @@ Meteor.methods({
       player.position.x = start.x;
       player.position.y = start.y;
       player.direction = start.direction;
+      player.robotId = i;
       player.start = start;
+
       Players.update(player._id, player);
+      console.log('Here is a marker' + Tiles.getBoardTile(player.position.x, player.position.y, game).markers[0].robotId);
     }
 
     console.log('set game started');

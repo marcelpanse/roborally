@@ -19,7 +19,7 @@ Template.board.helpers({
       var player = this.players[i];
       var rclass = "r" + i;
       p.push({
-        path: "/robot_"+i.toString()+".png",
+        path: "/robots/robot_"+i.toString()+".png",
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
@@ -27,33 +27,26 @@ Template.board.helpers({
     }
     return p;
   },
+  markers: function() {
+    var p = [];
+    for (var i in this.players) {
+      var player = this.players[i];
+      var mclass = "m" + i;
+      new_pos = calcPosition(player.start.x, player.start.y);
+      deg = 360 / (this.players.length+1) * i;
+      p.push({
+        path: "/robots/marker_"+i.toString()+".png",
+        robot_class: mclass,
+        position: 'top: '+ new_pos.y +'px; left:'+ new_pos.x +'px;',
+        direction: 'transform: rotate('+ deg + 'deg);',
+      });
+    }
+    return p;
+  },
   getRobotId: function() {
-    for (var i in this.players) {
-      var player = this.players[i];
-      if (player.userId === Meteor.userId()) {
-        return i.toString();
-      }
-    }
+    return Players.findOne({userId: Meteor.userId()}).robotId.toString();
   },
-  checkpointClasses: function() {
-    var players = Template.parentData(2).players;
-    var game = Template.parentData(2).game;
-    var nrOfCheckoutpoints = Tiles.getCheckpointCount(game);
-    var checkpoints = [];
-    for (var i in this.players) {
-      var player = this.players[i];
-      if (player.userId === Meteor.userId()) {
-        for (var j = 1; j < nrOfCheckoutpoints; ++j)  {
-          if (player.visited_checkpoints > j) {
-            checkpoints.push("visited");
-          } else {
-            checkpoints.push("");
-          }
-        }
-      }
-    }
-    return checkpoints;
-  },
+
   tiles: function() {
     return Tiles.getBoardTiles(this.game);
   },

@@ -130,7 +130,7 @@ class @Board
       y: Number(@row(x,y)),
       direction: str_to_dir(direction)
 
-    @tile(x,y).start = true
+    @tile(x,y).start = @start_tiles.length
 
   addCheckpoint: (x,y) ->
     cnt = @checkpoints.length
@@ -201,9 +201,6 @@ class @Board
       t.push(roller_type)
       roller_type = t.sort().join('-')
 
-    if (speed == 2) && !(RegExp('express').test(roller_type))
-      roller_type = 'express-' + roller_type
-
     @tile(x,y).roller_type = roller_type
     @setType(x,y,Tiles.ROLLER)
 
@@ -272,6 +269,7 @@ class @Board
       @type = tile_type
       @wall = false
       @items = []
+      @markers = []
       @damage = 0
       @rotate = 0
       @move = {x:0, y:0}
@@ -287,11 +285,15 @@ class @Board
         when 'empty'  then "-1"
         when 'gear'   then "-#{@gear_type}"
         when 'pusher'
-          if @pusher_type == 0 
-            '-even' 
-          else 
+          if @pusher_type == 0
+            '-even'
+          else
             '-odd'
-        when 'roller' then "-#{@roller_type}"
+        when 'roller'
+          if @speed == 2
+            "-express-#{@roller_type}"
+          else
+            "-#{@roller_type}"
         when 'void'   then '-square'
         else ''
       p += '.jpg'

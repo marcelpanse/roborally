@@ -48,9 +48,6 @@ Router.route('/select/:_id', {
         } else if (game.started) {
           console.log('game started, routing to board');
           Router.go('board.page', {_id: this.params._id});
-        } else if (game.select_board) {
-          console.log('selecting board');
-          Router.go('game.page', {_id: this.params._id});
         } else {
           return {game: game, players: Players.find().fetch()};
         }
@@ -65,7 +62,8 @@ Router.route('/select/:_id', {
     this.render('players', {
       to: 'rightPanel2',
       data: function() {
-        return Players.find();
+        var game = Games.findOne(this.params._id);
+        return {players: Players.find(), game: game};
       }
     });
   }
@@ -92,9 +90,6 @@ Router.route('/games/:_id', {
         } else if (game.started) {
           console.log('game started, routing to board');
           Router.go('board.page', {_id: this.params._id});
-        } else if (game.select_board) {
-          console.log('selecting board');
-          Router.go('boardselect.page', {_id: this.params._id});
         } else {
           return {messages: Chat.find(), gameId: this.params._id};
         }
@@ -109,7 +104,8 @@ Router.route('/games/:_id', {
     this.render('players', {
       to: 'rightPanel2',
       data: function() {
-        return Players.find();
+        var game = Games.findOne(this.params._id);
+        return {players: Players.find(), game: game};
       }
     });
     this.render('selectedBoard', {
@@ -123,10 +119,12 @@ Router.route('/games/:_id', {
           board = Tiles.boards['default']();
         }
         return { tiles: board.tiles, 
-                        width: board.width*20, 
-                        height: board.height*20,
-                        name: board.name,
-                        game: game
+                 width: board.width*20,
+                 height: board.height*20,
+                 name: board.name,
+                 extra_class: '',
+                 game: game,
+                 board: board
                };
       }
     });

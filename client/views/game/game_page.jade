@@ -10,23 +10,25 @@ template(name="gamePageActions")
   if gameReady
     if ownGame
       a.btn.btn-success.btn-lg.start.action-button(href="#") Start game
+  p
+    if inGame
+      a.btn.btn-danger.leave.action-button(href="#") Leave game
 
-  if inGame
-    a.btn.btn-danger.leave.action-button(href="#") Leave game
-
-  if ownGame
-    a.btn.btn-danger.delete.action-button(href="#") Cancel game
+    if ownGame
+      a.btn.btn-danger.delete.action-button(href="#") Cancel game
 
 template(name="players")
   h3 Players
-  each this
+  each players
     p #{name}
   else
     p nobody joined yet :-(
-  p Two players needed to start the game
+  p #{minPlayer} needed to start the game
 
 template(name="selectedBoard")
   h3 Board
-  .preview
+  | #{board.title}: #{board.min_player} - #{board.max_player} players
+  .selected-board
     +thumbnail
-  a.btn.btn-default.select.action-button(href="#") Select board
+  if ownGame
+    a.btn.btn-default.select.action-button(href="#") Change board

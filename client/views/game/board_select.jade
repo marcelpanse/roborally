@@ -1,0 +1,10 @@
+template(name="boardselect")
+  .well
+    h3 Select board
+    hr.star-well
+    each boards
+      .boardchoice
+        +thumbnail
+        | #{min} - #{max} players
+    div(style="clear:both;")
+

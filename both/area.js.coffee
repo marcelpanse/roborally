@@ -172,3 +172,51 @@ class @Area
       @addLaser 4, 8, 'd', 4
       @addLaser 7, 8, 'd', 4
 
+    maelstrom: () ->
+      @setVoid  5, 5
+      @setVoid  6, 5
+      @setVoid  5, 6
+      @setVoid  6, 6
+
+      @setRoller  1,  0, 'drrrrrrrrrddddddddlllllllluuuuuurrrrrrddddlllluur'
+      @setRoller  5,  0, 'dr'
+      @setRoller  6,  0, 'u'
+      @setRoller 11,  1, 'ld'
+      @setRoller 11,  5, 'ld'
+      @setRoller  0,  5, 'l'
+
+      @setExpressRoller 10, 11, 'ullllllllluuuuuuuurrrrrrrrddddddlllllluuuurrrrddl'
+      @setExpressRoller  6, 11, 'ul'
+      @setExpressRoller  0, 10, 'ru'
+      @setExpressRoller  0,  6, 'ru'
+
+      @setPusher  4,  0, 'down', 'odd'
+      @setPusher  7,  0, 'down', 'odd'
+      @setPusher  4, 11, 'up',   'odd'
+      @setPusher  7, 11, 'up',   'odd'
+      @setPusher 11,  4, 'left', 'odd'
+      @setPusher 11,  7, 'left', 'odd'
+      @setPusher  0,  4, 'right','odd'
+      @setPusher  0,  7, 'right','odd'
+
+      @setPusher  2,  0, 'down', 'even'
+      @setPusher  9,  0, 'down', 'even'
+      @setPusher  2, 11, 'up',   'even'
+      @setPusher  9, 11, 'up',   'even'
+      @setPusher 11,  2, 'left', 'even'
+      @setPusher 11,  9, 'left', 'even'
+      @setPusher  0,  2, 'right','even'
+      @setPusher  0,  9, 'right','even'
+
+      @setRepair  0,  0
+      @setRepair 11, 11
+      @setOption 11,  3
+      @setOption  0,  8
+
+      @addLaser 5, 3, 'd', 5
+      @addLaser 6, 4, 'd', 5
+      @addLaser 4, 5, 'r', 5
+      @addLaser 3, 4, 'r', 5
+
+
+
