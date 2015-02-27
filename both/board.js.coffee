@@ -269,7 +269,6 @@ class @Board
       @type = tile_type
       @wall = false
       @items = []
-      @markers = []
       @damage = 0
       @rotate = 0
       @move = {x:0, y:0}

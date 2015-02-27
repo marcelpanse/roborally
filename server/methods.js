@@ -133,9 +133,7 @@ Meteor.methods({
       player.direction = start.direction;
       player.robotId = i;
       player.start = start;
-
       Players.update(player._id, player);
-      console.log('Here is a marker' + Tiles.getBoardTile(player.position.x, player.position.y, game).markers[0].robotId);
     }
 
     console.log('set game started');
