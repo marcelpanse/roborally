@@ -48,16 +48,16 @@ Template.board.helpers({
   },
 
   tiles: function() {
-    return Tiles.getBoardTiles(this.game);
+    return this.game.board.tiles;
   },
   gameEnded: function() {
     return this.game.gamePhase == GameState.PHASE.ENDED;
   },
   boardWidth: function() {
-    return Tiles.getBoard(this.game).width * 50;
+    return this.game.board.width * 50;
   },
   boardHeight: function() {
-    return Tiles.getBoard(this.game).height * 50;
+    return this.game.board.height * 50;
   }
 });
 

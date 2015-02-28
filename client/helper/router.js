@@ -111,13 +111,7 @@ Router.route('/games/:_id', {
     this.render('selectedBoard', {
       to: 'rightPanel3',
       data: function() {
-        var game = Games.findOne(this.params._id);
-        var board;
-        if (game.boardId && game.boardId >= 0) {
-          board = Tiles.getBoard(game);
-        } else {
-          board = Tiles.boards['default']();
-        }
+        var board = Games.findOne(this.params._id).board;
         return { width: board.width*24,
                  height: board.height*24,
                  extra_class: '',
