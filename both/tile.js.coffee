@@ -1,12 +1,13 @@
 
 class @Tile
-  EMPTY:  "empty"
-  VOID:   "void"
-  ROLLER: "roller"
-  PUSHER: "pusher"
-  GEAR:   "gear"
-  REPAIR: "repair"
-  OPTION: "option"
+  @EMPTY:  "empty"
+  @VOID:   "void"
+  @ROLLER: "roller"
+  @PUSHER: "pusher"
+  @GEAR:   "gear"
+  @REPAIR: "repair"
+  @OPTION: "option"
+  @LIMBO:  "limbo"  # off the board
   
   constructor: (tile_type=Tile.EMPTY) ->
     @type = tile_type
@@ -17,10 +18,6 @@ class @Tile
     @move = {x:0, y:0}
     @direction = GameLogic.UP
     @roller_type = ''
-
-  orientation_css: () =>
-    return style_direction(@direction)
-
 
   hasWall: (direction) ->
     @wall && @wall[direction]
@@ -68,7 +65,7 @@ class @Tile
     @addItem('wall', direction)
 
   addCheckpoint: (number) ->
-    @checkpoint = cnt
+    @checkpoint = number
     @finish = true
     @repair = true
 
@@ -81,7 +78,7 @@ class @Tile
       when 2 then 'doublelaser'
       else 'laser'
     @damage = strength
-    addItem(laser_type, direction)
+    @addItem(laser_type, direction)
 
   addItem: (type, direction) ->
     # the items are inside of the tile span so the
@@ -90,7 +87,7 @@ class @Tile
 
 class Item
   constructor: (type, direction) ->
-    @style = style_direction(direction)
+    @direction = direction
     @path = "/tiles/"+ type + ".png"
     @description = switch type
       when 'wall'

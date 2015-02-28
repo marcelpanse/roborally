@@ -16,23 +16,20 @@ class @Board
   getTile: (x,y) ->
     if !@onBoard(x,y)
       console.log "Invalid board tile (#{x},#{y})"
-      return null
+      return new Tile(Tile.LIMBO)
     @tiles[y][x]
 
   onBoard: (x,y) ->
-    return  x < 0 || y < 0 || x >= @width || y >= @height
+    x >= 0 && y >= 0 && x < @width && y < @height
 
   canMove: (x, y, direction) ->
     dir = to_dir(direction)
     tile = @getTile(x, y)
-    targetTile = @getTile(tx, ty)
+    step = to_step direction
+    targetTile = @getTile(x+step.x, y+step.y)
     targetTileDir = opp_dir(dir)
 
-    if tile.hasWall(dir)
-      return false
-    else if targetTile != null && targetTile.hasWall(targetTileDir)
-      return false
-    return true
+    return !tile.hasWall(dir) && !targetTile.hasWall(targetTileDir)
 
 
   addRallyArea: (name, x_offset=0, y_offset=0, orientation=0) ->
@@ -65,6 +62,8 @@ class @Board
     @tile(x,y).addCheckpoint(cnt)
     console.log("Checkpoint #{cnt} located at #{x},#{y}")
 
+
+  #~~~~~~~~~ methods used in area.js.coffee to construct board areas
 
   tile: (x,y) ->
     @tiles[@row(x,y)][@col(x,y)]
@@ -129,7 +128,7 @@ class @Board
     @tile(x,y).repair
     @tile(x,y).repair = true
     @tile(x,y).option = true
-    @setType(x, y, Tile.OPTION)
+    @tile(x,y).setType Tile.OPTION
 
   setGear: (x,y,gear_type) ->
     @tile(x,y).setType Tile.GEAR
@@ -151,9 +150,8 @@ class @Board
 
 
   addWall: (x,y,direction) ->
-    dir = to_dir(direction)
     for d in direction.split('-')
-      @tile(x,y).addWall dir
+      @tile(x,y).addWall to_dir(d)
 
   addDoubleLaser: (startX, startY, direction, length) ->
     @addLaser(startX, startY, direction, length, 2)
@@ -224,9 +222,6 @@ class @Board
   nextY = (y, direction) ->
     y + stepY(direction)
 
-  style_direction = (direction) ->
-    "transform: rotate(#{90*direction}deg);"
-
   to_dir = (val) ->
     switch typeof val
       when 'object'
@@ -239,12 +234,12 @@ class @Board
         else if val.y < -1
           "up"
       when 'number'
-        if str < 0 || str > 3
-          str % 4
+        if val < 0 || val > 3
+          val % 4
         else
-          str
+          val
       when 'string'
-        GameLogic[long_dir[str].toUpperCase()]
+        GameLogic[long_dir[val].toUpperCase()]
 
   to_step = (dir) ->
     step = {x:0, y:0}

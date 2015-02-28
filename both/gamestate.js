@@ -18,7 +18,7 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 1500;
+  var _NEXT_PHASE_DELAY = 500;
 
   // game phases:
 
@@ -175,7 +175,8 @@ GameState = {
   }
 
   function checkCheckpoints(player,game) {
-    var tile = player.tile;
+    var tile = player.tile();
+
     if (tile.checkpoint) {
       player.updateStartPosition();
       if (tile.checkpoint === player.visited_checkpoints+1) {
@@ -189,7 +190,7 @@ GameState = {
 
   function checkIfWeHaveAWinner(game) {
     var players = Players.find({gameId: game._id}).fetch();
-    var board = game.board;
+    var board = game.board();
     var ended = false;
     var lastManStanding = false;
     var livingPlayers = 0;
@@ -217,7 +218,7 @@ GameState = {
       messages.push("All robots are dead");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       ended = true;
-    } else if (livingPlayers < game.board.min_player) {
+    } else if (livingPlayers < game.board().min_player) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       ended = true;

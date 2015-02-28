@@ -84,6 +84,7 @@ Meteor.methods({
       if (players.length === 1) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
       } else if (players.length === 0) {
+        console.log("Nobody left in the game.")
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       }
     }
@@ -101,7 +102,7 @@ Meteor.methods({
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
 
-    var board_id = BoardBox.getBoardId(game.name);
+    var board_id = BoardBox.getBoardId(boardName);
     if (board_id < 0) 
       throw new Meteor.Error(401, "Board " + boardName + " not found!" );
 
@@ -126,7 +127,8 @@ Meteor.methods({
     }
 
     for (var i in players) {
-      var start = game.board.startpoints[i];
+      console.log("get startpoints of " + game.btest.name);
+      var start = game.board().startpoints[i];
       var player = players[i];
       player.position.x = start.x;
       player.position.y = start.y;

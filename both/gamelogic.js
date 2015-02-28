@@ -49,7 +49,7 @@ GameLogic = {
   };
 
   scope.submitCards = function(player, cards) {
-    console.log('player ' + player.name + ' submitted cards: ' + cards);
+    console.log('player ' + player.name + ' submitted cards: ');
 
     //check if all played cards are available from original hand...
     var availableCards = Cards.findOne({playerId: player._id}).cards;
@@ -58,6 +58,7 @@ GameLogic = {
       for (var j = 0; j < availableCards.length; j++) {
         if (cards[i].cardId == availableCards[j].cardId) {
           availableCards.splice(j, 1);
+          console.log(_cardTypes[cards[i].cardType].name + ' ');
           found = true;
           break;
         }
@@ -117,7 +118,7 @@ GameLogic = {
       var cardType = _cardTypes[card.cardType];
       console.log('playing card ' + cardType.name + ' for player ' + player.name);
 
-      rotatePlayer(player,cardType.direction);
+      player.rotate(cardType.direction);
 
       if (cardType.position === 0) {
         Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, _CARD_PLAY_DELAY);
@@ -168,7 +169,7 @@ GameLogic = {
   scope.executeGears = function(players, callback) {
     players.forEach(function(player) {
       if (player.tile.type === Tile.GEAR) {
-        rotatePlayer(player, tile.rotate);
+        player.rotate(tile.rotate);
         Players.update(player._id, player);
       }
     });
@@ -223,7 +224,7 @@ GameLogic = {
   scope.shootRobotLaser = function(players, player) {
     var stepY = 0;
     var stepX = 0;
-    var board = player.board;
+    var board = player.board();
     switch (player.direction) {
       case GameLogic.UP:
         stepY = -1;
@@ -273,18 +274,19 @@ GameLogic = {
   }
 
   function tryToMovePlayer(players, player, step) {
-    var board = player.board;
+    var board = player.board();
     if (step.x !== 0 || step.y !== 0) {
       var moving_players = [player];
       var p = player;
-      console.log("Try to move player "+p.name);
+      console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
       while (board.canMove(p.position.x, p.position.y, step)) {
         p = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
         if (p !== null) {
-          console.log("Try to push player "+p.name);
+          console.log("trying to push player "+p.name);
           moving_players.push(p);
         } else {
           for (var i in moving_players) {
+            console.log("moving player "+moving_players[i].name);
             moving_players[i].move(step);
           }
           break;
@@ -292,6 +294,7 @@ GameLogic = {
       }
     }
   }
+
 
   function rollerMove(player, tile, is_moving) {
     if (is_moving) {
@@ -303,13 +306,13 @@ GameLogic = {
         step:tile.move,
         canceled: false
       };
-    } else {
+    } else { // to detect conflicts add non-moving players
       return {
         player: player,
         x: player.position.x,
         y: player.position.y,
         canceled: true
-      };  // to detect conflicts add non-moving players
+      };
     }
   }
 
@@ -331,12 +334,12 @@ GameLogic = {
         }
       }
     }
-    moves.forEach(function(move) {
-      if (!move.canceled) {
+    moves.forEach(function(roller_move) {
+      if (!roller_move.canceled) {
         //move player 1 step in roller direction and rotate
-        player.move(move.step);
-        player.rotate(move.rotate);
-        checkRespawnsAndUpdateDb(move.player, _CARD_PLAY_DELAY);
+        roller_move.player.move(roller_move.step);
+        roller_move.player.rotate(roller_move.rotate);
+        checkRespawnsAndUpdateDb(roller_move.player, _CARD_PLAY_DELAY);
       }
     });
   }
@@ -355,13 +358,14 @@ GameLogic = {
   function checkRespawnsAndUpdateDb(player, timeout, callback) {
     Meteor.setTimeout(function() {
       var respawned = false;
-      if (!player.isOnBoard || player.isOnVoid) {
+      if (!player.isOnBoard() || player.isOnVoid()) {
         respawned = true;
         player.submittedCards = [];
         player.damage = 2;
         player.lives--;
-        Players.update(player._id, player);
+        console.log(player.name, "died");
         console.log("updating position", player.name);
+        Players.update(player._id, player);
 
         Chat.insert({
           gameId: player.gameId,
@@ -480,3 +484,4 @@ GameLogic = {
     { priority: 840, cardType: 6 }
   ];
 })(GameLogic);
+
