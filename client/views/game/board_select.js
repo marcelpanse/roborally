@@ -10,13 +10,11 @@ Template.boardselect.helpers({
         css_class = 'selected';
       }
 
-      b.push( { tiles: temp.tiles, 
-                width: temp.width*20+4, 
-                height: temp.height*20+4,
-                name: name,
+      b.push( { width: temp.width*24+4,
+                height: temp.height*24+4,
+                board: temp,
                 extra_class: css_class,
-                min: temp.min_player,
-                max: temp.max_player 
+                show_start: true
               });
     }
     return b;
@@ -29,7 +27,7 @@ Template.boardselect.events({
     e.preventDefault();
     var game = Games.findOne({userId: Meteor.userId()});
 
-    Meteor.call('selectBoard', this.name, game._id, function(error) {
+    Meteor.call('selectBoard', this.board.name, game._id, function(error) {
       if (error)
         alert(error.reason);
       Router.go('game.page', {_id: game._id});

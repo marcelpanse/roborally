@@ -118,10 +118,8 @@ Router.route('/games/:_id', {
         } else {
           board = Tiles.boards['default']();
         }
-        return { tiles: board.tiles, 
-                 width: board.width*20,
-                 height: board.height*20,
-                 name: board.name,
+        return { width: board.width*24,
+                 height: board.height*24,
                  extra_class: '',
                  game: game,
                  board: board

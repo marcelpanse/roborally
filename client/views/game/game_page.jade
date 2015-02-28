@@ -27,8 +27,8 @@ template(name="players")
 
 template(name="selectedBoard")
   h3 Board
-  | #{board.title}: #{board.min_player} - #{board.max_player} players
-  .selected-board
+  .selected-board(style='clear:both;')
     +thumbnail
   if ownGame
-    a.btn.btn-default.select.action-button(href="#") Change board
+    p
+      a.btn.btn-primary.select.action-button(href="#") Change board

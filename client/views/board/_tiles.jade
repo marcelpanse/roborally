@@ -9,8 +9,10 @@ template(name="_tiles")
         if this.checkpoint
           .checkpoint(class="{{visited_checkpoint this.checkpoint}}", data-toggle="tooltip" data-placement="bottom" data-container="body" title="This is checkpoint no.#{this.checkpoint}.")
             = this.checkpoint
-        if show_start
+
+        if ../../show_start
           if this.start
-            img.board-item(src='/start.png', data-toggle="tooltip" data-placement="bottom" data-container="body" title="Spawnpoint, you will respawn here if you die.")
-              
+            if leq this.start ../../show_start
+              img.board-item(src='/start.png', data-toggle="tooltip" data-placement="bottom" data-container="body" title="Spawnpoint, you will respawn here if you die.")
+
 

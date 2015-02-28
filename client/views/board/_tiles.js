@@ -6,5 +6,8 @@ Template._tiles.helpers({
 		} else {
 			return '';
 		}
+	},
+	leq: function(current, limit){
+		return (current <= limit);
 	}
 });
