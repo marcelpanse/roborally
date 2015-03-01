@@ -1,4 +1,19 @@
-Games = new Meteor.Collection('games');
+var game = {
+  board: function() {
+    return BoardBox.getBoard(this.boardId);
+	},
+  players: function() {
+    return Players.find({gameId: game._id}).fetch();
+  }
+};
+
+
+Games = new Meteor.Collection('games', {
+  transform: function (doc) {
+  	var newInstance = Object.create(game);
+    return  _.extend(newInstance, doc);
+  }
+});
 
 Games.allow({
   insert: function(userId, doc) {

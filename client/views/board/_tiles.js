@@ -9,5 +9,8 @@ Template._tiles.helpers({
 	},
 	leq: function(current, limit){
 		return (current <= limit);
+	},
+	rotate: function(direction) {
+		return "transform: rotate(" +90*direction+ "deg);";
 	}
 });

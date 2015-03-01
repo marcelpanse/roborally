@@ -18,7 +18,7 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 1500;
+  var _NEXT_PHASE_DELAY = 500;
 
   // game phases:
 
@@ -174,8 +174,23 @@ GameState = {
     GameState.nextGamePhase(game._id);
   }
 
+  function checkCheckpoints(player,game) {
+    var tile = player.tile();
+
+    if (tile.checkpoint) {
+      player.updateStartPosition();
+      if (tile.checkpoint === player.visited_checkpoints+1) {
+        player.visited_checkpoints++;
+      }
+      Players.update(player._id, player);
+      return true;
+    }
+    return false;
+  }
+
   function checkIfWeHaveAWinner(game) {
     var players = Players.find({gameId: game._id}).fetch();
+    var board = game.board();
     var ended = false;
     var lastManStanding = false;
     var livingPlayers = 0;
@@ -183,7 +198,7 @@ GameState = {
 
     for (var i in players) {
       var player = players[i];
-      Tiles.checkCheckpoints(player,game);
+      checkCheckpoints(player,game);
       if (player.lives > 0) {
         livingPlayers++;
         lastManStanding = player;
@@ -191,7 +206,7 @@ GameState = {
         messages.push('Player ' + player.name + ' ran out of lives');
       }
 
-      if (player.visisted_checkpoints === Tiles.getCheckpointCount(game)) {
+      if (player.visisted_checkpoints === board.checkpoints.length) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         messages.push("Player " + player.name + " won the game!!");
         ended = true;
@@ -203,7 +218,7 @@ GameState = {
       messages.push("All robots are dead");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       ended = true;
-    } else if (livingPlayers < Tiles.getBoard(game).min_player) {
+    } else if (livingPlayers < game.board().min_player) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       ended = true;
