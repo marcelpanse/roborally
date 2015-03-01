@@ -10,7 +10,7 @@ Meteor.methods({
     }
     var author = getUsername(user);
     // pick out the whitelisted keys
-    
+
     var game = _.extend(_.pick(postAttributes, 'name'), {
       userId: user._id,
       author: author,
@@ -21,15 +21,15 @@ Meteor.methods({
       playPhaseCount: 0,
       boardId: 0
     });
-    
+
     var board_id = BoardBox.getBoardId(game.name);
-    if (board_id >= 0) 
+    if (board_id >= 0)
       game.boardId=board_id;
 
     game.min_player = BoardBox.getBoard(board_id).min_player;
     game.max_player = BoardBox.getBoard(board_id).max_player;
     var gameId = Games.insert(game);
-    
+
     Chat.insert({
       gameId: gameId,
       message: 'Game created',
@@ -103,7 +103,7 @@ Meteor.methods({
       throw new Meteor.Error(401, "Game id not found!");
 
     var board_id = BoardBox.getBoardId(boardName);
-    if (board_id < 0) 
+    if (board_id < 0)
       throw new Meteor.Error(401, "Board " + boardName + " not found!" );
 
     var min = BoardBox.getBoard(board_id).min_player;
@@ -127,7 +127,6 @@ Meteor.methods({
     }
 
     for (var i in players) {
-      console.log("get startpoints of " + game.btest.name);
       var start = game.board().startpoints[i];
       var player = players[i];
       player.position.x = start.x;
