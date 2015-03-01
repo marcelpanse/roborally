@@ -172,3 +172,131 @@ class @Area
       @addLaser 4, 8, 'd', 4
       @addLaser 7, 8, 'd', 4
 
+    maelstrom: () ->
+      @setVoid  5, 5
+      @setVoid  6, 5
+      @setVoid  5, 6
+      @setVoid  6, 6
+
+      @setRoller  1,  0, 'drrrrrrrrrddddddddlllllllluuuuuurrrrrrddddlllluur'
+      @setRoller  5,  0, 'dr'
+      @setRoller  6,  0, 'u'
+      @setRoller 11,  1, 'ld'
+      @setRoller 11,  5, 'ld'
+      @setRoller  0,  5, 'l'
+
+      @setExpressRoller 10, 11, 'ullllllllluuuuuuuurrrrrrrrddddddlllllluuuurrrrddl'
+      @setExpressRoller  6, 11, 'ul'
+      @setExpressRoller  0, 10, 'ru'
+      @setExpressRoller  0,  6, 'ru'
+
+      @setPusher  4,  0, 'down', 'odd'
+      @setPusher  7,  0, 'down', 'odd'
+      @setPusher  4, 11, 'up',   'odd'
+      @setPusher  7, 11, 'up',   'odd'
+      @setPusher 11,  4, 'left', 'odd'
+      @setPusher 11,  7, 'left', 'odd'
+      @setPusher  0,  4, 'right','odd'
+      @setPusher  0,  7, 'right','odd'
+
+      @setPusher  2,  0, 'down', 'even'
+      @setPusher  9,  0, 'down', 'even'
+      @setPusher  2, 11, 'up',   'even'
+      @setPusher  9, 11, 'up',   'even'
+      @setPusher 11,  2, 'left', 'even'
+      @setPusher 11,  9, 'left', 'even'
+      @setPusher  0,  2, 'right','even'
+      @setPusher  0,  9, 'right','even'
+
+      @setRepair  0,  0
+      @setRepair 11, 11
+      @setOption 11,  3
+      @setOption  0,  8
+
+      @addLaser 5, 3, 'd', 5
+      @addLaser 6, 4, 'd', 5
+      @addLaser 4, 5, 'r', 5
+      @addLaser 3, 4, 'r', 5
+
+    chess: () ->
+      @setVoid 3, 3
+      @setVoid 6, 4
+      @setVoid 8, 6
+      @setVoid 5, 7
+
+      @setExpressRoller 1, 1, 'rrrrrrrrrdddddddddllllllllluuuuuuuuur'
+      @setRoller 2, 2, 'r'
+      @setRoller 2, 4, 'r'
+      @setRoller 2, 6, 'r'
+      @setRoller 2, 8, 'r'
+      @setRoller 4, 2, 'r'
+      @setRoller 4, 4, 'r'
+      @setRoller 4, 6, 'r'
+      @setRoller 4, 8, 'r'
+
+      @setRoller 3, 5, 'r'
+      @setRoller 3, 7, 'r'
+      @setRoller 3, 9, 'r'
+
+      @setRoller 5, 3, 'r'
+      @setRoller 5, 9, 'r'
+
+      @setRoller 7, 3, 'l'
+      @setRoller 7, 5, 'l'
+      @setRoller 7, 7, 'l'
+      @setRoller 7, 9, 'l'
+      @setRoller 9, 3, 'l'
+      @setRoller 9, 5, 'l'
+      @setRoller 9, 7, 'l'
+      @setRoller 9, 9, 'l'
+
+      @setRoller 8, 2, 'l'
+      @setRoller 8, 4, 'l'
+      @setRoller 8, 8, 'l'
+
+      @setRoller 6, 2, 'l'
+      @setRoller 6, 8, 'l'
+
+      @setOption 5, 5
+      @setOption 6, 6
+      @setRepair 11, 0
+      @setRepair  0,11
+
+      @addWall 2, 0, 'u'
+      @addWall 4, 0, 'u'
+      @addWall 7, 0, 'u'
+      @addWall 9, 0, 'u'
+      @addWall 3, 1, 'd'
+      @addWall 5, 1, 'd'
+      @addWall 6, 1, 'd'
+      @addWall 8, 1, 'd'
+
+      @addWall 2, 11, 'd'
+      @addWall 4, 11, 'd'
+      @addWall 7, 11, 'd'
+      @addWall 9, 11, 'd'
+      @addWall 3, 10, 'u'
+      @addWall 5, 10, 'u'
+      @addWall 6, 10, 'u'
+      @addWall 8, 10, 'u'
+
+      @addWall 0, 2, 'l'
+      @addWall 0, 4, 'l'
+      @addWall 0, 7, 'l'
+      @addWall 0, 9, 'l'
+      @addWall 1, 3, 'r'
+      @addWall 1, 5, 'r'
+      @addWall 1, 6, 'r'
+      @addWall 1, 8, 'r'
+
+      @addWall 11, 2, 'r'
+      @addWall 11, 4, 'r'
+      @addWall 11, 7, 'r'
+      @addWall 11, 9, 'r'
+      @addWall 10, 3, 'l'
+      @addWall 10, 5, 'l'
+      @addWall 10, 6, 'l'
+      @addWall 10, 8, 'l'
+
+
+

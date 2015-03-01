@@ -1,4 +1,5 @@
 $tile-size: 50px
+$preview-tile-size: 24px
 
 #login-dropdown-list
    padding-top: 15px
@@ -40,40 +41,66 @@ a.white
     .system
       color: #BBB
 
-#board
+
+=board($tile, $font-size)
   position: relative
 
   span.tile
-    width: $tile-size
-    height: $tile-size
+    width: $tile
+    height: $tile
     float: left
     background-size: 100%
 
   img.board-item
-    width: 50px
-    height: 50px
+    width: $tile
+    height: $tile
 
   div.checkpoint
-    font-size: 19px
+    font-size: $font-size
     background-color: #336699
-    width: 25px
-    height: 25px
-    border-radius: 13px
-    margin-top: 12px
-    margin-left: 12px
+    width: $tile/2
+    height: $tile/2
+    border-radius: $tile/4+1
+    margin-top: $tile/4
+    margin-left: $tile/4
 
     &.visited
       background-color: #449d44
 
   div
     position: absolute
-    width: $tile-size
-    height: $tile-size
+    width: $tile
+    height: $tile
 
     img
-      width: $tile-size
-      height: $tile-size
+      width: $tile
+      height: $tile
       -webkit-transform-origin: 50% 50%
+
+#board
+  +board($tile-size, 19px)
+
+.board-thumbnail
+  +board($preview-tile-size, 9px)
+
+.boardchoice
+  float: left
+  margin: 30px
+
+  .board-thumbnail
+    border: 2px solid #000
+  .selected
+    border: 2px solid #00f
+
+.selected-board .board-thumbnail
+  margin-left: auto
+  margin-right: auto
+
+span.players
+  float: left
+span.length
+  float: right
+
 
 img#robot
   width: $tile-size

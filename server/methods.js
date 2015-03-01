@@ -22,7 +22,7 @@ Meteor.methods({
       boardId: 0
     });
     
-    var board_id = Tiles.BOARD_NAMES.indexOf(game.name)
+    var board_id = Tiles.BOARD_NAMES.indexOf(game.name);
     if (board_id >= 0) 
       game.boardId=board_id;
 
@@ -95,8 +95,32 @@ Meteor.methods({
     });
   },
 
+  selectBoard: function(boardName, gameId) {
+    var user = Meteor.user();
+    var game = Games.findOne(gameId);
+    if (!game)
+      throw new Meteor.Error(401, "Game id not found!");
+
+    var board_id = Tiles.BOARD_NAMES.indexOf(boardName);
+    if (board_id < 0) 
+      throw new Meteor.Error(401, "Board " + boardName + " not found!" );
+
+    var min = Tiles.getBoard(game).min_player;
+    var max = Tiles.getBoard(game).max_player;
+    Games.update(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
+
+    var author = getUsername(user);
+    console.log('User ' + author + ' selected ' + boardName + " for game " + gameId);
+    Chat.insert({
+      gameId: gameId,
+      message: author + ' selected board ' + boardName,
+      submitted: new Date().getTime()
+    });
+  },
+
   startGame: function(gameId) {
     var players = Players.find({gameId: gameId}).fetch();
+    var game = Games.findOne(gameId);
     if (players.length > 8) {
       throw new Meteor.Error(401, "Too many players.");
     }
@@ -107,6 +131,7 @@ Meteor.methods({
       player.position.x = start.x;
       player.position.y = start.y;
       player.direction = start.direction;
+      player.robotId = i;
       player.start = start;
       Players.update(player._id, player);
     }
