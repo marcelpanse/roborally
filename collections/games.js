@@ -1,5 +1,4 @@
 var game = {
-  btest: BoardBox.getBoard(this.boardId),
   board: function() {
     return BoardBox.getBoard(this.boardId);
 	},
@@ -7,8 +6,6 @@ var game = {
     return Players.find({gameId: game._id}).fetch();
   }
 };
-
-
 
 
 Games = new Meteor.Collection('games', {
