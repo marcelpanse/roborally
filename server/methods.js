@@ -55,7 +55,7 @@ Meteor.methods({
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
-      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, position: {x: -1, y: -1}});
+      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, needsRespawn: false, position: {x: -1, y: -1}});
     }
 
     Chat.insert({
@@ -79,7 +79,7 @@ Meteor.methods({
 
     Players.remove({gameId: game._id, userId: user._id});
     if (game.started) {
-      var players = Players.find({gameId: game._id});
+      var players = Players.find({gameId: game._id}).fetch();
       if (players.length === 1) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
       } else if (players.length === 0) {

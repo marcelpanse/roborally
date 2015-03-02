@@ -11,14 +11,14 @@ var player = {
 	isOnBoard: function() {
 		var a = this.board().onBoard(this.position.x, this.position.y);
     if (!a) {
-      console.log("Player fell off the board", player.name);
+      console.log("Player fell off the board", this.name);
     }
     return a;
 	},
   isOnVoid: function() {
     var a = this.tile.type == Tile.VOID;
     if (a) {
-      console.log("Player fell into the void", player.name);
+      console.log("Player fell into the void", this.name);
     }
     return a;
   },

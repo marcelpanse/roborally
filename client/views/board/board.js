@@ -96,10 +96,8 @@ function animatePosition(element, x, y) {
 
 function animateRotation(element, direction) {
   var oldRotation = $("."+element).css('rotate');
-  var wasUndefined = false;
   if (oldRotation === undefined) {
     oldRotation = 0;
-    wasUndefined=true;
   } else if (oldRotation !== 0) {
     oldRotation = parseInt(oldRotation.match(/\d+/g)[0]);
   }
@@ -124,8 +122,14 @@ function animateRotation(element, direction) {
     Tracker.afterFlush(function() {
       var delta = newRotation - (oldRotation % 360);
 
-      if (delta == 270 && !wasUndefined) {
-        delta = -90;
+      if (delta == 270) {
+        if(oldRotation==0) {
+          $("."+element).transition({
+            rotate: '+=359deg'
+          }, 0, 'linear');
+          delta = -89;
+        } else
+          delta = -90;
       }
       if (delta == -270) {
         delta = 90;

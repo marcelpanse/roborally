@@ -4,13 +4,10 @@ Template.cards.helpers({
     return addUIData(Session.get("chosenCards") || [], false);
   },
   availableCards: function() {
-    console.log("available cards update");
     Session.set("availableCards", this.cards);
-
     return addUIData(this.cards, true);
   },
   lockedCardsHtml: function() {
-    console.log("Locked Cards: "+this.lockedCards);
     return addUIData(this.lockedCards || [], false);
   },
   playedCardsHtml: function() {
@@ -18,9 +15,16 @@ Template.cards.helpers({
   },
   showCards: function() {
     var cards = this.cards || [];
-    return this.game.gamePhase == GameState.PHASE.PROGRAM && cards.length > 0 &&
-      Players.findOne({userId: Meteor.userId()}) && 
-      !Players.findOne({userId: Meteor.userId()}).submitted;
+    if(this.game.gamePhase == GameState.PHASE.PROGRAM && 
+       Players.findOne({userId: Meteor.userId()}) &&
+       !Players.findOne({userId: Meteor.userId()}).submitted) {
+      if(cards.length>0) {
+        return true;
+      } else {
+        submitCards(this.game);
+        return false;
+      }
+    }
   },
   showPlayButton: function() {
     return !Players.findOne({userId: Meteor.userId()}).submitted;

@@ -37,6 +37,13 @@ GameState = {
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
+          var players = Players.find({gameId: game._id}).fetch();
+          for(var i in players) {
+            if(players[i].needsRespawn && players[i].lives>0) {
+              console.log("Sending respawn for "+players[i].name);
+              GameLogic.respawnPlayer(players[i]);
+            }
+          }
           Games.update(game._id, {$set: {gamePhase: GameState.PHASE.DEAL}});
           GameState.nextGamePhase(game._id);
           break;
@@ -87,6 +94,7 @@ GameState = {
           break;
         case GameState.PLAY_PHASE.REPAIRS:
           playRepairs(game);
+          GameState.nextGamePhase(game._id);
           break;
       }
     }, _NEXT_PHASE_DELAY);
@@ -113,7 +121,7 @@ GameState = {
   }
 
   function playMoveBots(game) {
-    var players = Players.find({gameId: game._id});
+    var players = Players.find({gameId: game._id}).fetch();;
     // play 1 card per player
     var cardsToPlay = [];
 
@@ -181,7 +189,6 @@ GameState = {
   function playRepairs(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeRepairs)(players);
-    GameState.nextGamePhase(game._id);
   }
 
   function checkCheckpoints(player,game) {
