@@ -98,7 +98,7 @@ GameLogic = {
   };
 
   scope.submitCards = function(player, cards) {
-    console.log('player ' + player.name + ' submitted cards: ' + cards);
+    console.log('player ' + player.name + ' submitted cards: ');
 
     //check if all played cards are available from original hand...
     //Except locked cards, those are not in the hand.
@@ -111,6 +111,7 @@ GameLogic = {
       for (var j = 0; j < availableCards.length; j++) {
         if (cards[i].cardId == availableCards[j].cardId) {
           availableCards.splice(j, 1);
+          console.log(_cardTypes[cards[i].cardType].name + ' ');
           found = true;
           break;
         }
@@ -170,17 +171,17 @@ GameLogic = {
       var cardType = _cardTypes[card.cardType];
       console.log('playing card ' + cardType.name + ' for player ' + player.name);
 
-      rotatePlayer(player,cardType.direction);
+      player.rotate(cardType.direction);
 
       if (cardType.position === 0) {
-        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, _CARD_PLAY_DELAY);
+        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, _CARD_PLAY_DELAY);
       } else {
         var step = Math.min(cardType.position, 1);
         for (var j = 0; j < Math.abs(cardType.position); j++) {
           executeStep(players, player, step);
           var timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
-          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(players, player, timeout)) {
-            break; //players[playerNum] respawned, don't continue playing out this card.
+          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, timeout)) {
+            break; //player respawned, don't continue playing out this card.
           }
         }
       }
@@ -191,7 +192,184 @@ GameLogic = {
   };
 
 
-  scope.tryToMovePlayersOnRollers = function(players, moves) {
+
+
+  scope.executeRollers = function(players, callback) {
+    var roller_moves = [];
+    players.forEach(function(player) {
+      //check if is on roller
+      var tile = player.tile;
+      var moving = (tile.type === Tile.ROLLER);
+      roller_moves.push(rollerMove(player, tile, moving));
+    });
+    tryToMovePlayersOnRollers(roller_moves);
+    callback();
+  };
+
+  // move players 2nd step in roller direction; 1st step is done by executeRollers,
+  scope.executeExpressRollers = function(players, callback) {
+    var roller_moves = [];
+    players.forEach(function(player) {
+      //check if is on roller
+      var tile = player.tile;
+      var moving  = (tile.type === Tile.ROLLER && tile.speed === 2);
+      roller_moves.push(rollerMove(player, tile, moving));
+    });
+    tryToMovePlayersOnRollers(roller_moves);
+    callback();
+  };
+
+  scope.executeGears = function(players, callback) {
+    players.forEach(function(player) {
+      if (player.tile.type === Tile.GEAR) {
+        player.rotate(tile.rotate);
+        Players.update(player._id, player);
+      }
+    });
+    callback();
+  };
+
+  scope.executePushers = function(players, callback) {
+    var game = players[0].game;
+    players.forEach(function(player) {
+      var tile = player.tile;
+      if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
+        tryToMovePlayer(player, tile.move);
+        checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
+      }
+    });
+    callback();
+  };
+
+  scope.executeLasers = function(players, callback) {
+    var victims = [];
+    players.forEach(function(player) {
+      var tile = player.tile;
+      if (tile.damage > 0) {
+        player.damage += tile.damage;
+        console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
+        checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
+      }
+      if (!player.powered_down) {
+        victims.push(scope.shootRobotLaser(players, player));
+      }
+    });
+    victims.forEach(function(victim) {
+      if (victim) {
+        victim.damage++;
+        checkRespawnsAndUpdateDb(victim, _CARD_PLAY_DELAY);
+      }        
+    });
+    callback();
+  };
+
+  scope.executeRepairs = function(players, callback) {
+    players.forEach(function(player) {
+      if (player.tile.repair) {
+        player.updateStartPosition();
+        player.damage--;
+        Players.update(player._id, player);
+      }
+    });
+    callback();
+  };
+
+  scope.shootRobotLaser = function(players, player) {
+    var stepY = 0;
+    var stepX = 0;
+    var board = player.board();
+    switch (player.direction) {
+      case GameLogic.UP:
+        stepY = -1;
+        break;
+      case GameLogic.RIGHT:
+        stepX = 1;
+        break;
+      case GameLogic.DOWN:
+        stepY = 1;
+        break;
+      case GameLogic.LEFT:
+        stepX = -1;
+        break;
+    }
+    var x = player.position.x;
+    var y = player.position.y;
+
+    while (board.onBoard(x+stepX,y+stepY) && board.canMove(x, y, player.direction) ) {
+      x += stepX;
+      y += stepY;
+      var victim = isPlayerOnTile(players,x,y);
+      if (victim) {
+        console.log(victim.name + " was shot on ("+ x + ","+y+") by " + player.name + " on (" + player.position.x +","+player.position.y+")");
+        return victim;
+      }
+    }
+    return false;
+  };
+
+  function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
+    var step = { x: 0, y: 0 }; 
+    switch (player.direction) {
+      case GameLogic.UP:
+        step.y = -1 * direction;
+        break;
+      case GameLogic.RIGHT:
+        step.x = direction;
+        break;
+      case GameLogic.DOWN:
+        step.y = direction;
+        break;
+      case GameLogic.LEFT:
+        step.x = -1 * direction;
+        break;
+    }
+    tryToMovePlayer(players, player, step);
+  }
+
+  function tryToMovePlayer(players, player, step) {
+    var board = player.board();
+    if (step.x !== 0 || step.y !== 0) {
+      var moving_players = [player];
+      var p = player;
+      console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
+      while (board.canMove(p.position.x, p.position.y, step)) {
+        p = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
+        if (p !== null) {
+          console.log("trying to push player "+p.name);
+          moving_players.push(p);
+        } else {
+          for (var i in moving_players) {
+            console.log("moving player "+moving_players[i].name);
+            moving_players[i].move(step);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+
+  function rollerMove(player, tile, is_moving) {
+    if (is_moving) {
+      return {
+        player: player,
+        x: player.position.x+tile.move.x,
+        y: player.position.y+tile.move.y,
+        rotate: tile.rotate,
+        step:tile.move,
+        canceled: false
+      };
+    } else { // to detect conflicts add non-moving players
+      return {
+        player: player,
+        x: player.position.x,
+        y: player.position.y,
+        canceled: true
+      };
+    }
+  }
+
+  function tryToMovePlayersOnRollers(moves) {
     var move_canceled = true;
     while (move_canceled) {  // if a move was canceled we have to check for other conflicts again
       move_canceled = false;
@@ -209,208 +387,38 @@ GameLogic = {
         }
       }
     }
-    moves.forEach(function(move) {
-      if (!move.canceled) {
+    moves.forEach(function(roller_move) {
+      if (!roller_move.canceled) {
         //move player 1 step in roller direction and rotate
-        movePlayer(move.player, move.step);
-        rotatePlayer(move.player, move.rotate);
-        checkRespawnsAndUpdateDb(players, move.player, _CARD_PLAY_DELAY);
+        roller_move.player.move(roller_move.step);
+        roller_move.player.rotate(roller_move.rotate);
+        checkRespawnsAndUpdateDb(roller_move.player, _CARD_PLAY_DELAY);
       }
     });
-  };
-
-  scope.executeRollers = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    var roller_moves = [];
-    players.forEach(function(player) {
-      //check if is on roller
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.type === Tiles.ROLLER) {
-        roller_moves.push({player: player, x: player.position.x+tile.move.x, y: player.position.y+tile.move.y, rotate: tile.rotate, step:tile.move, canceled: false});
-      } else {
-        roller_moves.push({player: player, x: player.position.x, y: player.position.y, canceled: true});  // to detect conflicts add non-moving players
-      }
-    });
-    scope.tryToMovePlayersOnRollers(players, roller_moves);
-    callback();
-  };
-
-  // move players 2nd step in roller direction; 1st step is done by executeRollers,
-  scope.executeExpressRollers = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    var roller_moves = [];
-    players.forEach(function(player) {
-      //check if is on roller
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.type === Tiles.ROLLER && tile.speed === 2) {
-        GameLogic.movePlayerWithRoller(player, players, tile);
-      }
-    });
-    scope.tryToMovePlayersOnRollers(players, roller_moves);
-    callback();
-  };
-
-  scope.executeGears = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    players.forEach(function(player) {
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.type === Tiles.GEAR) {
-        rotatePlayer(player, tile.rotate);
-        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
-      }
-    });
-    callback();
-  };
-
-  scope.executePushers = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    players.forEach(function(player) {
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.type === Tiles.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
-        tryToMovePlayer(players, player, tile.move, game);
-        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
-      }
-    });
-    callback();
-  };
-
-  scope.executeLasers = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    var victims = [];
-    players.forEach(function(player) {
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.damage > 0) {
-        player.damage += tile.damage;
-        console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
-        checkRespawnsAndUpdateDb(players, player, _CARD_PLAY_DELAY);
-      }
-      if (!player.powered_down) {
-        victims.push(scope.shootRobotLaser(players, player, game));
-      }
-    });
-    victims.forEach(function(victim) {
-      if (victim) {
-        victim.damage++;
-        checkRespawnsAndUpdateDb(players, victim, _CARD_PLAY_DELAY);
-      }        
-    });
-    callback();
-  };
-
-  scope.executeRepairs = function(players, callback) {
-    var game = Games.findOne(players[0].gameId);
-    players.forEach(function(player) {
-      var tile = Tiles.getBoardTile(player.position.x, player.position.y,game);
-      if (tile.repair) {
-        player.start.x = player.position.x;
-        player.start.y = player.position.y;
-        player.damage--;
-      }
-    });
-    callback();
-  };
-
-  scope.shootRobotLaser = function(players, player, game) {
-    var stepY = 0;
-    var stepX = 0;
-    var wallDir = [];
-    switch (player.direction) {
-      case GameLogic.UP:
-        stepY = -1;
-        wallDir = ['up','down'];
-        break;
-      case GameLogic.RIGHT:
-        wallDir = ['right','left'];
-        stepX = 1;
-        break;
-      case GameLogic.DOWN:
-        stepY = 1;
-        wallDir = ['down','up'];
-        break;
-      case GameLogic.LEFT:
-        wallDir = ['left','right'];
-        stepX = -1;
-        break;
-    }
-    var x = player.position.x;
-    var y = player.position.y;
-
-    while (x+stepX > 0 && y+stepY > 0 && x+stepX < Tiles.BOARD_WIDTH && y+stepY < Tiles.BOARD_HEIGHT &&
-          !Tiles.hasWall(x,y, wallDir[0], game) && !Tiles.hasWall(x+stepX,y+stepY, wallDir[1], game)) {
-      x += stepX;
-      y += stepY;
-      var victim = Tiles.isPlayerOnTile(players,x,y);
-      if (victim) {
-        console.log(victim.name + " was shot on ("+ x + ","+y+") by " + player.name + " on (" + player.position.x +","+player.position.y+")");
-        return victim;
-      }
-    }
-    return false;
-  };
-
-  function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
-    var game = Games.findOne(player.gameId);
-    var step = { x: 0, y: 0 }; 
-    switch (player.direction) {
-      case GameLogic.UP:
-        step.y = -1 * direction;
-        break;
-      case GameLogic.RIGHT:
-        step.x = direction;
-        break;
-      case GameLogic.DOWN:
-        step.y = direction;
-        break;
-      case GameLogic.LEFT:
-        step.x = -1 * direction;
-        break;
-    }
-    tryToMovePlayer(players, player, step, game);
   }
 
-  function tryToMovePlayer(players, player, step, game) {
-    if (step.x !== 0 || step.y !== 0) {
-      var moving_players = [player];
-      var p = player;
-      console.log("Try to move player "+p.name);
-      while (Tiles.canMove(p.position.x, p.position.y, p.position.x+step.x, p.position.y+step.y, game)) {
-        p = Tiles.isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
-        if (p !== null) {
-          console.log("Try to push player "+p.name);
-          moving_players.push(p);
-        } else {
-          for (var i in moving_players) {
-            movePlayer(moving_players[i], step);
-          }
-          break;
-        }
+  function isPlayerOnTile(players, x, y) {
+    var found = null;
+    players.forEach(function(player) {
+      if (player.position.x == x && player.position.y == y) {
+        found = player;
       }
-    }
-  }
-
-  function movePlayer(player, step) {
-    player.position.x += step.x;
-    player.position.y += step.y;
-  }
-
-  function rotatePlayer(player, rotation) {
-    player.direction += rotation + 4;
-    player.direction %= 4;
+    });
+    return found;
   }
 
 
-
-  function checkRespawnsAndUpdateDb(players, player, timeout, callback) {
+  function checkRespawnsAndUpdateDb(player, timeout, callback) {
     Meteor.setTimeout(function() {
-      var game = Games.findOne(player.gameId);
       var respawned = false;
-      if (!Tiles.isPlayerOnBoard(player, game) || Tiles.isPlayerOnVoid(player, game)) {
+      if (!player.isOnBoard() || player.isOnVoid()) {
         respawned = true;
         player.submittedCards = [];
         player.damage = 2;
         player.lives--;
-        Players.update(player._id, player);
+        console.log(player.name, "died");
         console.log("updating position", player.name);
+        Players.update(player._id, player);
 
         Chat.insert({
           gameId: player.gameId,
@@ -418,7 +426,7 @@ GameLogic = {
           submitted: new Date().getTime()
         });
 
-        Meteor.wrapAsync(respawnPlayerWithDelay)(players, player);
+        Meteor.wrapAsync(respawnPlayerWithDelay)(player);
       } else {
         console.log("updating position", player.name);
         Players.update(player._id, player);
@@ -430,13 +438,13 @@ GameLogic = {
     }, timeout);
   }
 
-  function respawnPlayerWithDelay(players, player, callback) {
+  function respawnPlayerWithDelay(player, callback) {
     Meteor.setTimeout(function() {
       //respawn if player off board or on void-tile
       player.position.x = player.start.x;
       player.position.y = player.start.y;
       player.direction = player.start.direction;
-      console.log("respawning player", players.name);
+      console.log("respawning player", player.name);
       Players.update(player._id, player);
       callback();
     }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
@@ -529,3 +537,4 @@ GameLogic = {
     { priority: 840, cardType: 6 }
   ];
 })(GameLogic);
+

@@ -1,0 +1,6 @@
+template(name="thumbnail")
+  h4  #{board.title}
+  div(id=board.name, class="board-thumbnail {{extra_class}}", style="width: {{width}}px; height: {{height}}px;")
+    +_tiles(rows=board.tiles show_start=board.max_player)
+    span.players Players: #{board.min_player} - #{board.max_player}
+    span.length Length: #{board.length}
