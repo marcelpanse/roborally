@@ -166,6 +166,20 @@ Meteor.methods({
     }
   },
 
+  robotReenterGame: function(gameId, direction) {
+    var game = Games.findOne(gameId);
+    var player = Players.findOne({gameId: attributes.gameId, userId: Meteor.userId()});
+    GameLogic.resetRobot(game, player, direction);
+    
+    var message  = 'Player ' + player.name + ' chose ' + game.destroyedRobot.phase;
+    Chat.insert({
+        gameId: player.gameId,
+        message: message,
+        submitted: new Date().getTime()
+      });
+    console.log(message);
+  },
+
   addMessage: function(postAttributes) {
     var user = Meteor.user();
 

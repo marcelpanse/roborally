@@ -58,7 +58,14 @@ Template.board.helpers({
   },
   boardHeight: function() {
     return this.game.board().height * 50;
+  },
+  choosePosition: function() {
+    return this.game.gamePhase == GameState.PHASE.REENTER && this.game.destroyedRobot.playerId === Meteor.userId() && this.destroyedRobot.phase === 'position';
+  },
+  chooseDirection: function() {
+    return this.game.gamePhase == GameState.PHASE.REENTER && this.game.destroyedRobot.playerId === Meteor.userId() && this.destroyedRobot.phase === 'direction';
   }
+
 });
 
 function animatePosition(element, x, y) {
@@ -163,5 +170,11 @@ Template.board.events({
     } else {
       Router.go('gamelist.page');
     }
+  },
+  'click .reenter-select': function(e) {
+    Meteor.call('robotReenterGame', this.game._id, e.target.id, function(error) {
+      if (error)
+        alert(error.reason);
+    });
   }
 });
