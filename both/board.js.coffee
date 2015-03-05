@@ -226,13 +226,13 @@ class @Board
     switch typeof val
       when 'object'
         if val.x > 0
-          "right"
+          GameLogic.RIGHT
         else if val.x < 0
-          "left"
-        else if val.y > 1
-          "down"
-        else if val.y < -1
-          "up"
+          GameLogic.LEFT
+        else if val.y > 0
+          GameLogic.DOWN
+        else if val.y < 0
+          GameLogic.UP
       when 'number'
         if val < 0 || val > 3
           val % 4

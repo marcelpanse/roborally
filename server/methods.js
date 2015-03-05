@@ -83,7 +83,7 @@ Meteor.methods({
       if (players.length === 1) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
       } else if (players.length === 0) {
-        console.log("Nobody left in the game.")
+        console.log("Nobody left in the game.");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       }
     }

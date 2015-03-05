@@ -121,7 +121,7 @@ GameState = {
   }
 
   function playMoveBots(game) {
-    var players = Players.find({gameId: game._id}).fetch();;
+    var players = Players.find({gameId: game._id}).fetch();
     // play 1 card per player
     var cardsToPlay = [];
 
