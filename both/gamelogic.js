@@ -43,8 +43,8 @@ GameLogic = {
           lockedCards=[];
         }
         console.log("Player Used Cards: " +players[i].playedCards.length+"|"+players[i].submittedCards.length);
-        for(var j=0;players[i].playedCards!=null && j<players[i].playedCards.length; ++j) {
-          deck.discards.push({priority: players[i].playedCards[j].priority, cardType: players[i].playedCards[j].cardType});
+        for(var k=0;players[i].playedCards!==null && k<players[i].playedCards.length; ++k) {
+          deck.discards.push({priority: players[i].playedCards[k].priority, cardType: players[i].playedCards[k].cardType});
         }
         //Update the player's locked card count, skip the step if unchanged (Micro-optimization)
         if(lockedCards.length!=origLockedCnt) {
@@ -55,14 +55,14 @@ GameLogic = {
       }
       Deck.upsert({gameId: game._id}, deck);
     }
-  }
+  };
 
   scope.makeDeck = function(gameId) {
     var deck = Deck.findOne({gameId: gameId});
     //create/shuffle new deck (cards are returned from hands)
     if(typeof deck === "undefined") {
       Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck), discards: []}});
-    } else if(deck.cards.length==0) {
+    } else if(deck.cards.length===0) {
       deck.cards=_.shuffle(deck.discards);
       deck.discards=[];
       Deck.upsert({gameId: gameId}, deck);
@@ -85,7 +85,7 @@ GameLogic = {
     for (var j = 0; j < nrOfNewCards; j++) {
       //Remake the deck if it's out of cards.
       //Warning, could crash if discard deck runs out.  But there's more then 9*8=72 cards right?
-      if(deck.cards.length==0) {
+      if(deck.cards.length===0) {
         Deck.update(deck._id, deck);
         deck=GameLogic.makeDeck(player.gameId);
       }
@@ -213,7 +213,7 @@ GameLogic = {
     var roller_moves = [];
     players.forEach(function(player) {
       //check if is on roller
-      var tile = player.tile;
+      var tile = player.tile();
       var moving  = (tile.type === Tile.ROLLER && tile.speed === 2);
       roller_moves.push(rollerMove(player, tile, moving));
     });
@@ -223,7 +223,7 @@ GameLogic = {
 
   scope.executeGears = function(players, callback) {
     players.forEach(function(player) {
-      if (player.tile.type === Tile.GEAR) {
+      if (player.tile().type === Tile.GEAR) {
         player.rotate(tile.rotate);
         Players.update(player._id, player);
       }
@@ -234,7 +234,7 @@ GameLogic = {
   scope.executePushers = function(players, callback) {
     var game = players[0].game;
     players.forEach(function(player) {
-      var tile = player.tile;
+      var tile = player.tile();
       if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
         tryToMovePlayer(players, player, tile.move, _CARD_PLAY_DELAY);
       }
@@ -245,7 +245,7 @@ GameLogic = {
   scope.executeLasers = function(players, callback) {
     var victims = [];
     players.forEach(function(player) {
-      var tile = player.tile;
+      var tile = player.tile();
       if (tile.damage > 0) {
         player.damage += tile.damage;
         console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
@@ -266,7 +266,7 @@ GameLogic = {
 
   scope.executeRepairs = function(players, callback) {
     players.forEach(function(player) {
-      if (player.tile.repair) {
+      if (player.tile().repair) {
         player.updateStartPosition();
         player.damage--;
         Players.update(player._id, player);
@@ -295,11 +295,7 @@ GameLogic = {
     var x = player.position.x;
     var y = player.position.y;
 
-    //DEBUG$$$
-    var myTile=board.getTile(player.position.x,player.position.y);
-    var targetTile=board.getTile(player.position.x+step.x,player.position.y+step.y);
-    while (board.onBoard(x+step.x,y+step.y) && !myTile.hasWall(BREAK_DIRECTION(to_dir(step))) && !targetTile.hasWall(BREAK_DIRECTION(opp_dir(to_dir(step))))) {
-    //while (board.onBoard(x+step.x,y+step.y) && board.canMove(x, y, step) ) {
+    while (board.onBoard(x+step.x,y+step.y) && board.canMove(x, y, step) ) {
       x += step.x;
       y += step.y;
       var victim = isPlayerOnTile(players,x,y);
@@ -335,50 +331,14 @@ GameLogic = {
     tryToMovePlayer(players, player, step, timeout);
   }
   
-  function to_dir(step) {
-    if(step.y == -1)
-      return GameLogic.UP;
-    else if(step.y == 1)
-      return GameLogic.DOWN;
-    else if(step.x == -1)
-      return GameLogic.RIGHT;
-    else if(step.x == 1)
-      return GameLogic.LEFT;
-  }
-  
-  function opp_dir(direction) {
-    switch (direction) {
-      case GameLogic.UP:
-        return GameLogic.DOWN;
-      case GameLogic.RIGHT:
-        return GameLogic.LEFT;
-      case GameLogic.DOWN:
-        return GameLogic.UP;
-      case GameLogic.LEFT:
-        return GameLogic.RIGHT;
-    }
-  }
-  
-  function BREAK_DIRECTION(direction) {
-    switch(direction) {
-      case GameLogic.RIGHT:
-        return GameLogic.LEFT;
-      case GameLogic.LEFT:
-        return GameLogic.RIGHT;
-    }
-    return GameLogic.direction;
-  }
 
   function tryToMovePlayer(players, p, step, timeout) {
     var board = p.board();
     var makeMove=true;
     if (step.x !== 0 || step.y !== 0) {
       console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
-      //DEBUG$$$
-      var myTile=board.getTile(p.position.x,p.position.y);
-      var targetTile=board.getTile(p.position.x+step.x,p.position.y+step.y);
-      if(!myTile.hasWall(BREAK_DIRECTION(to_dir(step))) && !targetTile.hasWall(BREAK_DIRECTION(opp_dir(to_dir(step))))) {
-      //if (board.canMove(p.position.x, p.position.y, step)) {
+
+      if (board.canMove(p.position.x, p.position.y, step)) {
         var pushedPlayer = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
         if (pushedPlayer !== null) {
           console.log("trying to push player "+pushedPlayer.name);
@@ -492,7 +452,7 @@ GameLogic = {
     player.needsRespawn=false;
     console.log("respawning player", player.name);
     Players.update(player._id, player);
-  }
+  };
 
   var _deck = [
     { priority:  10, cardType: 0 },
