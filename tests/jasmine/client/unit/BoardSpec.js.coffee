@@ -1,14 +1,15 @@
 # Test Board
-#          0                1             2         3
-#  0      Finish         PushDownEven  PushUpOdd Checkpoint
+#          0                1             2              3
+#                                                    ----------
+#  0      Finish         PushDownEven  PushUpOdd     Checkpoint
 #
-#  1    |===Option===|     Void        Repair  ExpressLeft
-#                          -------
-#  2      RollerRight       Laser     | ExpressRight ExpressUp
-#
-#  3      RollerUp          GearCw        GearCcw ExpressUp
-#                          -------
-#  4      Start             Start        Start    Start
+#  1    |===Option===|   Void          Repair        ExpressLeft
+#                        -----------
+#  2      RollerRight      |           ExpressRight  ExpressUp
+#                          |
+#  3      RollerUp         | GearCw    GearCcw       ExpressUp
+#                        -----------
+#  4      Start          Start         Start         Start
 
 
 
@@ -93,11 +94,19 @@ describe 'Board', ->
         expect(gearCcw.direction).toBeFalsy()
 
 
-  describe 'Robot', ->
-    it 'can not move through walls', ->
+  describe 'canMove', ->
+    it 'false if wall in direction', ->
       expect(board.canMove(1,2,GameLogic.RIGHT)).toBeFalsy()
-
-    it 'notices end of board', ->
+    it 'false if wall in opposite direction', ->
+      expect(board.canMove(2,2,GameLogic.LEFT)).toBeFalsy()
+    it 'true for move off board', ->
+      expect(board.canMove(0,0,GameLogic.UP)).toBeTruthy()
+    it 'true for move on void', ->
+      expect(board.canMove(1,0,GameLogic.DOWN)).toBeTruthy()
+  describe 'onBoard', ->
+    it 'true on board', ->
+      expect(board.onBoard(1,1)).toBeTruthy()
+    it 'false off board', ->
       expect(board.onBoard(-1,0)).toBeFalsy()
 
 

@@ -1,15 +1,15 @@
 # Test Board
-#          0                1             2         3
-#                                                ----------
-#  0      Finish         PushDownEven  PushUpOdd Checkpoint
+#          0                1             2              3
+#                                                    ----------
+#  0      Finish         PushDownEven  PushUpOdd     Checkpoint
 #
-#  1    |===Option===|     Void        Repair      ExpressLeft
-#                          -------
-#  2      RollerRight       Laser |   ExpressRight  ExpressUp
-#
-#  3      RollerUp         GearCw,Laser   GearCcw     ExpressUp
-#                          -------
-#  4      Start             Start        Start    Start
+#  1    |===Option===|   Void          Repair        ExpressLeft
+#                        -----------
+#  2      RollerRight      |           ExpressRight  ExpressUp
+#                          |
+#  3      RollerUp         | GearCw    GearCcw       ExpressUp
+#                        -----------
+#  4      Start          Start         Start         Start
 
 
 describe 'GameLogic', ->
@@ -17,31 +17,6 @@ describe 'GameLogic', ->
   RIGHT = GameLogic.RIGHT
   UP    = GameLogic.UP
   DOWN  = GameLogic.DOWN
-
-  game   = null
-  gameId = null
-  # beforeEach( ->
-  #   game =  {
-  #     name: "test",
-  #     submitted: new Date().getTime(),
-  #     started: true,
-  #     gamePhase: GameState.PHASE.IDLE,
-  #     playPhase: GameState.PLAY_PHASE.IDLE,
-  #     playPhaseCount: 1,
-  #     boardId: BoardBox.test_board_id
-  #   }
-  #   gameId = Games.insert(game)
-  # )
-  # game =  {
-  #   name: "test",
-  #   submitted: new Date().getTime(),
-  #   started: true,
-  #   gamePhase: GameState.PHASE.IDLE,
-  #   playPhase: GameState.PLAY_PHASE.IDLE,
-  #   playPhaseCount: 1,
-  #   boardId: BoardBox.test_board_id
-  # }
-  # gameId = Games.insert(game)
 
   players_at = (x1, y1, x2=-1,y2=-1, x3=-1,y3=-1) ->
     game =  {
