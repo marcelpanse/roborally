@@ -129,8 +129,13 @@ describe 'GameLogic', ->
         expect(players[0].damage).toEqual(2)
 
   describe 'executeRepairs', ->
-    it 'dcreases damage by 1', ->
+    it 'decreases damage by 1', ->
       players = players_at(2, 1)
+      players[0].damage = 5
+      Meteor.wrapAsync(GameLogic.executeRepairs)(players)
+      expect(players[0].damage).toEqual(4)
+    it 'decreases damage on option sites', ->
+      players = players_at(0, 2)
       players[0].damage = 5
       Meteor.wrapAsync(GameLogic.executeRepairs)(players)
       expect(players[0].damage).toEqual(4)
