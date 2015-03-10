@@ -11,7 +11,6 @@ GameLogic = {
   var _MAX_NUMBER_OF_CARDS = 9;
   var _CARD_PLAY_DELAY = 500;
 
-
   var _cardTypes = {
     0: {direction: 2, position: 0, name: "U_TURN"},
     1: {direction: 1, position: 0, name: "TURN_RIGHT"},
@@ -21,7 +20,7 @@ GameLogic = {
     5: {direction: 0, position: 2, name: "STEP_FORWARD_2"},
     6: {direction: 0, position: 3, name: "STEP_FORWARD_3"}
   };
-  
+
   scope.discardCards = function(game,players) {
     var deck = Deck.findOne({gameId: game._id});
     if(typeof deck !== "undefined") {
@@ -73,7 +72,7 @@ GameLogic = {
   scope.dealCards = function(player) {
     var deck = Deck.findOne({gameId: player.gameId});
     var playerCards = Cards.findOne({playerId: player._id});
-    
+
     if (!playerCards) {
       playerCards = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: [], lockedCards: []};
     }
@@ -106,7 +105,7 @@ GameLogic = {
     var playerCards = Cards.findOne({playerId: player._id});
     var availableCards = playerCards.cards;
     var lockedCards = playerCards.lockedCards;
-    
+
     for (var i = cards.length-1; i >= 0; i--) {
       var found = false;
       for (var j = 0; j < availableCards.length; j++) {
@@ -259,7 +258,7 @@ GameLogic = {
       if (victim) {
         victim.damage++;
         checkRespawnsAndUpdateDb(victim, _CARD_PLAY_DELAY);
-      }        
+      }
     });
     callback();
   };
@@ -313,7 +312,7 @@ GameLogic = {
   };
 
   function executeStep(players, player, direction, timeout) {   // direction = 1 for step forward, -1 for step backwards
-    var step = { x: 0, y: 0 }; 
+    var step = { x: 0, y: 0 };
     switch (player.direction) {
       case GameLogic.UP:
         step.y = -1 * direction;
@@ -330,7 +329,7 @@ GameLogic = {
     }
     tryToMovePlayer(players, player, step, timeout);
   }
-  
+
 
   function tryToMovePlayer(players, p, step, timeout) {
     var board = p.board();
@@ -437,7 +436,7 @@ GameLogic = {
         console.log("updating position", player.name);
         Players.update(player._id, player);
       }
-      
+
       if (callback) {
         callback();
       }
@@ -541,4 +540,3 @@ GameLogic = {
     { priority: 840, cardType: 6 }
   ];
 })(GameLogic);
-

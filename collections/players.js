@@ -16,7 +16,7 @@ var player = {
     return a;
 	},
   isOnVoid: function() {
-    var a = this.tile.type == Tile.VOID;
+    var a = this.tile().type == Tile.VOID;
     if (a) {
       console.log("Player fell into the void", this.name);
     }
@@ -55,6 +55,3 @@ Players.allow({
     return false;
   }
 });
-
-
-
