@@ -106,7 +106,7 @@ class @Board
           @tile(x,y).rotate = -1
           roller_type = 'ccw'
         else
-          @tile(x,y).rotate = -1
+          @tile(x,y).rotate = 1
           roller_type = 'cw'
       else
         roller_type = 'straight'
@@ -274,5 +274,3 @@ class @Board
 
   opp_word  = {r:'l',        l:'r',        u:'d',     d:'u', \
               right:'left', left:'right', up:'down', down:'up'}
-
-

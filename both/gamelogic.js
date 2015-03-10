@@ -192,9 +192,6 @@ GameLogic = {
     callback();
   };
 
-
-
-
   scope.executeRollers = function(players, callback) {
     var roller_moves = [];
     players.forEach(function(player) {
@@ -330,10 +327,9 @@ GameLogic = {
     tryToMovePlayer(players, player, step, timeout);
   }
 
-
   function tryToMovePlayer(players, p, step, timeout) {
     var board = p.board();
-    var makeMove=true;
+    var makeMove = true;
     if (step.x !== 0 || step.y !== 0) {
       console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
 
@@ -411,7 +407,6 @@ GameLogic = {
     });
     return found;
   }
-
 
   function checkRespawnsAndUpdateDb(player, timeout, callback) {
     Meteor.setTimeout(function() {
