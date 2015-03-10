@@ -274,5 +274,3 @@ class @Board
 
   opp_word  = {r:'l',        l:'r',        u:'d',     d:'u', \
               right:'left', left:'right', up:'down', down:'up'}
-
-

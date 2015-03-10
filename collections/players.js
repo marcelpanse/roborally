@@ -55,6 +55,3 @@ Players.allow({
     return false;
   }
 });
-
-
-

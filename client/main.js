@@ -1,7 +1,9 @@
 Meteor.subscribe('onlineUsers');
 
 Meteor.startup(function() {
-  analytics.load("fqB9zzTwPC");
+  if (Meteor.isClient && Meteor.absoluteUrl().indexOf("localhost") == -1) {
+    analytics.load("fqB9zzTwPC");
+  }
 
   Tracker.autorun(function(c) {
     try {
