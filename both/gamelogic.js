@@ -163,8 +163,7 @@ GameLogic = {
     }
   };
 
-  scope.playCard = function(players, card, callback) {
-    var player = Players.findOne(card.playerId);
+  scope.playCard = function(players, player, card, callback) {
     if(!player.needsRespawn) {
       console.log("trying to play next card for player " + player.name);
 
@@ -224,7 +223,7 @@ GameLogic = {
   scope.executeGears = function(players, callback) {
     players.forEach(function(player) {
       if (player.tile().type === Tile.GEAR) {
-        player.rotate(tile.rotate);
+        player.rotate(player.tile().rotate);
         Players.update(player._id, player);
       }
     });
@@ -232,7 +231,7 @@ GameLogic = {
   };
 
   scope.executePushers = function(players, callback) {
-    var game = players[0].game;
+    var game = players[0].game();
     players.forEach(function(player) {
       var tile = player.tile();
       if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
@@ -268,7 +267,8 @@ GameLogic = {
     players.forEach(function(player) {
       if (player.tile().repair) {
         player.updateStartPosition();
-        player.damage--;
+        if (player.damage > 0)
+          player.damage--;
         Players.update(player._id, player);
       }
     });

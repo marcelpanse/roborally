@@ -2,10 +2,14 @@ class @BoardBox
   @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour', 'option_world', 'moving_targets' ]
 
   @cache = []
+  @test_board_id = @CATALOG.length
 
   @getBoard: (boardId) ->
-    if !boardId? || boardId < 0 || boardId > @CATALOG.length
-      boardId = 0
+    if !boardId? || boardId < 0 || boardId >= @CATALOG.length
+      if boardId == @test_board_id
+        return @getTestBoard()
+      else
+        boardId = 0
     if !@cache[boardId]?
       board_name = @CATALOG[boardId]
       console.log("Load #{board_name} board")
@@ -14,7 +18,15 @@ class @BoardBox
     @cache[boardId]
 
   @getBoardId: (name) ->
-    @CATALOG.indexOf(name)
+    if name == 'test'
+      @test_board_id
+    else
+      @CATALOG.indexOf(name)
+
+  @getTestBoard: ->
+    if !@cache[@test_board_id]?
+      @cache[@test_board_id] = @boards.test()
+    @cache[@test_board_id]
 
   @boards:
     default: () ->
@@ -27,6 +39,15 @@ class @BoardBox
       board.addCheckpoint(7, 3)
       board.addCheckpoint(1, 8)
       board.addCheckpoint(7, 7)
+      return board
+    test: () ->
+      board = new Board(1,4,4,5)
+      board.name = 'test'
+      board.title = "Test Board"
+      board.addRallyArea('test')
+      board.addStartArea('test',0,4)
+      board.addCheckpoint(3,0)
+      board.addCheckpoint(0,0)
       return board
     option_world: () ->
       board = new Board(2,8)

@@ -106,7 +106,7 @@ class @Board
           @tile(x,y).rotate = -1
           roller_type = 'ccw'
         else
-          @tile(x,y).rotate = -1
+          @tile(x,y).rotate = 1
           roller_type = 'cw'
       else
         roller_type = 'straight'
@@ -134,9 +134,9 @@ class @Board
     @tile(x,y).setType Tile.GEAR
     @tile(x,y).gear_type = gear_type
     if (gear_type == 'cw')
-      @tile(x,y).rotate = -1
-    else
       @tile(x,y).rotate = 1
+    else
+      @tile(x,y).rotate = -1
 
   setPusher: (x,y, direction, pusher_type) ->
     @tile(x,y).setType Tile.PUSHER
@@ -163,7 +163,7 @@ class @Board
       @tile(x,y).addLaser dir, strength
       if i == 1  # lasers are always between walls
         @tile(x,y).addWall opp_dir(dir)
-      else if i == length
+      if i == length
         @tile(x,y).addWall dir
 
       y = nextY(y,direction)
