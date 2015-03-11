@@ -422,7 +422,7 @@ GameLogic = {
 
         Chat.insert({
           gameId: player.gameId,
-          message: player.name + ' died and got re-assembled! (lives: '+ player.lives +', damage: '+ player.damage +')',
+          message: player.name + ' died! (lives: '+ player.lives +', damage: '+ player.damage +')',
           submitted: new Date().getTime()
         });
 
@@ -443,14 +443,13 @@ GameLogic = {
       player.position.x = -1;
       player.position.y = 0;
       Players.update(player._id, player);
-      console.log("removing player", players.name);
+      console.log("removing player", player.name);
       Players.update(player._id, player);
       callback();
     }, _CARD_PLAY_DELAY);
-  };
+  }
 
   scope.respawnPlayer = function(player) {
-    //respawn if player off board or on void-tile
     player.position.x = player.start.x;
     player.position.y = player.start.y;
     player.direction = player.start.direction;
