@@ -141,24 +141,23 @@ class @Board
     @tile(x,y).setType Tile.OPTION
 
   setGear: (x,y,gear_type) ->
-    @tile(x,y).setType Tile.GEAR
     @tile(x,y).gear_type = gear_type
     if (gear_type == 'cw')
       @tile(x,y).rotate = 1
     else
       @tile(x,y).rotate = -1
+    @tile(x,y).setType Tile.GEAR
 
   setPusher: (x,y, direction, pusher_type) ->
     dir = @absolute_dir(direction)
-    @tile(x,y).setType Tile.PUSHER
-    @tile(x,y).move = to_step(dir)
-    @tile(x,y).direction = dir
     if (pusher_type == 'even')
       @tile(x,y).pusher_type = 0
     else
       @tile(x,y).pusher_type = 1
+    @tile(x,y).setType Tile.PUSHER
+    @tile(x,y).move = to_step(dir)
+    @tile(x,y).direction = dir
     @tile(x,y).addWall opp_dir(dir)
-
 
   addWall: (x,y,direction) ->
     for d in direction.split('-')
@@ -171,11 +170,11 @@ class @Board
     dir = @absolute_dir(direction)
 
     for i in [1..length]
-      @tile(x,y).addLaser dir, strength
       if i == 1  # lasers are always between walls
         @tile(x,y).addWall opp_dir(dir)
       if i == length
         @tile(x,y).addWall dir
+      @tile(x,y).addLaser dir, strength
 
       y = nextY(y,direction)
       x = nextX(x,direction)

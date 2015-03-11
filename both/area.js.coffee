@@ -105,7 +105,7 @@ class @Area
       @setVoid 9, 8
       @setVoid 2,10
       @setVoid 0,11
-  
+
       @setRoller  1, 0, 'drrrrddldldllll'
       @setRoller  5, 0, 'dd'
       @setRoller 11, 1, 'luu'
@@ -114,7 +114,7 @@ class @Area
       @setRoller  0,10, 'rdd'
       @setRoller 10,11, 'ulllluuuurrrrrr'
       @setRoller  6,11, 'uu'
-  
+
       @setRepair 11, 0
       @setRepair  0, 9
       @setOption  2, 3
@@ -132,11 +132,11 @@ class @Area
       @addWall  9,11, 'right'
       @addWall  7,11, 'right'
       Area.boundaryWalls.call(@)
-  
+
       @addLaser 4, 0, 'd', 3
       @addLaser 2, 8, 'r', 2
       @addLaser 7, 8, 'r', 2
-  
+
       @addDoubleLaser 8, 1, 'd', 3
 
     vault: () ->
@@ -333,11 +333,3 @@ class @Area
       @addLaser 8,5,'d',4
       @addLaser 5,8,'r',2
       Area.boundaryWalls.call(@)
-
-
-
-
-
-
-
-

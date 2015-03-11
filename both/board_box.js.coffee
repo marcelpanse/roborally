@@ -16,7 +16,7 @@ class @BoardBox
       board_name = @CATALOG[boardId]
       console.log("Load #{board_name} board")
       @cache[boardId] = @boards[board_name]()
-  
+
     @cache[boardId]
 
   @getBoardId: (name) ->
@@ -52,7 +52,7 @@ class @BoardBox
       board.addCheckpoint(0,0)
       return board
     option_world: () ->
-      board = new Board(2,8)
+      board = new Board(1,8)
       board.name = 'option_world'
       board.title = 'Option World'
       board.length = 'medium'
@@ -144,5 +144,3 @@ class @BoardBox
       board.addCheckpoint 9,2
       board.addCheckpoint 8,9
       return board
-
-

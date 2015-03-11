@@ -8,7 +8,7 @@ class @Tile
   @REPAIR: "repair"
   @OPTION: "option"
   @LIMBO:  "limbo"  # off the board
-  
+
   constructor: (tile_type=Tile.EMPTY) ->
     @type = tile_type
     @wall = false
@@ -38,14 +38,24 @@ class @Tile
            when ending here after a card has been played."
       when Tile.VOID
         "Don't fall in this giant hole in the ground or you'll die."
-      when Tile.EMPTY
-        if (@wall)
-          "Even awesome robots can't pass through these massive walls."
+      when Tile.REPAIR, Tile.OPTION
+        "If you end your hand on a repair site, one damage will be repaired."
+      when Tile.GEAR
+        msg = "This gear will turn you "
+        msg += if @gear_type is "cw" then "left" else "right"
+        msg += " when ending here after a card has been played."
+      when Tile.PUSHER
+        msg = "This pusher will push you 1 space away from it, but only after card "
+        msg += if @pusher_type == 0 then "2 or 4" else "1, 3 or 5"
 
   path: () ->
     p = "/tiles/#{@type}"
     p += switch @type
-      when 'empty'  then "-1"
+      when 'empty'
+        if Math.random() < 0.5
+          "-1"
+        else
+          "-2"
       when 'gear'   then "-#{@gear_type}"
       when 'pusher'
         if @pusher_type == 0
@@ -121,5 +131,9 @@ class Item
       when 'wall'
         "Even awesome robots can't pass through these massive walls."
       when 'laser'
-        "This is a laser. You will gain one damage."
+        "This is a laser! It hurts and you will gain one damage."
+      when 'doublelaser'
+        "This is a double laser!! It hurts a lot and you will gain two damages."
+      when 'triplelaser'
+        "This is a triple laser!!! It hurts like hell and you will gain three damages."
       else ''
