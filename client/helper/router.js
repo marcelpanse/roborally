@@ -37,7 +37,7 @@ Router.route('/select/:_id', {
       Meteor.subscribe('players', this.params._id),
       Meteor.subscribe('chat', this.params._id)];
   },
-  
+
   action: function() {
     this.render('boardselect', {
       data: function() {

@@ -1,15 +1,14 @@
 Template.boardselect.helpers({
   boards: function() {
-    var game = Games.findOne({userId: Meteor.userId()});
     var b = [];
     for (var i in BoardBox.CATALOG) {
       var board = BoardBox.getBoard(i);
       var css_class = '';
-      if (Number(game.boardId) === Number(i)) {
+      if (Number(this.game.boardId) === Number(i)) {
         css_class = 'selected';
       }
 
-      b.push( { gameId: game._id,
+      b.push( { gameId: this.game._id,
                 width: board.width*24+4,
                 height: board.height*24+4,
                 board: board,
@@ -26,6 +25,9 @@ Template.boardselect.events({
     e.preventDefault();
 
     var gameId = this.gameId;
+
+    console.log(gameId);
+
     Meteor.call('selectBoard', this.board.name, gameId, function(error) {
       if (error)
         alert(error.reason);
