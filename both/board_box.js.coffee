@@ -1,5 +1,7 @@
 class @BoardBox
-  @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour', 'option_world', 'moving_targets' ]
+  @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
+               'option_world', 'oddest_sea', 'dizzy_dash', 'twister' ]
+               #moving_targets'
 
   @cache = []
   @test_board_id = @CATALOG.length
@@ -106,4 +108,41 @@ class @BoardBox
       board.addCheckpoint(3,11)
       board.addCheckpoint(11,6)
       return board
+    oddest_sea: () ->
+      board = new Board(5,8,12,28)
+      board.name = 'oddest_sea'
+      board.title = 'Oddest Sea'
+      board.length = 'long'
+      board.addRallyArea('vault',0,0,180)
+      board.addRallyArea('maelstrom',0,12)
+      board.addStartArea('simple',0,24)
+      board.addCheckpoint(8,6)
+      board.addCheckpoint(1,4)
+      board.addCheckpoint(5,8)
+      board.addCheckpoint(9,2)
+      return board
+    dizzy_dash: () ->
+      board = new Board(2,8)
+      board.name = 'dizzy_dash'
+      board.title = 'Dizzy Dash'
+      board.length = 'short'
+      board.addRallyArea('spin_zone')
+      board.addStartArea('roller')
+      board.addCheckpoint 5,4
+      board.addCheckpoint 10,11
+      board.addCheckpoint 1,6
+      return board
+    twister: () ->
+      board = new Board(5,8)
+      board.name = 'twister'
+      board.title = 'Twister'
+      board.length = 'medium'
+      board.addRallyArea('spin_zone')
+      board.addStartArea('roller')
+      board.addCheckpoint 2,9
+      board.addCheckpoint 3,2
+      board.addCheckpoint 9,2
+      board.addCheckpoint 8,9
+      return board
+
 
