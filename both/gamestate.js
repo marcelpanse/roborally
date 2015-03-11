@@ -235,7 +235,10 @@ GameState = {
       messages.push("All robots are dead");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       ended = true;
-    } else if (livingPlayers < game.board().min_player) {
+    } else if (livingPlayers === 1 && game.board().min_players > 1) {
+      // for testing there is currently a single player board
+      // don't stop the game for that one
+
       messages.push("Player " + lastManStanding.name + " won the game!!");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       ended = true;

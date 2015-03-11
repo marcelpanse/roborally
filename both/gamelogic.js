@@ -411,7 +411,7 @@ GameLogic = {
   function checkRespawnsAndUpdateDb(player, timeout, callback) {
     Meteor.setTimeout(function() {
       console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
-      if (!player.isOnBoard() || player.isOnVoid()) {
+      if (!player.isOnBoard() || player.isOnVoid() || player.damage > 9) {
         player.submittedCards = [];
         player.damage = 2;
         player.lives--;
@@ -426,7 +426,7 @@ GameLogic = {
           submitted: new Date().getTime()
         });
 
-        //Meteor.wrapAsync(respawnPlayerWithDelay)(player);
+        Meteor.wrapAsync(removePlayerWithDelay)(player);
       } else {
         console.log("updating position", player.name);
         Players.update(player._id, player);
@@ -437,6 +437,17 @@ GameLogic = {
       }
     }, timeout);
   }
+
+  function removePlayerWithDelay(player, callback) {
+    Meteor.setTimeout(function() {
+      player.position.x = -1;
+      player.position.y = 0;
+      Players.update(player._id, player);
+      console.log("removing player", players.name);
+      Players.update(player._id, player);
+      callback();
+    }, _CARD_PLAY_DELAY);
+  };
 
   scope.respawnPlayer = function(player) {
     //respawn if player off board or on void-tile
