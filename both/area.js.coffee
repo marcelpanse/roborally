@@ -53,8 +53,28 @@ class @Area
       @addStart 10, 1, 'up'
       @addStart  0, 0, 'up'
       @addStart 11, 0, 'up'
-
+    test: () ->
+      @addStart 0,0, 'up'
+      @addStart 1,0, 'up'
+      @addStart 2,0, 'up'
+      @addStart 3,0, 'up'
   @course:
+    test: () ->
+      @setVoid 1,1
+      @setRoller 0,3, 'ur'
+      @setExpressRoller 3,3, 'uul'
+      @setExpressRoller 2,2, 'r'
+      @setGear 1,3, 'cw'
+      @setGear 2,3, 'ccw'
+      @setPusher 1,0, 'down', 'even'
+      @setPusher 2,0, 'up', 'odd'
+      @setOption 2,1
+      @setRepair 0,1
+      @addWall 1,2, 'right'
+      @addWall 3,0, 'up'
+      @addLaser 1,2, 'd', 2
+      @addDoubleLaser 0,1, 'r', 1
+
     default: () ->
       @setVoid 9, 2
       @setVoid 1, 4

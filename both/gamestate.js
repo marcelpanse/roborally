@@ -63,7 +63,7 @@ GameState = {
   }
 
   function playProgramCardsSubmitted(game) {
-    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY, playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 0}});
+    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY, playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 1}});
     GameState.nextPlayPhase(game._id);
   }
 
@@ -145,7 +145,8 @@ GameState = {
 
     cardsToPlay.forEach(function(card) {
       Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
-      Meteor.wrapAsync(GameLogic.playCard)(players, card);
+      var player = Players.findOne(card.playerId);
+      Meteor.wrapAsync(GameLogic.playCard)(players, player, card);
     });
 
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOARD}});
@@ -172,7 +173,7 @@ GameState = {
 
   function playCheckpoints(game) {
     if (!checkIfWeHaveAWinner(game)) {
-      if (game.playPhaseCount < 4) {
+      if (game.playPhaseCount < 5) {
         Games.update(game._id,
           { $set: {playPhase: GameState.PLAY_PHASE.REVEAL_CARDS}, $inc: {playPhaseCount: 1} }
         );

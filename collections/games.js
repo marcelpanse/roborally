@@ -10,7 +10,7 @@ var game = {
 
 Games = new Meteor.Collection('games', {
   transform: function (doc) {
-  	var newInstance = Object.create(game);
+    var newInstance = Object.create(game);
     return  _.extend(newInstance, doc);
   }
 });
