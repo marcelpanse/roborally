@@ -10,7 +10,7 @@ Meteor.methods({
     }
     var author = getUsername(user);
     // pick out the whitelisted keys
-    
+
     var game = _.extend(_.pick(postAttributes, 'name'), {
       userId: user._id,
       author: author,
@@ -21,15 +21,14 @@ Meteor.methods({
       playPhaseCount: 0,
       boardId: 0
     });
-    
     var board_id = BoardBox.getBoardId(game.name);
-    if (board_id >= 0) 
+    if (board_id >= 0)
       game.boardId=board_id;
 
     game.min_player = BoardBox.getBoard(board_id).min_player;
     game.max_player = BoardBox.getBoard(board_id).max_player;
     var gameId = Games.insert(game);
-    
+
     Chat.insert({
       gameId: gameId,
       message: 'Game created',
@@ -56,7 +55,7 @@ Meteor.methods({
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
       console.log('User ' + author + ' joining game ' + gameId);
-      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, position: {x: -1, y: -1}});
+      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, needsRespawn: false, position: {x: -1, y: -1}});
     }
 
     Chat.insert({
@@ -80,11 +79,11 @@ Meteor.methods({
 
     Players.remove({gameId: game._id, userId: user._id});
     if (game.started) {
-      var players = Players.find({gameId: game._id});
+      var players = Players.find({gameId: game._id}).fetch();
       if (players.length === 1) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
       } else if (players.length === 0) {
-        console.log("Nobody left in the game.")
+        console.log("Nobody left in the game.");
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       }
     }
@@ -103,7 +102,7 @@ Meteor.methods({
       throw new Meteor.Error(401, "Game id not found!");
 
     var board_id = BoardBox.getBoardId(boardName);
-    if (board_id < 0) 
+    if (board_id < 0)
       throw new Meteor.Error(401, "Board " + boardName + " not found!" );
 
     var min = BoardBox.getBoard(board_id).min_player;
@@ -127,7 +126,6 @@ Meteor.methods({
     }
 
     for (var i in players) {
-      console.log("get startpoints of " + game.btest.name);
       var start = game.board().startpoints[i];
       var player = players[i];
       player.position.x = start.x;

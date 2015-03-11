@@ -12,6 +12,8 @@ template(name="cards")
     div.playing
       each chosenCards
         +card
+      each lockedCardsHtml
+        +card
     if showPlayButton
       a.btn.btn-success.playBtn.disabled play cards
   else

@@ -38,7 +38,6 @@ Router.route('/select/:_id', {
       Meteor.subscribe('chat', this.params._id)];
   },
 
-  
   action: function() {
     this.render('boardselect', {
       data: function() {
@@ -152,7 +151,7 @@ Router.route('/board/:_id', {
       to: 'rightPanel',
       data: function() {
         var c = Cards.findOne();
-        return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], players: Players.find()};
+        return {game: Games.findOne(this.params._id), cards: c ? c.cards : [], lockedCards: c ? c.lockedCards : [], players: Players.find()};
       }
     });
     this.render('chat', {

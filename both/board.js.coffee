@@ -68,6 +68,9 @@ class @Board
   tile: (x,y) ->
     @tiles[@row(x,y)][@col(x,y)]
 
+  absolute_dir: (direction) ->
+    (to_dir(direction) + (@orientation/90)) % 4
+
   col: (x,y) ->
     x += @x_offset
     y += @y_offset
@@ -91,6 +94,13 @@ class @Board
 
   setVoid: (x,y) ->
     @tile(x,y).setType Tile.VOID
+    for i in [0..3]
+      step = to_step(i)
+      nx = x+step.x
+      ny = y+step.y
+      if @onBoard(nx, ny) && @tile(nx, ny).type == Tile.VOID
+        @tile(nx, ny).updateVoidType(opp_dir(i))
+        @tile(x,y).updateVoidType(i)
 
   setRoller: (x, y, route, speed=1) ->
     cur_dir = route.charAt(0)
@@ -106,7 +116,7 @@ class @Board
           @tile(x,y).rotate = -1
           roller_type = 'ccw'
         else
-          @tile(x,y).rotate = -1
+          @tile(x,y).rotate = 1
           roller_type = 'cw'
       else
         roller_type = 'straight'
@@ -131,40 +141,40 @@ class @Board
     @tile(x,y).setType Tile.OPTION
 
   setGear: (x,y,gear_type) ->
-    @tile(x,y).setType Tile.GEAR
     @tile(x,y).gear_type = gear_type
     if (gear_type == 'cw')
-      @tile(x,y).rotate = -1
-    else
       @tile(x,y).rotate = 1
+    else
+      @tile(x,y).rotate = -1
+    @tile(x,y).setType Tile.GEAR
 
   setPusher: (x,y, direction, pusher_type) ->
-    @tile(x,y).setType Tile.PUSHER
-    @tile(x,y).move = to_step(direction)
-    @tile(x,y).direction = to_dir(direction)
+    dir = @absolute_dir(direction)
     if (pusher_type == 'even')
       @tile(x,y).pusher_type = 0
     else
       @tile(x,y).pusher_type = 1
-    @addWall(x,y,opp_dir(direction))
-
+    @tile(x,y).setType Tile.PUSHER
+    @tile(x,y).move = to_step(dir)
+    @tile(x,y).direction = dir
+    @tile(x,y).addWall opp_dir(dir)
 
   addWall: (x,y,direction) ->
     for d in direction.split('-')
-      @tile(x,y).addWall to_dir(d)
+      @tile(x,y).addWall @absolute_dir(d)
 
   addDoubleLaser: (startX, startY, direction, length) ->
     @addLaser(startX, startY, direction, length, 2)
 
   addLaser: (x, y, direction, length, strength=1) ->
-    dir = to_dir(direction)
+    dir = @absolute_dir(direction)
 
     for i in [1..length]
-      @tile(x,y).addLaser dir, strength
       if i == 1  # lasers are always between walls
         @tile(x,y).addWall opp_dir(dir)
-      else if i == length
+      if i == length
         @tile(x,y).addWall dir
+      @tile(x,y).addLaser dir, strength
 
       y = nextY(y,direction)
       x = nextX(x,direction)
@@ -174,15 +184,16 @@ class @Board
     @startpoints.push
       x: Number(@col(x,y)),
       y: Number(@row(x,y)),
-      direction: to_dir(direction)
+      direction: @absolute_dir(direction)
 
     @tile(x,y).addStart(@startpoints.length)
 
   #~~~~~~ helper methods
 
   setRollerTileProp: (x,y, roller_type, direction, speed) ->
-    @tile(x,y).direction = to_dir(direction)
-    @tile(x,y).move      = to_step(direction)
+    dir = @absolute_dir(direction)
+    @tile(x,y).direction = dir
+    @tile(x,y).move      = to_step(dir)
     @tile(x,y).speed     = speed
 
     if @tile(x,y).type == Tile.ROLLER && @tile(x,y).roller_type != roller_type
@@ -226,13 +237,13 @@ class @Board
     switch typeof val
       when 'object'
         if val.x > 0
-          "right"
+          GameLogic.RIGHT
         else if val.x < 0
-          "left"
-        else if val.y > 1
-          "down"
-        else if val.y < -1
-          "up"
+          GameLogic.LEFT
+        else if val.y > 0
+          GameLogic.DOWN
+        else if val.y < 0
+          GameLogic.UP
       when 'number'
         if val < 0 || val > 3
           val % 4
@@ -254,9 +265,6 @@ class @Board
         step.x = -1
     return step
 
-  to_word = (dir) ->
-    dir_words[to_dir(dir)]
-
   opp_dir = (dir) ->
     switch typeof dir
       when 'number'
@@ -266,13 +274,8 @@ class @Board
       when 'object'
         {x: -dir.x, y: -dir.y}
 
-
-  dir_words = ['up', 'right', 'down', 'left']
-
   long_dir = {r:'right',     l:'left',   u:'up', d:'down', \
               right:'right', left:'left',up:'up',down:'down'  }
 
   opp_word  = {r:'l',        l:'r',        u:'d',     d:'u', \
               right:'left', left:'right', up:'down', down:'up'}
-
-

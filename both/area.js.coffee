@@ -1,4 +1,22 @@
 class @Area
+  @boundaryWalls: () ->
+    @addWall 2, 0, 'u'
+    @addWall 4, 0, 'u'
+    @addWall 7, 0, 'u'
+    @addWall 9, 0, 'u'
+    @addWall 2, 11, 'd'
+    @addWall 4, 11, 'd'
+    @addWall 7, 11, 'd'
+    @addWall 9, 11, 'd'
+    @addWall 0, 2, 'l'
+    @addWall 0, 4, 'l'
+    @addWall 0, 7, 'l'
+    @addWall 0, 9, 'l'
+    @addWall 11, 2, 'r'
+    @addWall 11, 4, 'r'
+    @addWall 11, 7, 'r'
+    @addWall 11, 9, 'r'
+
   @start:
     simple: () ->
       @addWall  2, 0, 'up'
@@ -53,8 +71,28 @@ class @Area
       @addStart 10, 1, 'up'
       @addStart  0, 0, 'up'
       @addStart 11, 0, 'up'
-
+    test: () ->
+      @addStart 0,0, 'up'
+      @addStart 1,0, 'up'
+      @addStart 2,0, 'up'
+      @addStart 3,0, 'up'
   @course:
+    test: () ->
+      @setVoid 1,1
+      @setRoller 0,3, 'ur'
+      @setExpressRoller 3,3, 'uul'
+      @setExpressRoller 2,2, 'r'
+      @setGear 1,3, 'cw'
+      @setGear 2,3, 'ccw'
+      @setPusher 1,0, 'down', 'even'
+      @setPusher 2,0, 'up', 'odd'
+      @setOption 2,1
+      @setRepair 0,1
+      @addWall 1,2, 'right'
+      @addWall 3,0, 'up'
+      @addLaser 1,2, 'd', 2
+      @addDoubleLaser 0,1, 'r', 1
+
     default: () ->
       @setVoid 9, 2
       @setVoid 1, 4
@@ -67,7 +105,7 @@ class @Area
       @setVoid 9, 8
       @setVoid 2,10
       @setVoid 0,11
-  
+
       @setRoller  1, 0, 'drrrrddldldllll'
       @setRoller  5, 0, 'dd'
       @setRoller 11, 1, 'luu'
@@ -76,41 +114,29 @@ class @Area
       @setRoller  0,10, 'rdd'
       @setRoller 10,11, 'ulllluuuurrrrrr'
       @setRoller  6,11, 'uu'
-  
+
       @setRepair 11, 0
       @setRepair  0, 9
-  
       @setOption  2, 3
       @setOption  9, 7
-  
-      @addWall  2, 0, 'up'
-      @addWall  7, 0, 'up'
-      @addWall  9, 0, 'up'
-      @addWall  0, 2, 'left'
-      @addWall 11, 2, 'right'
+
       @addWall  1, 3, 'right-down'
       @addWall  3, 3, 'right'
       @addWall  7, 3, 'left-down'
-      @addWall  0, 4, 'left'
       @addWall  9, 4, 'down'
-      @addWall 11, 4, 'right'
-      @addWall  0, 7, 'left-down'
+      @addWall  0, 7, 'down'
       @addWall  7, 7, 'left-up'
       @addWall 10, 7, 'up'
-      @addWall 11, 7, 'right'
       @addWall  4, 8, 'up'
-      @addWall  0, 9, 'left'
       @addWall  2, 9, 'right'
       @addWall  9,11, 'right'
-      @addWall  2,11, 'down'
-      @addWall  4,11, 'down'
-      @addWall  7,11, 'right-down'
-      @addWall  9,11, 'down'
-  
+      @addWall  7,11, 'right'
+      Area.boundaryWalls.call(@)
+
       @addLaser 4, 0, 'd', 3
       @addLaser 2, 8, 'r', 2
       @addLaser 7, 8, 'r', 2
-  
+
       @addDoubleLaser 8, 1, 'd', 3
 
     vault: () ->
@@ -147,30 +173,22 @@ class @Area
       @setPusher  5, 9, 'down', 'even'
       @setPusher  6, 9, 'down', 'odd'
 
-      @addWall  2, 0, 'up'
-      @addWall  9, 0, 'up'
       @addWall  6, 2, 'down'
       @addWall 11, 2, 'right'
-      @addWall  0 ,4, 'left'
       @addWall  4, 4, 'left'
       @addWall  7, 4, 'right'
-      @addWall 11, 4, 'right'
       @addWall  2, 5, 'right'
       @addWall  9, 5, 'left'
-      @addWall  0, 7, 'left'
       @addWall  3, 7, 'left'
       @addWall  7, 7, 'right'
-      @addWall 11, 7, 'right'
-      @addWall  0, 9, 'left'
-      @addWall 11, 9, 'right'
-      @addWall  2,11, 'down'
-      @addWall  9,11, 'down'
 
       @addLaser 4, 0, 'd', 4
       @addLaser 7, 0, 'd', 4
       @addLaser 0, 2, 'r', 4
       @addLaser 4, 8, 'd', 4
       @addLaser 7, 8, 'd', 4
+
+      Area.boundaryWalls.call(@)
 
     maelstrom: () ->
       @setVoid  5, 5
@@ -224,7 +242,7 @@ class @Area
       @setVoid 8, 6
       @setVoid 5, 7
 
-      @setExpressRoller 1, 1, 'rrrrrrrrrdddddddddllllllllluuuuuuuuur'
+      @setExpressRoller 2, 1, 'rrrrrrrrdddddddddllllllllluuuuuuuuurr'
       @setRoller 2, 2, 'r'
       @setRoller 2, 4, 'r'
       @setRoller 2, 6, 'r'
@@ -262,41 +280,56 @@ class @Area
       @setRepair 11, 0
       @setRepair  0,11
 
-      @addWall 2, 0, 'u'
-      @addWall 4, 0, 'u'
-      @addWall 7, 0, 'u'
-      @addWall 9, 0, 'u'
+
       @addWall 3, 1, 'd'
       @addWall 5, 1, 'd'
       @addWall 6, 1, 'd'
       @addWall 8, 1, 'd'
-
-      @addWall 2, 11, 'd'
-      @addWall 4, 11, 'd'
-      @addWall 7, 11, 'd'
-      @addWall 9, 11, 'd'
       @addWall 3, 10, 'u'
       @addWall 5, 10, 'u'
       @addWall 6, 10, 'u'
       @addWall 8, 10, 'u'
-
-      @addWall 0, 2, 'l'
-      @addWall 0, 4, 'l'
-      @addWall 0, 7, 'l'
-      @addWall 0, 9, 'l'
       @addWall 1, 3, 'r'
       @addWall 1, 5, 'r'
       @addWall 1, 6, 'r'
       @addWall 1, 8, 'r'
-
-      @addWall 11, 2, 'r'
-      @addWall 11, 4, 'r'
-      @addWall 11, 7, 'r'
-      @addWall 11, 9, 'r'
       @addWall 10, 3, 'l'
       @addWall 10, 5, 'l'
       @addWall 10, 6, 'l'
       @addWall 10, 8, 'l'
+      Area.boundaryWalls.call(@)
 
+    spin_zone: () ->
+      @setGear 2,2, 'cw'
+      @setGear 3,3, 'cw'
+      @setGear 2,8, 'cw'
+      @setGear 3,9, 'cw'
+      @setGear 8,2, 'cw'
+      @setGear 9,3, 'cw'
+      @setGear 8,8, 'cw'
+      @setGear 9,9, 'cw'
 
+      @setGear 5,2, 'ccw'
+      @setGear 6,4, 'ccw'
+      @setGear 4,5, 'ccw'
+      @setGear 9,5, 'ccw'
+      @setGear 2,6, 'ccw'
+      @setGear 7,6, 'ccw'
+      @setGear 5,7, 'ccw'
+      @setGear 6,9, 'ccw'
 
+      @setRepair 2,3
+      @setRepair 9,8
+      @setOption 8,3
+      @setOption 3,8
+
+      @setExpressRoller 2,1, 'rrdddllluuurr'
+      @setExpressRoller 8,1, 'rrdddllluuurr'
+      @setExpressRoller 2,7, 'rrdddllluuurr'
+      @setExpressRoller 8,7, 'rrdddllluuurr'
+
+      @addLaser 3,3,'d',4
+      @addLaser 5,3,'r',2
+      @addLaser 8,5,'d',4
+      @addLaser 5,8,'r',2
+      Area.boundaryWalls.call(@)

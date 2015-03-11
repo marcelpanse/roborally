@@ -11,7 +11,6 @@ GameLogic = {
   var _MAX_NUMBER_OF_CARDS = 9;
   var _CARD_PLAY_DELAY = 500;
 
-
   var _cardTypes = {
     0: {direction: 2, position: 0, name: "U_TURN"},
     1: {direction: 1, position: 0, name: "TURN_RIGHT"},
@@ -22,29 +21,79 @@ GameLogic = {
     6: {direction: 0, position: 3, name: "STEP_FORWARD_3"}
   };
 
-  scope.makeDeck = function(game) {
-    var current = Deck.findOne({gameId: game._id});
+  scope.discardCards = function(game,players) {
+    var deck = Deck.findOne({gameId: game._id});
+    if(typeof deck !== "undefined") {
+      for (var i in players) {
+        var playerCards=Cards.findOne({playerId: players[i]._id});
+        var unusedCards=playerCards.cards;
+        var origLockedCnt=playerCards.lockedCards.length;
+        var lockedCards=[];
+        console.log("Returning cards to deck, old total: "+deck.discards.length+" from "+players[i].name);
+        for(var j in unusedCards) {
+          deck.discards.push({priority: unusedCards[j].priority, cardType: unusedCards[j].cardType});
+        }
+        //Are there supposed to be locked cards?
+        if(_MAX_NUMBER_OF_CARDS - players[i].damage < GameLogic.CARD_SLOTS) {
+          for(var lockPtr = _MAX_NUMBER_OF_CARDS - players[i].damage; lockPtr<GameLogic.CARD_SLOTS; ++lockPtr) {
+            lockedCards.push(players[i].playedCards[lockPtr]);
+          }
+        } else if(lockedCards.length>0){
+          lockedCards=[];
+        }
+        console.log("Player Used Cards: " +players[i].playedCards.length+"|"+players[i].submittedCards.length);
+        for(var k=0;players[i].playedCards!==null && k<players[i].playedCards.length; ++k) {
+          deck.discards.push({priority: players[i].playedCards[k].priority, cardType: players[i].playedCards[k].cardType});
+        }
+        //Update the player's locked card count, skip the step if unchanged (Micro-optimization)
+        if(lockedCards.length!=origLockedCnt) {
+          playerCards.lockedCards=lockedCards;
+          Cards.upsert({playerId: players[i]._id}, playerCards);
+        }
+        console.log("Returned cards, new total: "+deck.discards.length+" Overall Deck Size: "+(deck.cards.length+deck.discards.length));
+      }
+      Deck.upsert({gameId: game._id}, deck);
+    }
+  };
+
+  scope.makeDeck = function(gameId) {
+    var deck = Deck.findOne({gameId: gameId});
     //create/shuffle new deck (cards are returned from hands)
-    Deck.upsert({gameId: game._id}, {$set: {cards: _.shuffle(_deck)}});
+    if(typeof deck === "undefined") {
+      Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck), discards: []}});
+    } else if(deck.cards.length===0) {
+      deck.cards=_.shuffle(deck.discards);
+      deck.discards=[];
+      Deck.upsert({gameId: gameId}, deck);
+    }
+    return deck;
   };
 
   scope.dealCards = function(player) {
     var deck = Deck.findOne({gameId: player.gameId});
-    var cardObj = Cards.findOne({playerId: player._id});
-    if (!cardObj) {
-      cardObj = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: []};
+    var playerCards = Cards.findOne({playerId: player._id});
+
+    if (!playerCards) {
+      playerCards = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: [], lockedCards: []};
     }
-    var cards = cardObj.cards || [];
+    //Rule note: You do not keep un-used cards from prior turn.
+    var cards = [];
     var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage); //for every damage you get a card less
     var nrOfNewCards = maxCards - cards.length;
 
     for (var j = 0; j < nrOfNewCards; j++) {
-      var cardFromDeck = deck.cards.splice(_.random(0, deck.cards.length-1), 1)[0]; //grab card from deck, so it can't be handed out twice
+      //Remake the deck if it's out of cards.
+      //Warning, could crash if discard deck runs out.  But there's more then 9*8=72 cards right?
+      if(deck.cards.length===0) {
+        Deck.update(deck._id, deck);
+        deck=GameLogic.makeDeck(player.gameId);
+      }
+      var cardFromDeck = deck.cards.splice(0, 1)[0]; //grab card from deck, so it can't be handed out twice
       cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
     }
+    playerCards.cards=cards;
 
-    console.log('player ' + player.name + ' has new cards', cards);
-    Cards.upsert({playerId: player._id}, cardObj);
+    Cards.upsert({playerId: player._id}, playerCards);
     Deck.update(deck._id, deck);
   };
 
@@ -52,7 +101,11 @@ GameLogic = {
     console.log('player ' + player.name + ' submitted cards: ');
 
     //check if all played cards are available from original hand...
-    var availableCards = Cards.findOne({playerId: player._id}).cards;
+    //Except locked cards, those are not in the hand.
+    var playerCards = Cards.findOne({playerId: player._id});
+    var availableCards = playerCards.cards;
+    var lockedCards = playerCards.lockedCards;
+
     for (var i = cards.length-1; i >= 0; i--) {
       var found = false;
       for (var j = 0; j < availableCards.length; j++) {
@@ -69,9 +122,9 @@ GameLogic = {
       }
     }
 
-    if (cards.length < GameLogic.CARD_SLOTS) {
+    if (cards.length + lockedCards.length < GameLogic.CARD_SLOTS) {
       console.log("Not enough cards submitted");
-      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length;
+      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length - lockedCards.length;
       for (var q = 0; q < nrOfNewCards; q++) {
         var cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]; //grab card from hand
         console.log("Handing out random card", cardFromHand);
@@ -79,8 +132,8 @@ GameLogic = {
       }
     }
 
-    Players.update(player._id, {$set: {submittedCards: cards, submitted: true}});
-    Cards.update({playerId: player._id}, {$set: {cards: availableCards}});
+    Players.update(player._id, {$set: {submittedCards: cards, submittedLockedCards: lockedCards, submitted: true}});
+    Cards.update({playerId: player._id}, {$set: {cards: availableCards, lockedCards: lockedCards}});
 
     var playerCnt = Players.find({gameId: player.gameId}).count();
     var readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();
@@ -109,43 +162,40 @@ GameLogic = {
     }
   };
 
-  scope.playCard = function(players, card, callback) {
-    var player = Players.findOne(card.playerId);
-    
-    console.log("trying to play next card for player " + player.name);
+  scope.playCard = function(players, player, card, callback) {
+    if(!player.needsRespawn) {
+      console.log("trying to play next card for player " + player.name);
 
-    if (card !== undefined) {
-      var cardType = _cardTypes[card.cardType];
-      console.log('playing card ' + cardType.name + ' for player ' + player.name);
+      if (card !== undefined) {
+        var cardType = _cardTypes[card.cardType];
+        console.log('playing card ' + cardType.name + ' for player ' + player.name);
 
-      player.rotate(cardType.direction);
+        player.rotate(cardType.direction);
 
-      if (cardType.position === 0) {
-        Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, _CARD_PLAY_DELAY);
-      } else {
-        var step = Math.min(cardType.position, 1);
-        for (var j = 0; j < Math.abs(cardType.position); j++) {
-          executeStep(players, player, step);
-          var timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
-          if (Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, timeout)) {
-            break; //player respawned, don't continue playing out this card.
+        if (cardType.position === 0) {
+          Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, _CARD_PLAY_DELAY);
+        } else {
+          var step = Math.min(cardType.position, 1);
+          for (var j = 0; j < Math.abs(cardType.position); j++) {
+            var timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
+            executeStep(players, player, step, timeout);
+            if (player.needsRespawn) {
+              break; //player respawned, don't continue playing out this card.
+            }
           }
         }
+      } else {
+        console.log("card is not playable " + card + " player " + player.name);
       }
-    } else {
-      console.log("card is not playable " + card + " player " + player.name);
     }
     callback();
   };
-
-
-
 
   scope.executeRollers = function(players, callback) {
     var roller_moves = [];
     players.forEach(function(player) {
       //check if is on roller
-      var tile = player.tile;
+      var tile = player.tile();
       var moving = (tile.type === Tile.ROLLER);
       roller_moves.push(rollerMove(player, tile, moving));
     });
@@ -158,7 +208,7 @@ GameLogic = {
     var roller_moves = [];
     players.forEach(function(player) {
       //check if is on roller
-      var tile = player.tile;
+      var tile = player.tile();
       var moving  = (tile.type === Tile.ROLLER && tile.speed === 2);
       roller_moves.push(rollerMove(player, tile, moving));
     });
@@ -168,8 +218,8 @@ GameLogic = {
 
   scope.executeGears = function(players, callback) {
     players.forEach(function(player) {
-      if (player.tile.type === Tile.GEAR) {
-        player.rotate(tile.rotate);
+      if (player.tile().type === Tile.GEAR) {
+        player.rotate(player.tile().rotate);
         Players.update(player._id, player);
       }
     });
@@ -177,12 +227,11 @@ GameLogic = {
   };
 
   scope.executePushers = function(players, callback) {
-    var game = players[0].game;
+    var game = players[0].game();
     players.forEach(function(player) {
-      var tile = player.tile;
+      var tile = player.tile();
       if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
-        tryToMovePlayer(player, tile.move);
-        checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
+        tryToMovePlayer(players, player, tile.move, _CARD_PLAY_DELAY);
       }
     });
     callback();
@@ -191,7 +240,7 @@ GameLogic = {
   scope.executeLasers = function(players, callback) {
     var victims = [];
     players.forEach(function(player) {
-      var tile = player.tile;
+      var tile = player.tile();
       if (tile.damage > 0) {
         player.damage += tile.damage;
         console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
@@ -205,16 +254,17 @@ GameLogic = {
       if (victim) {
         victim.damage++;
         checkRespawnsAndUpdateDb(victim, _CARD_PLAY_DELAY);
-      }        
+      }
     });
     callback();
   };
 
   scope.executeRepairs = function(players, callback) {
     players.forEach(function(player) {
-      if (player.tile.repair) {
+      if (player.tile().repair) {
         player.updateStartPosition();
-        player.damage--;
+        if (player.damage > 0)
+          player.damage--;
         Players.update(player._id, player);
       }
     });
@@ -222,31 +272,35 @@ GameLogic = {
   };
 
   scope.shootRobotLaser = function(players, player) {
-    var stepY = 0;
-    var stepX = 0;
+    var step = {x:0, y:0};
     var board = player.board();
     switch (player.direction) {
       case GameLogic.UP:
-        stepY = -1;
+        step.y = -1;
         break;
       case GameLogic.RIGHT:
-        stepX = 1;
+        step.x = 1;
         break;
       case GameLogic.DOWN:
-        stepY = 1;
+        step.y = 1;
         break;
       case GameLogic.LEFT:
-        stepX = -1;
+        step.x = -1;
         break;
     }
     var x = player.position.x;
     var y = player.position.y;
 
-    while (board.onBoard(x+stepX,y+stepY) && board.canMove(x, y, player.direction) ) {
-      x += stepX;
-      y += stepY;
+    while (board.onBoard(x+step.x,y+step.y) && board.canMove(x, y, step) ) {
+      x += step.x;
+      y += step.y;
       var victim = isPlayerOnTile(players,x,y);
       if (victim) {
+        Chat.insert({
+          gameId: victim.gameId,
+          message: victim.name + ' was shot by '+ player.name +', Total damage: '+ (victim.damage+1),
+          submitted: new Date().getTime()
+        });
         console.log(victim.name + " was shot on ("+ x + ","+y+") by " + player.name + " on (" + player.position.x +","+player.position.y+")");
         return victim;
       }
@@ -254,8 +308,8 @@ GameLogic = {
     return false;
   };
 
-  function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
-    var step = { x: 0, y: 0 }; 
+  function executeStep(players, player, direction, timeout) {   // direction = 1 for step forward, -1 for step backwards
+    var step = { x: 0, y: 0 };
     switch (player.direction) {
       case GameLogic.UP:
         step.y = -1 * direction;
@@ -270,31 +324,31 @@ GameLogic = {
         step.x = -1 * direction;
         break;
     }
-    tryToMovePlayer(players, player, step);
+    tryToMovePlayer(players, player, step, timeout);
   }
 
-  function tryToMovePlayer(players, player, step) {
-    var board = player.board();
+  function tryToMovePlayer(players, p, step, timeout) {
+    var board = p.board();
+    var makeMove = true;
     if (step.x !== 0 || step.y !== 0) {
-      var moving_players = [player];
-      var p = player;
       console.log("trying to move player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
-      while (board.canMove(p.position.x, p.position.y, step)) {
-        p = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
-        if (p !== null) {
-          console.log("trying to push player "+p.name);
-          moving_players.push(p);
-        } else {
-          for (var i in moving_players) {
-            console.log("moving player "+moving_players[i].name);
-            moving_players[i].move(step);
-          }
-          break;
+
+      if (board.canMove(p.position.x, p.position.y, step)) {
+        var pushedPlayer = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
+        if (pushedPlayer !== null) {
+          console.log("trying to push player "+pushedPlayer.name);
+          makeMove=tryToMovePlayer(players, pushedPlayer, step, timeout);
+        }
+        if(makeMove) {
+          console.log("moving player "+p.name+" to "+ (p.position.x+step.x)+","+(p.position.y+step.y));
+          p.move(step);
+          Meteor.wrapAsync(checkRespawnsAndUpdateDb)(p, timeout);
+          return true;
         }
       }
     }
+    return false;
   }
-
 
   function rollerMove(player, tile, is_moving) {
     if (is_moving) {
@@ -354,48 +408,55 @@ GameLogic = {
     return found;
   }
 
-
   function checkRespawnsAndUpdateDb(player, timeout, callback) {
     Meteor.setTimeout(function() {
-      var respawned = false;
-      if (!player.isOnBoard() || player.isOnVoid()) {
-        respawned = true;
+      console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
+      if (!player.isOnBoard() || player.isOnVoid() || player.damage > 9) {
         player.submittedCards = [];
         player.damage = 2;
         player.lives--;
         console.log(player.name, "died");
         console.log("updating position", player.name);
+        player.needsRespawn=true;
         Players.update(player._id, player);
 
         Chat.insert({
           gameId: player.gameId,
-          message: player.name + ' died and got re-assembled! (lives: '+ player.lives +', damage: '+ player.damage +')',
+          message: player.name + ' died! (lives: '+ player.lives +', damage: '+ player.damage +')',
           submitted: new Date().getTime()
         });
 
-        Meteor.wrapAsync(respawnPlayerWithDelay)(player);
+        Meteor.wrapAsync(removePlayerWithDelay)(player);
       } else {
         console.log("updating position", player.name);
         Players.update(player._id, player);
       }
-      
+
       if (callback) {
-        callback(null, respawned);
+        callback();
       }
     }, timeout);
   }
 
-  function respawnPlayerWithDelay(player, callback) {
+  function removePlayerWithDelay(player, callback) {
     Meteor.setTimeout(function() {
-      //respawn if player off board or on void-tile
-      player.position.x = player.start.x;
-      player.position.y = player.start.y;
-      player.direction = player.start.direction;
-      console.log("respawning player", player.name);
+      player.position.x = -1;
+      player.position.y = 0;
+      Players.update(player._id, player);
+      console.log("removing player", player.name);
       Players.update(player._id, player);
       callback();
-    }, _CARD_PLAY_DELAY); //wait before respawning, so you can see the player stepping into the void
+    }, _CARD_PLAY_DELAY);
   }
+
+  scope.respawnPlayer = function(player) {
+    player.position.x = player.start.x;
+    player.position.y = player.start.y;
+    player.direction = player.start.direction;
+    player.needsRespawn=false;
+    console.log("respawning player", player.name);
+    Players.update(player._id, player);
+  };
 
   var _deck = [
     { priority:  10, cardType: 0 },
@@ -484,4 +545,3 @@ GameLogic = {
     { priority: 840, cardType: 6 }
   ];
 })(GameLogic);
-

@@ -14,34 +14,32 @@ Template.board.helpers({
   },
 
   robots: function() {
-    var p = [];
-    for (var i in this.players) {
-      var player = this.players[i];
-      var rclass = "r" + i;
-      p.push({
-        path: "/robots/robot_"+i.toString()+".png",
+    var r = [];
+    this.players.forEach(function(player) {
+      var rclass = "r" + player.robotId;
+      r.push({
+        path: "/robots/robot_"+player.robotId.toString()+".png",
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
       });
-    }
-    return p;
+    });
+    return r;
   },
   markers: function() {
-    var p = [];
-    for (var i in this.players) {
-      var player = this.players[i];
-      var mclass = "m" + i;
-      new_pos = calcPosition(player.start.x, player.start.y);
-      deg = 360 / (this.players.length+1) * i;
-      p.push({
-        path: "/robots/marker_"+i.toString()+".png",
-        robot_class: mclass,
+    var m = [];
+    var p_cnt = this.players.length;
+    this.players.forEach(function(player) {
+      var new_pos = calcPosition(player.start.x, player.start.y);
+      var deg = 360 / p_cnt * player.robotId;
+      m.push({
+        path: "/robots/marker_"+player.robotId.toString()+".png",
+        marker_class: "m" + player.robotId.toString(),
         position: 'top: '+ new_pos.y +'px; left:'+ new_pos.x +'px;',
         direction: 'transform: rotate('+ deg + 'deg);',
       });
-    }
-    return p;
+    });
+    return m;
   },
   getRobotId: function() {
     return Players.findOne({userId: Meteor.userId()}).robotId.toString();
@@ -103,36 +101,26 @@ function animatePosition(element, x, y) {
 
 function animateRotation(element, direction) {
   var oldRotation = $("."+element).css('rotate');
-  var wasUndefined = false;
   if (oldRotation === undefined) {
     oldRotation = 0;
-    wasUndefined=true;
   } else if (oldRotation !== 0) {
     oldRotation = parseInt(oldRotation.match(/\d+/g)[0]);
   }
 
-  var newRotation = 0;
-  switch(direction) {
-    case GameLogic.UP:
-      newRotation = 0;
-      break;
-    case GameLogic.RIGHT:
-      newRotation = 90;
-      break;
-    case GameLogic.DOWN:
-      newRotation = 180;
-      break;
-    case GameLogic.LEFT:
-      newRotation = 270;
-      break;
-  }
+  var newRotation = direction * 90;
 
   if (newRotation != oldRotation) {
     Tracker.afterFlush(function() {
       var delta = newRotation - (oldRotation % 360);
 
-      if (delta == 270 && !wasUndefined) {
-        delta = -90;
+      if (delta == 270) {
+        if(oldRotation===0) {
+          $("."+element).transition({
+            rotate: '+=359deg'
+          }, 0, 'linear');
+          delta = -89;
+        } else
+          delta = -90;
       }
       if (delta == -270) {
         delta = 90;
