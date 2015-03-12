@@ -51,12 +51,8 @@ class @Tile
   path: () ->
     p = "/tiles/#{@type}"
     p += switch @type
-      when 'empty'
-        if Math.random() < 0.5
-          "-1"
-        else
-          "-2"
-      when 'gear'   then "-#{@gear_type}"
+      when 'empty' then "-1"
+      when 'gear' then "-#{@gear_type}"
       when 'pusher'
         if @pusher_type == 0
           '-even'
