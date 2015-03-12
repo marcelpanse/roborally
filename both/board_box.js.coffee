@@ -52,7 +52,7 @@ class @BoardBox
       board.addCheckpoint(0,0)
       return board
     option_world: () ->
-      board = new Board(1,8)
+      board = new Board(2,8)
       board.name = 'option_world'
       board.title = 'Option World'
       board.length = 'medium'

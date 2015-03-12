@@ -12,3 +12,5 @@ Installing Meteor:
 ```
 curl https://install.meteor.com/ | sh
 ```
+
+If you want to contribute, please fork the project and make a pull request with your changes. Refer to an issue from the issue tracker in your commit messages and pull requests. If you want to work on something, but there is no issue, please go ahead and create the issue yourself.
