@@ -490,13 +490,6 @@ GameLogic = {
     Players.update(player._id, player);
   };
 
-  scope.updatePowerState = function(playerId, state) {
-    player = Players.findOne(playerId);
-    //Meteor.setTimeout(function() {
-      Players.update(player._id, {$set:{powerState: state}});
-    //});
-  };
-
   var _deck = [
     { priority:  10, cardType: 0 },
     { priority:  20, cardType: 0 },
