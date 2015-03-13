@@ -35,8 +35,8 @@ Template.board.helpers({
       m.push({
         path: "/robots/marker_"+player.robotId.toString()+".png",
         marker_class: "m" + player.robotId.toString(),
-        position: 'top: '+ new_pos.y +'px; left:'+ new_pos.x +'px;',
-        direction: 'transform: rotate('+ deg + 'deg);',
+        position: cssPosition(player.start.x, player.start.y),
+        direction: cssRotate(deg)
       });
     });
     return m;
@@ -126,6 +126,16 @@ function animateRotation(element, direction) {
     });
   }
   return '';
+}
+
+function cssPosition(x,y) {
+  var coord = calcPosition(x, y);
+  return 'top: '+ coord.y +'px; left:'+ coord.x +'px;';
+}
+
+function cssRotate(deg) {
+  var rotate = "rotate(" +deg+ "deg);";
+  return 'transform: '+rotate+' -webkit-transform: '+rotate+' -ms-transform: '+rotate;
 }
 
 function calcPosition(x, y) {

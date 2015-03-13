@@ -11,6 +11,7 @@ Template._tiles.helpers({
 		return (current <= limit);
 	},
 	rotate: function(direction) {
-		return "transform: rotate(" +90*direction+ "deg);";
+		var rotate = "rotate(" +90*direction+ "deg);";
+		return "transform: "+rotate+" -webkit-transform: "+rotate+' -ms-transform: '+rotate;
 	}
 });
