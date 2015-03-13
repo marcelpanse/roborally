@@ -296,12 +296,8 @@ GameLogic = {
       y += step.y;
       var victim = isPlayerOnTile(players,x,y);
       if (victim) {
-        Chat.insert({
-          gameId: victim.gameId,
-          message: victim.name + ' was shot by '+ player.name +', Total damage: '+ (victim.damage+1),
-          submitted: new Date().getTime()
-        });
-        console.log(victim.name + " was shot on ("+ x + ","+y+") by " + player.name + " on (" + player.position.x +","+player.position.y+")");
+        debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
+        victim.chat('was shot by '+ player.name +', Total damage: '+ (victim.damage+1), debug_info);
         return victim;
       }
     }
@@ -415,17 +411,14 @@ GameLogic = {
         player.submittedCards = [];
         player.damage = 2;
         player.lives--;
-        console.log(player.name, "died");
-        console.log("updating position", player.name);
         player.needsRespawn=true;
         Players.update(player._id, player);
-
-        Chat.insert({
-          gameId: player.gameId,
-          message: player.name + ' died! (lives: '+ player.lives +', damage: '+ player.damage +')',
-          submitted: new Date().getTime()
-        });
-
+        if (player.damage > 0) {
+          var game = player.game();
+          game.waitingForRespawn.push(player._id);
+          Games.update(game._id, game);
+        }
+        player.chat('died! (lives: '+ player.lives +', damage: '+ player.damage +')');
         Meteor.wrapAsync(removePlayerWithDelay)(player);
       } else {
         console.log("updating position", player.name);
@@ -449,14 +442,19 @@ GameLogic = {
     }, _CARD_PLAY_DELAY);
   }
 
-  scope.respawnPlayer = function(player) {
-    player.position.x = player.start.x;
-    player.position.y = player.start.y;
-    player.direction = player.start.direction;
-    player.needsRespawn=false;
-    console.log("respawning player", player.name);
+  scope.respawnPlayerAtPos = function(player,x,y) {
+    player.position.x = x;
+    player.position.y = y;
+    console.log("respawning player", player.name,'at', x,',',y);
     Players.update(player._id, player);
   };
+
+  scope.respawnPlayerWithDir = function(player,dir) {
+    player.direction = dir;
+    player.needsRespawn = false;
+    Players.update(player._id, player);
+  };
+
 
   var _deck = [
     { priority:  10, cardType: 0 },

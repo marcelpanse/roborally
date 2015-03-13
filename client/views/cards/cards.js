@@ -79,8 +79,24 @@ Template.cards.helpers({
           case GameState.PLAY_PHASE.REPAIRS:
             return "Repairing bots";
         }
+        break;
+      case GameState.PHASE.RESPAWN:
+        switch (this.game.respawnPhase) {
+          case GameState.RESPAWN_PHASE.CHOOSE_POSITION:
+            if (this.game.respawnUserId === Meteor.userId())
+              return "Choose position";
+            else
+              return "Waiting for destroyed bots to reenter";
+            break;
+          case GameState.RESPAWN_PHASE.CHOOSE_DIRECTION:
+            if (this.game.respawnUserId === Meteor.userId())
+              return "Choose direction";
+            else
+              return "Waiting for destroyed bots to reenter";
+        }
+        break;
     }
-    console.log(this.game.gamePhase, this.game.playPhase);
+    console.log(this.game.gamePhase, this.game.playPhase, this.game.respawnPhase);
     return "Problem?";
   },
   powerState: function() {

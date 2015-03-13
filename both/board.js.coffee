@@ -62,6 +62,37 @@ class @Board
     @tile(x,y).addCheckpoint(cnt)
     console.log("Checkpoint #{cnt} located at #{x},#{y}")
 
+  @to_dir: (val) ->
+    switch typeof val
+      when 'object'
+        if val.x > 0
+          GameLogic.RIGHT
+        else if val.x < 0
+          GameLogic.LEFT
+        else if val.y > 0
+          GameLogic.DOWN
+        else if val.y < 0
+          GameLogic.UP
+      when 'number'
+        if val < 0 || val > 3
+          val % 4
+        else
+          val
+      when 'string'
+        GameLogic[long_dir[val].toUpperCase()]
+
+  @to_step: (dir) ->
+    step = {x:0, y:0}
+    switch @to_dir(dir)
+      when GameLogic.UP
+        step.y = -1
+      when GameLogic.RIGHT
+        step.x = 1
+      when GameLogic.DOWN
+        step.y = 1
+      when GameLogic.LEFT
+        step.x = -1
+    return step
 
   #~~~~~~~~~ methods used in area.js.coffee to construct board areas
 
@@ -234,36 +265,10 @@ class @Board
     y + stepY(direction)
 
   to_dir = (val) ->
-    switch typeof val
-      when 'object'
-        if val.x > 0
-          GameLogic.RIGHT
-        else if val.x < 0
-          GameLogic.LEFT
-        else if val.y > 0
-          GameLogic.DOWN
-        else if val.y < 0
-          GameLogic.UP
-      when 'number'
-        if val < 0 || val > 3
-          val % 4
-        else
-          val
-      when 'string'
-        GameLogic[long_dir[val].toUpperCase()]
+    Board.to_dir(val)
 
   to_step = (dir) ->
-    step = {x:0, y:0}
-    switch to_dir(dir)
-      when GameLogic.UP
-        step.y = -1
-      when GameLogic.RIGHT
-        step.x = 1
-      when GameLogic.DOWN
-        step.y = 1
-      when GameLogic.LEFT
-        step.x = -1
-    return step
+    Board.to_step(dir)
 
   opp_dir = (dir) ->
     switch typeof dir

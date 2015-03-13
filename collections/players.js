@@ -33,7 +33,18 @@ var player = {
     this.direction += rotation + 4;
     this.direction %= 4;
   },
-  togglePowerDown: function() {
+  chat: function(msg, debug_info) {
+    msg = this.name + ' ' + msg;
+    Chat.insert({
+      gameId: this.gameId,
+      message: msg,
+      submitted: new Date().getTime()
+    });
+    if (debug_info !== undefined)
+      msg += ' ' + debug_info;
+    console.log(msg);
+  },
+togglePowerDown: function() {
     if (this.powerState === GameLogic.ON)
       this.powerState = GameLogic.DOWN;
     else if (this.powerState === GameLogic.OFF && this.optionalInstantPowerDown)
