@@ -32,6 +32,19 @@ var player = {
   rotate: function(rotation) {
     this.direction += rotation + 4;
     this.direction %= 4;
+  },
+  togglePowerDown: function() {
+    if (this.powerState === GameLogic.ON)
+      this.powerState = GameLogic.DOWN;
+    else if (this.powerState === GameLogic.OFF && this.optionalInstantPowerDown)
+      this.powerState = GameLogic.ON;
+    else if (this.powerState === GameLogic.DOWN) {
+      if  (this.optionalInstantPowerDown)
+        this.powerState = GameLogic.OFF;
+      else
+        this.powerState = GameLogic.ON;
+    }
+    Players.update(this._id, {$set:{powerState: this.powerState}});
   }
 
 };

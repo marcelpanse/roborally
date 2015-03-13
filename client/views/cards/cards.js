@@ -82,6 +82,15 @@ Template.cards.helpers({
     }
     console.log(this.game.gamePhase, this.game.playPhase);
     return "Problem?";
+  },
+  powerState: function() {
+    var player = Players.findOne({userId: Meteor.userId()});
+    if (player.poweredDown)
+      return  '/Power_Off.png';
+    else if (player.powerDownNextTurn === GameLogic.ANNOUNCED)
+      return  '/Power_Down.png';
+    else
+      return  '/Power_On.png';
   }
 });
 
@@ -119,8 +128,13 @@ Template.card.events({
 Template.cards.events({
   'click .playBtn': function(e) {
     submitCards(this.game);
+  },
+  'click #power': function() {
+    var player = Players.findOne({userId: Meteor.userId()});
+    GameState.togglePower(this.game, player);
   }
 });
+
 
 function submitCards(game) {
   var chosenCards = Session.get("chosenCards") || [];
