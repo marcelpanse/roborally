@@ -44,20 +44,27 @@ var player = {
       msg += ' ' + debug_info;
     console.log(msg);
   },
-togglePowerDown: function() {
-    if (this.powerState === GameLogic.ON)
-      this.powerState = GameLogic.DOWN;
-    else if (this.powerState === GameLogic.OFF && this.optionalInstantPowerDown)
-      this.powerState = GameLogic.ON;
-    else if (this.powerState === GameLogic.DOWN) {
-      if  (this.optionalInstantPowerDown)
-        this.powerState = GameLogic.OFF;
-      else
-        this.powerState = GameLogic.ON;
+  togglePowerDown: function() {
+    switch (this.powerState) {
+      case GameLogic.DOWN:
+        if  (this.optionalInstantPowerDown)
+          this.powerState = GameLogic.OFF;
+        else
+          this.powerState = GameLogic.ON;
+        break;
+      case GameLogic.ON:
+        this.powerState = GameLogic.DOWN;
+        break;
+      case GameLogic.OFF:
+        if (this.optionalInstantPowerDown)
+          this.powerState = GameLogic.ON;
     }
-    Players.update(this._id, {$set:{powerState: this.powerState}});
+    console.log("new power state "+this.powerState);
+    GameLogic.updatePowerState(this._id, this.powerState);
+  },
+  isPoweredDown: function() {
+    return this.powerState === GameLogic.OFF;
   }
-
 };
 
 

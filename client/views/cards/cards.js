@@ -62,7 +62,12 @@ Template.cards.helpers({
       case GameState.PHASE.ENDED:
         return "Game over";
       case GameState.PHASE.PROGRAM:
-        return "Pick your cards";
+        var player = Players.findOne({userId: Meteor.userId()});
+        if (player.isPoweredDown() && !player.optionalInstantPowerDown)
+          return "Powered down";
+        else
+          return "Pick your cards";
+        break;
       case GameState.PHASE.PLAY:
         switch (this.game.playPhase) {
           case GameState.PLAY_PHASE.IDLE:
@@ -101,12 +106,14 @@ Template.cards.helpers({
   },
   powerState: function() {
     var player = Players.findOne({userId: Meteor.userId()});
-    if (player.poweredDown)
-      return  '/Power_Off.png';
-    else if (player.powerDownNextTurn === GameLogic.ANNOUNCED)
-      return  '/Power_Down.png';
-    else
-      return  '/Power_On.png';
+    switch (player.powerState) {
+      case GameLogic.DOWN:
+        return  '/Power_Down.png';
+      case GameLogic.OFF:
+        return  '/Power_Off.png';
+      case GameLogic.ON:
+        return  '/Power_On.png';
+    }
   }
 });
 
@@ -122,7 +129,7 @@ Template.card.events({
         $(e.currentTarget).hide();
       }
       Session.set("chosenCards", chosenCards);
-      $(".playBtn").toggleClass("disabled", chosenCards.length != 5 - playerCards.lockedCards.length);
+      $(".playBtn").toggleClass("disabled", !allowSubmit());
     }
   },
   'click .played': function(e) {
@@ -136,21 +143,31 @@ Template.card.events({
       Session.set("chosenCards", chosenCards);
 
       $('.available.' + this.cardId).show();
-      $(".playBtn").toggleClass("disabled", chosenCards.length != 5 - playerCards.lockedCards.length);
+      $(".playBtn").toggleClass("disabled", !allowSubmit());
     }
-  }
+  },
 });
 
 Template.cards.events({
   'click .playBtn': function(e) {
     submitCards(this.game);
   },
-  'click #power': function() {
-    var player = Players.findOne({userId: Meteor.userId()});
-    GameState.togglePower(this.game, player);
+  'click .powerBtn': function(e) {
+    Meteor.call('togglePowerDown', this.game._id, function(error) {
+      if (error)
+        return alert(error.reason);
+    });
+    $(".playBtn").toggleClass("disabled", !allowSubmit());
   }
 });
 
+function allowSubmit() {
+  var lockedCards = Cards.findOne({userId: Meteor.userId()}).lockedCards;
+  var chosenCards = Session.get("chosenCards") || [];
+  var player = Players.findOne({userId: Meteor.userId()});
+  console.log(chosenCards.length + lockedCards.length == 5);
+  return chosenCards.length + lockedCards.length == 5 || player.isPoweredDown();
+}
 
 function submitCards(game) {
   var chosenCards = Session.get("chosenCards") || [];
