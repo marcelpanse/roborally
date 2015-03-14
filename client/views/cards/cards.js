@@ -1,7 +1,7 @@
 var timerHandle = null;
 Template.cards.helpers({
   chosenCards: function() {
-    return addUIData(Session.get("chosenCards") || [], false);
+    return addUIData(getChosenCards(), false);
   },
   availableCards: function() {
     Session.set("availableCards", this.cards);
@@ -12,6 +12,19 @@ Template.cards.helpers({
   },
   playedCardsHtml: function() {
     return addUIData(this.playedCards || [], false);
+  },
+  showPowerState: function() {
+    return this.powerState != GameLogic.ON;
+  },
+  powerState: function() {
+    switch (this.powerState) {
+      case GameLogic.DOWN:
+        return  '/Power_Down.png';
+      case GameLogic.OFF:
+        return  '/Power_Off.png';
+      case GameLogic.ON:
+        return  '/Power_On.png';
+    }
   },
   showCards: function() {
     var cards = this.cards || [];
@@ -104,7 +117,7 @@ Template.cards.helpers({
     console.log(this.game.gamePhase, this.game.playPhase, this.game.respawnPhase);
     return "Problem?";
   },
-  powerState: function() {
+  ownPowerState: function() {
     var player = Players.findOne({userId: Meteor.userId()});
     switch (player.powerState) {
       case GameLogic.DOWN:
@@ -114,38 +127,71 @@ Template.cards.helpers({
       case GameLogic.ON:
         return  '/Power_On.png';
     }
+  },
+  poweredDown: function() {
+    var player = Players.findOne({userId: Meteor.userId()});
+    return player.isPoweredDown();
   }
 });
 
+Template.card.helpers({
+  emptyCard: function() {
+    return this.type === 'empty';
+  },
+  selected: function() {
+    return this.slot === getSlotIndex() ? 'selected' : '';
+  }
+});
 Template.card.events({
   'click .available': function(e) {
     var player = Players.findOne({userId: Meteor.userId()});
     //TODO: Avoid this call, probably higher overhead than needed.
     var playerCards = Cards.findOne({playerId: player._id});
-    if (!player.submitted) {
-      var chosenCards = Session.get("chosenCards") || [];
-      if (chosenCards.length < 5 - playerCards.lockedCards.length) {
-        chosenCards.push(this);
-        $(e.currentTarget).hide();
+    if (!player.submitted && getChosenCardsCnt() < 5) {
+      var chosenCards = getChosenCards();
+      var selectedSlot = getSlotIndex();
+      chosenCards[selectedSlot] = this;
+      $(e.currentTarget).hide();
+
+      var nextSlot = -1;
+      for (var i=0;i<chosenCards.length;i++) {
+        if (chosenCards[i].type === 'empty') {
+          nextSlot = i;
+          break;
+        }
       }
+      Session.set("chosenCardsCnt", getChosenCardsCnt()+1);
       Session.set("chosenCards", chosenCards);
+      Session.set("selectedSlot", nextSlot);
+
+      if (player.isPoweredDown())
+        Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
+          if (error)
+            return alert(error.reason);
+        });
       $(".playBtn").toggleClass("disabled", !allowSubmit());
     }
   },
   'click .played': function(e) {
     var player = Players.findOne({userId: Meteor.userId()});
     if (!player.submitted) {
-      var cardId = this.cardId;
-      var chosenCards = Session.get("chosenCards") || [];
-      chosenCards = _.filter(chosenCards, function(item) {
-        return item.cardId != cardId;
-      });
-      Session.set("chosenCards", chosenCards);
+        var cardId = this.cardId;
+        var chosenCards = getChosenCards();
+        chosenCards[this.slot] = {type: 'empty', cardType: -1};
+        Session.set("chosenCardsCnt", getChosenCardsCnt()-1);
+        Session.set("chosenCards", chosenCards);
+        Session.set("selectedSlot", this.slot);
 
-      $('.available.' + this.cardId).show();
-      $(".playBtn").toggleClass("disabled", !allowSubmit());
+        $('.available.' + this.cardId).show();
+        $(".playBtn").toggleClass("disabled", !allowSubmit());
     }
   },
+  'click .empty': function(e) {
+    var player = Players.findOne({userId: Meteor.userId()});
+    if (!player.submitted) {
+      Session.set("selectedSlot", this.slot);
+    }
+  }
 });
 
 Template.cards.events({
@@ -153,37 +199,68 @@ Template.cards.events({
     submitCards(this.game);
   },
   'click .powerBtn': function(e) {
-    Meteor.call('togglePowerDown', this.game._id, function(error) {
+    Meteor.call('togglePowerDown', this.game._id, function(error, powerState) {
       if (error)
         return alert(error.reason);
+      if (powerState == GameLogic.OFF) {
+        var chosenCards = getChosenCards();
+        chosenCards.forEach(function(item) {
+          if (item.type !== 'empty')
+            $('.available.' + item.cardId).show();
+        });
+        Session.set("chosenCards", emptySelection());
+      }
+      $(".playBtn").toggleClass("disabled", !allowSubmit());
     });
-    $(".playBtn").toggleClass("disabled", !allowSubmit());
   }
 });
 
+function getChosenCardsCnt() {
+  return Session.get("chosenCardsCnt") || Cards.findOne({userId: Meteor.userId()}).lockedCards.length;
+}
+
+function getSlotIndex() {
+  return Session.get("selectedSlot") || 0;
+}
+
+function getChosenCards() {
+  return Session.get("chosenCards")|| emptySelection();
+}
+
+function emptySelection() {
+  var lockedCnt = Cards.findOne({userId: Meteor.userId()}).lockedCards.length;
+  arr = Array.apply(false, Array(5-lockedCnt));
+  arr = arr.map(function (x, i) {
+    return {cardType: -1, type:'empty', slot:i};
+  });
+  return arr;
+}
+
 function allowSubmit() {
-  var lockedCards = Cards.findOne({userId: Meteor.userId()}).lockedCards;
-  var chosenCards = Session.get("chosenCards") || [];
-  var player = Players.findOne({userId: Meteor.userId()});
-  console.log(chosenCards.length + lockedCards.length == 5);
-  return chosenCards.length + lockedCards.length == 5 || player.isPoweredDown();
+  return getChosenCardsCnt() == 5 || player.isPoweredDown();
 }
 
 function submitCards(game) {
-  var chosenCards = Session.get("chosenCards") || [];
+  var chosenCards = getChosenCards();
   console.log("submitting cards", chosenCards);
   Meteor.call('playCards', {gameId: game._id, cards: chosenCards}, function(error) {
-    Session.set("chosenCards", []);
+    Session.set("chosenCards", emptySelection());
+    Session.set("selectedSlot", 0);
+    Session.set("chosenCardsCnt", false);
     if (error)
       return alert(error.reason);
   });
 }
 
 function addUIData(cards, available) {
-  cards.forEach(function(card) {
-    if (card !== null) {
+  cards.forEach(function(card, i) {
+    if (card !== null && card.cardType !== -1) {
+      card.slot = i;
       card.class = available ? 'available' : 'played';
       card.type = ['u', 'r', 'l', 'b', 'f1', 'f2', 'f3'][card.cardType];
+    } else {
+      card.type = 'empty';
+      card.slot = i;
     }
   });
   return cards;
