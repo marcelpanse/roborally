@@ -147,22 +147,9 @@ Template.card.events({
     var player = Players.findOne({userId: Meteor.userId()});
     //TODO: Avoid this call, probably higher overhead than needed.
     var playerCards = Cards.findOne({playerId: player._id});
-    if (!player.submitted && getChosenCardsCnt() < 5) {
-      var chosenCards = getChosenCards();
-      var selectedSlot = getSlotIndex();
-      chosenCards[selectedSlot] = this;
+    if (!player.submitted && getChosenCnt() < 5) {
+      chooseCard(this);
       $(e.currentTarget).hide();
-
-      var nextSlot = -1;
-      for (var i=0;i<chosenCards.length;i++) {
-        if (chosenCards[i].type === 'empty') {
-          nextSlot = i;
-          break;
-        }
-      }
-      Session.set("chosenCardsCnt", getChosenCardsCnt()+1);
-      Session.set("chosenCards", chosenCards);
-      Session.set("selectedSlot", nextSlot);
 
       if (player.isPoweredDown())
         Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
@@ -175,15 +162,9 @@ Template.card.events({
   'click .played': function(e) {
     var player = Players.findOne({userId: Meteor.userId()});
     if (!player.submitted) {
-        var cardId = this.cardId;
-        var chosenCards = getChosenCards();
-        chosenCards[this.slot] = {type: 'empty', cardType: -1};
-        Session.set("chosenCardsCnt", getChosenCardsCnt()-1);
-        Session.set("chosenCards", chosenCards);
-        Session.set("selectedSlot", this.slot);
-
-        $('.available.' + this.cardId).show();
-        $(".playBtn").toggleClass("disabled", !allowSubmit());
+      unchooseCard(this);
+      $('.available.' + this.cardId).show();
+      $(".playBtn").toggleClass("disabled", !allowSubmit());
     }
   },
   'click .empty': function(e) {
@@ -203,20 +184,51 @@ Template.cards.events({
       if (error)
         return alert(error.reason);
       if (powerState == GameLogic.OFF) {
-        var chosenCards = getChosenCards();
-        chosenCards.forEach(function(item) {
+        getChosenCards().forEach(function(item) {
           if (item.type !== 'empty')
             $('.available.' + item.cardId).show();
         });
-        Session.set("chosenCards", emptySelection());
+        unchooseAllCards();
       }
       $(".playBtn").toggleClass("disabled", !allowSubmit());
     });
   }
 });
 
-function getChosenCardsCnt() {
-  return Session.get("chosenCardsCnt") || Cards.findOne({userId: Meteor.userId()}).lockedCards.length;
+
+function chooseCard(card) {
+  var chosenCards = getChosenCards();
+  var selectedSlot = getSlotIndex();
+  chosenCards[selectedSlot] = card;
+
+  var nextSlot = -1;
+  for (var i=0;i<chosenCards.length;i++) {
+    if (chosenCards[i].type === 'empty') {
+      nextSlot = i;
+      break;
+    }
+  }
+  Session.set("chosenCnt", getChosenCnt()+1);
+  Session.set("chosenCards", chosenCards);
+  Session.set("selectedSlot", nextSlot);
+}
+
+function unchooseCard(card) {
+  var chosenCards = getChosenCards();
+  chosenCards[card.slot] = {type: 'empty', cardType: -1, slot:card.slot};
+  Session.set("chosenCnt", getChosenCnt()-1);
+  Session.set("chosenCards", chosenCards);
+  Session.set("selectedSlot", card.slot);
+}
+
+function unchooseAllCards() {
+  Session.set("chosenCnt", getLockedCnt());
+  Session.set("chosenCards", emptySelection());
+  Session.set("selectedSlot", 0);
+}
+
+function getChosenCnt() {
+  return Session.get("chosenCnt") || getLockedCnt();
 }
 
 function getSlotIndex() {
@@ -227,9 +239,12 @@ function getChosenCards() {
   return Session.get("chosenCards")|| emptySelection();
 }
 
+function getLockedCnt() {
+  return Cards.findOne({userId: Meteor.userId()}).lockedCards.length;
+}
+
 function emptySelection() {
-  var lockedCnt = Cards.findOne({userId: Meteor.userId()}).lockedCards.length;
-  arr = Array.apply(false, Array(5-lockedCnt));
+  arr = Array.apply(null, Array(5-getLockedCnt()));
   arr = arr.map(function (x, i) {
     return {cardType: -1, type:'empty', slot:i};
   });
@@ -237,16 +252,18 @@ function emptySelection() {
 }
 
 function allowSubmit() {
-  return getChosenCardsCnt() == 5 || player.isPoweredDown();
+  console.log("chosen cnt",getChosenCnt());
+  var player = Players.findOne({userId: Meteor.userId()});
+  return getChosenCnt() == 5 || player.isPoweredDown();
 }
 
 function submitCards(game) {
   var chosenCards = getChosenCards();
   console.log("submitting cards", chosenCards);
   Meteor.call('playCards', {gameId: game._id, cards: chosenCards}, function(error) {
-    Session.set("chosenCards", emptySelection());
+    Session.set("chosenCnt", false);
+    Session.set("chosenCards", false);
     Session.set("selectedSlot", 0);
-    Session.set("chosenCardsCnt", false);
     if (error)
       return alert(error.reason);
   });

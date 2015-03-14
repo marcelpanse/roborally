@@ -10,12 +10,13 @@ template(name="cards")
     h5
       | Playing
     div.playing
-      each chosenCards
-        +card
-      each lockedCardsHtml
-        +card
       if poweredDown
         img.powerBtn(src=ownPowerState)
+      else
+        each chosenCards
+          +card
+        each lockedCardsHtml
+          +card
     div.power
       h5
         | Power state
@@ -33,7 +34,7 @@ template(name="cards")
           each playedCardsHtml
             +card
           if showPowerState
-            img.powerBtn(src=powerState)
+            img.power-state(src=powerState)
 template(name="card")
   if emptyCard
     .card(class="empty #{selected}" data-toggle='tooltip' title='#{title}')
