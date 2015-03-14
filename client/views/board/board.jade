@@ -16,7 +16,8 @@ template(name="board")
         div(class=robot_class, style=position )
           img(src= path, style=direction )
       each selectOptions
-        div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir)
+        div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, 
+          data-toggle="tooltip" data-placement="top" data-container="body" title=title)
   .myRobot
     unless gameEnded
       img#robot(src='/robots/robot_#{getRobotId}.png')

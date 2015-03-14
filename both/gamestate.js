@@ -92,7 +92,7 @@ GameState = {
         GameLogic.dealCards(players[i]);
     }
     game.setGamePhase(GameState.PHASE.PROGRAM);
-    var notPoweredDownCnt = Players.find({gameId: player.gameId, submitted: false}).count();
+    var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
       game.nextGamePhase();
   }
@@ -284,7 +284,7 @@ GameState = {
         messages.push('Player ' + player.name + ' ran out of lives');
       }
 
-      if (player.visisted_checkpoints === board.checkpoints.length) {
+      if (player.visited_checkpoints === board.checkpoints.length) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         messages.push("Player " + player.name + " won the game!!");
         ended = true;
