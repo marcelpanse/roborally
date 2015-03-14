@@ -3,6 +3,8 @@ GameLogic = {
   RIGHT: 1,
   DOWN: 2,
   LEFT: 3,
+  OFF: 4,
+  ON: 5,
   TIMER: 30,
   CARD_SLOTS: 5
 };
@@ -77,9 +79,8 @@ GameLogic = {
       playerCards = {gameId: player.gameId, playerId: player._id, userId: player.userId, cards: [], lockedCards: []};
     }
     //Rule note: You do not keep un-used cards from prior turn.
-    var cards = [];
-    var maxCards = (_MAX_NUMBER_OF_CARDS - player.damage); //for every damage you get a card less
-    var nrOfNewCards = maxCards - cards.length;
+    playerCards.cards = [];
+    var nrOfNewCards = (_MAX_NUMBER_OF_CARDS - player.damage); //for every damage you get a card less
 
     for (var j = 0; j < nrOfNewCards; j++) {
       //Remake the deck if it's out of cards.
@@ -89,9 +90,28 @@ GameLogic = {
         deck=GameLogic.makeDeck(player.gameId);
       }
       var cardFromDeck = deck.cards.splice(0, 1)[0]; //grab card from deck, so it can't be handed out twice
-      cards.push({cardId: Meteor.uuid(), cardType: cardFromDeck.cardType, priority: cardFromDeck.priority});
+      playerCards.cards.push({
+        cardId: Meteor.uuid(),
+        cardType: cardFromDeck.cardType,
+        priority: cardFromDeck.priority
+      });
     }
-    playerCards.cards=cards;
+
+    // if player was powered down last turn there might be not enough locked cards
+    if (playerCards.lockedCards.length + nrOfNewCards < 5) {
+      for (var k = 0; k < 5 - (playerCards.lockedCards.length + nrOfNewCards); k++) {
+        if(deck.cards.length===0) {
+          Deck.update(deck._id, deck);
+          deck=GameLogic.makeDeck(player.gameId);
+        }
+        var cardFromDeck = deck.cards.splice(0, 1)[0]; //grab card from deck, so it can't be handed out twice
+        playerCards.lockedCards.push({
+          cardId: Meteor.uuid(),
+          cardType: cardFromDeck.cardType,
+          priority: cardFromDeck.priority
+        });
+      }
+    }
 
     Cards.upsert({playerId: player._id}, playerCards);
     Deck.update(deck._id, deck);
@@ -100,41 +120,55 @@ GameLogic = {
   scope.submitCards = function(player, cards) {
     console.log('player ' + player.name + ' submitted cards: ');
 
-    //check if all played cards are available from original hand...
-    //Except locked cards, those are not in the hand.
-    var playerCards = Cards.findOne({playerId: player._id});
-    var availableCards = playerCards.cards;
-    var lockedCards = playerCards.lockedCards;
+    if (player.isPoweredDown()) {
+      Players.update(player._id, {$set: {
+        submitted: true,
+        damage: 0,
+      }});
+    } else {
+      //check if all played cards are available from original hand...
+        //Except locked cards, those are not in the hand.
+        var playerCards = Cards.findOne({playerId: player._id});
+        var availableCards = playerCards.cards;
+        var lockedCards = playerCards.lockedCards;
 
-    for (var i = cards.length-1; i >= 0; i--) {
-      var found = false;
-      for (var j = 0; j < availableCards.length; j++) {
-        if (cards[i].cardId == availableCards[j].cardId) {
-          availableCards.splice(j, 1);
-          console.log(_cardTypes[cards[i].cardType].name + ' ');
-          found = true;
-          break;
+      for (var i = cards.length-1; i >= 0; i--) {
+        var found = false;
+        for (var j = 0; j < availableCards.length; j++) {
+          if (cards[i].cardId == availableCards[j].cardId) {
+            availableCards.splice(j, 1);
+            console.log(_cardTypes[cards[i].cardType].name + ' ');
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          console.log("illegal card detected! (removing card)");
+          cards.splice(i, 1);
         }
       }
-      if (!found) {
-        console.log("illegal card detected! (removing card)");
-        cards.splice(i, 1);
+
+      if (cards.length + lockedCards.length < GameLogic.CARD_SLOTS) {
+        console.log("Not enough cards submitted");
+        var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length - lockedCards.length;
+        for (var q = 0; q < nrOfNewCards; q++) {
+          var cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]; //grab card from hand
+          console.log("Handing out random card", cardFromHand);
+          cards.push({cardId: Meteor.uuid(), cardType: cardFromHand.cardType, priority: cardFromHand.priority});
+        }
       }
+
+      Players.update(player._id, {$set: {
+        submittedCards: cards,
+        submittedLockedCards: lockedCards,
+        submitted: true,
+        optionalInstantPowerDown: false
+      }});
+      Cards.update({playerId: player._id}, {$set: {
+        cards: availableCards,
+        lockedCards: lockedCards
+      }});
     }
-
-    if (cards.length + lockedCards.length < GameLogic.CARD_SLOTS) {
-      console.log("Not enough cards submitted");
-      var nrOfNewCards = GameLogic.CARD_SLOTS - cards.length - lockedCards.length;
-      for (var q = 0; q < nrOfNewCards; q++) {
-        var cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]; //grab card from hand
-        console.log("Handing out random card", cardFromHand);
-        cards.push({cardId: Meteor.uuid(), cardType: cardFromHand.cardType, priority: cardFromHand.priority});
-      }
-    }
-
-    Players.update(player._id, {$set: {submittedCards: cards, submittedLockedCards: lockedCards, submitted: true}});
-    Cards.update({playerId: player._id}, {$set: {cards: availableCards, lockedCards: lockedCards}});
-
     var playerCnt = Players.find({gameId: player.gameId}).count();
     var readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();
     if (readyPlayerCnt === playerCnt) {
@@ -246,7 +280,7 @@ GameLogic = {
         console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
         checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
       }
-      if (!player.powered_down) {
+      if (!player.isPoweredDown()) {
         victims.push(scope.shootRobotLaser(players, player));
       }
     });
@@ -412,6 +446,7 @@ GameLogic = {
         player.damage = 2;
         player.lives--;
         player.needsRespawn=true;
+        player.optionalInstantPowerDown=true;
         Players.update(player._id, player);
         if (player.damage > 0) {
           var game = player.game();
@@ -454,7 +489,6 @@ GameLogic = {
     player.needsRespawn = false;
     Players.update(player._id, player);
   };
-
 
   var _deck = [
     { priority:  10, cardType: 0 },

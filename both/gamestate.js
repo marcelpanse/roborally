@@ -62,13 +62,39 @@ GameState = {
 
   function playDealPhase(game) {
     var players = Players.find({gameId: game._id}).fetch();
+    var dealCards;
     GameLogic.discardCards(game,players);
     GameLogic.makeDeck(game._id);
     for (var i in players) {
-      Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submittedLockedCards: [], submitted: false}});
-      GameLogic.dealCards(players[i]);
+      dealCards = true;
+      var options = {
+        playedCards: [],
+        submittedCards: [],
+        submittedLockedCards: [],
+        submitted: false,
+      };
+      if (players[i].powerState === GameLogic.OFF) {
+        // player was powered down last turn
+        // -> can choose to stay powered down this turn
+        options.optionalInstantPowerDown = true;
+      } else if (players[i].powerState == GameLogic.DOWN) {
+        // player announced power down last turn
+        options.powerState = GameLogic.OFF;
+        if (!players[i].optionalInstantPowerDown) {
+          options.submitted = true;
+          options.damage = 0;
+          dealCards = false;
+        }
+      }
+
+      Players.update(players[i]._id, {$set: options});
+      if (dealCards)
+        GameLogic.dealCards(players[i]);
     }
     game.setGamePhase(GameState.PHASE.PROGRAM);
+    var notPoweredDownCnt = Players.find({gameId: player.gameId, submitted: false}).count();
+    if (notPoweredDownCnt === 0)
+      game.nextGamePhase();
   }
 
   function playProgramCardsSubmitted(game) {

@@ -56,7 +56,18 @@ Meteor.methods({
     var author = getUsername(user);
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
-      Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, needsRespawn: false, position: {x: -1, y: -1}});
+      Players.insert({
+        gameId: gameId,
+        userId: user._id,
+        name: author,
+        lives: 3,
+        damage: 0,
+        visited_checkpoints: 0,
+        needsRespawn: false,
+        powerState: GameLogic.ON,
+        optionalInstantPowerDown: false,
+        position: {x: -1, y: -1}
+      });
     }
     game.chat(author + ' joined the game', gameId);
   },
@@ -154,6 +165,10 @@ Meteor.methods({
     GameLogic.respawnPlayerWithDir(player, Number(direction));
     player.chat('chose direction', direction);
     GameState.nextGamePhase(game);
+  },
+  togglePowerDown: function(gameId) {
+     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+     player.togglePowerDown();
   },
   addMessage: function(postAttributes) {
     var user = Meteor.user();

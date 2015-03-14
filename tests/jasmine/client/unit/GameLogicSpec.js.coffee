@@ -114,7 +114,7 @@ describe 'GameLogic', ->
         expect(players[0].damage).toEqual(1)
       it 'not fired if powered down', ->
         players = players_at 0,4, 0,0
-        players[0].powered_down = true
+        players[0].powerState = GameLogic.OFF
         Meteor.wrapAsync(GameLogic.executeLasers)(players)
         expect(players[1].damage).toEqual(0)
     describe 'board lasers', ->
