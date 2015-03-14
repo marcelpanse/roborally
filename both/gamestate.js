@@ -224,7 +224,7 @@ GameState = {
         messages.push('Player ' + player.name + ' ran out of lives');
       }
 
-      if (player.visisted_checkpoints === board.checkpoints.length) {
+      if (player.visited_checkpoints === board.checkpoints.length) {
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
         messages.push("Player " + player.name + " won the game!!");
         ended = true;
