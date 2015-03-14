@@ -30,7 +30,6 @@ Template.board.helpers({
     var m = [];
     var p_cnt = this.players.length;
     this.players.forEach(function(player) {
-      var new_pos = calcPosition(player.start.x, player.start.y);
       var deg = 360 / p_cnt * player.robotId;
       m.push({
         path: "/robots/marker_"+player.robotId.toString()+".png",
@@ -56,7 +55,27 @@ Template.board.helpers({
   },
   boardHeight: function() {
     return this.game.board().height * 50;
-  }
+  },
+  selectOptions: function() {
+    var s = [];
+    var game = this.game;
+    console.log(game.respawnUserId);
+    if (this.game.respawnUserId === Meteor.userId()) {
+      game.selectOptions.forEach(function(opts) {
+        opts.position = cssPosition(opts.x, opts.y);
+        opts.gameId   = game._id;
+        if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_POSITION) {
+          opts.select_class = 'position-select pointer';
+          opts.title = 'choose a starting position';
+        } else if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_DIRECTION) {
+          opts.select_class = 'direction-select pointer';
+          opts.title = 'choose the direction you want to face';
+        }
+        s.push(opts);
+      });
+    }
+    return s;
+  },
 });
 
 function animatePosition(element, x, y) {
@@ -161,5 +180,17 @@ Template.board.events({
     } else {
       Router.go('gamelist.page');
     }
+  },
+  'click .position-select': function(e) {
+    Meteor.call('selectRespawnPosition', this.gameId, $(e.target).attr('data-x'), $(e.target).attr('data-y'), function(error) {
+      if (error)
+        alert(error.reason);
+    });
+  },
+  'click .direction-select': function(e) {
+    Meteor.call('selectRespawnDirection', this.gameId, $(e.target).attr('data-dir'), function(error) {
+      if (error)
+        alert(error.reason);
+    });
   }
 });

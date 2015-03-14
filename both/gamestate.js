@@ -4,6 +4,7 @@ GameState = {
     DEAL: "deal",
     PROGRAM: "program",
     PLAY: "play",
+    RESPAWN: "respawn",
     ENDED: "game ended"
   },
   PLAY_PHASE: {
@@ -14,6 +15,10 @@ GameState = {
     LASERS: "lasers",
     CHECKPOINTS: "checkpoints",
     REPAIRS: "repairs"
+  },
+  RESPAWN_PHASE: {
+    CHOOSE_POSITION: "choose position",
+    CHOOSE_DIRECTION: "choose direction"
   }
 };
 
@@ -37,34 +42,97 @@ GameState = {
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
-          var players = Players.find({gameId: game._id}).fetch();
-          for(var i in players) {
-            if(players[i].needsRespawn && players[i].lives>0) {
-              console.log("Sending respawn for "+players[i].name);
-              GameLogic.respawnPlayer(players[i]);
-            }
+          if (game.waitingForRespawn.length > 0) {
+            Games.update(game._id, {$set: {
+              watingForRespawn: game.waitingForRespawn.reverse(),
+              gamePhase: GameState.PHASE.RESPAWN,
+            }});
+            game.nextGamePhase();
+          } else {
+            game.nextGamePhase(GameState.PHASE.DEAL);
           }
-          Games.update(game._id, {$set: {gamePhase: GameState.PHASE.DEAL}});
-          GameState.nextGamePhase(game._id);
           break;
+        case GameState.PHASE.RESPAWN:
+          playNextRespawn(game);
+        break;
       }
     }, _NEXT_PHASE_DELAY);
   };
 
+
   function playDealPhase(game) {
     var players = Players.find({gameId: game._id}).fetch();
+    var dealCards;
     GameLogic.discardCards(game,players);
     GameLogic.makeDeck(game._id);
     for (var i in players) {
-      Players.update(players[i]._id, {$set: {playedCards: [], submittedCards: [], submittedLockedCards: [], submitted: false}});
-      GameLogic.dealCards(players[i]);
+      dealCards = true;
+      var options = {
+        playedCards: [],
+        submittedCards: [],
+        submittedLockedCards: [],
+        submitted: false,
+      };
+      if (players[i].powerState === GameLogic.OFF) {
+        // player was powered down last turn
+        // -> can choose to stay powered down this turn
+        options.optionalInstantPowerDown = true;
+      } else if (players[i].powerState == GameLogic.DOWN) {
+        // player announced power down last turn
+        options.powerState = GameLogic.OFF;
+        if (!players[i].optionalInstantPowerDown) {
+          options.submitted = true;
+          options.damage = 0;
+          dealCards = false;
+        }
+      }
+
+      Players.update(players[i]._id, {$set: options});
+      if (dealCards)
+        GameLogic.dealCards(players[i]);
     }
-    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PROGRAM}});
+    game.setGamePhase(GameState.PHASE.PROGRAM);
+    var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
+    if (notPoweredDownCnt === 0)
+      game.nextGamePhase();
   }
 
   function playProgramCardsSubmitted(game) {
-    Games.update(game._id, {$set: {gamePhase: GameState.PHASE.PLAY, playPhase: GameState.PLAY_PHASE.IDLE, playPhaseCount: 1}});
-    GameState.nextPlayPhase(game._id);
+    Games.update(game._id, {$set: {
+      gamePhase: GameState.PHASE.PLAY,
+      playPhase: GameState.PLAY_PHASE.IDLE,
+      playPhaseCount: 1
+    }});
+    game.nextPlayPhase();
+  }
+
+  function playNextRespawn(game) {
+    if (game.waitingForRespawn.length > 0) {
+      var player = Players.findOne(game.waitingForRespawn.pop());
+      var nextPhase;
+      var x = player.start.x;
+      var y = player.start.y;
+      if (game.isPlayerOnTile(x,y)) {
+        nextPhase = GameState.RESPAWN_PHASE.CHOOSE_POSITION;
+      } else {
+        GameLogic.respawnPlayerAtPos(player,x,y);
+        nextPhase = GameState.RESPAWN_PHASE.CHOOSE_DIRECTION;
+      }
+      Games.update(game._id, {$set: {
+        respawnPhase: nextPhase,
+        respawnPlayerId: player._id,
+        waitingForRespawn: game.waitingForRespawn
+      }});
+      game.nextRespawnPhase();
+    } else {
+      Games.update(game._id, {$set: {
+        gamePhase: GameState.PHASE.DEAL,
+        respawnUserId: null,
+        respawnPlayerId: null,
+        selectOptions: null
+      }});
+      game.nextGamePhase();
+    }
   }
 
   // play phases:
@@ -74,8 +142,7 @@ GameState = {
     Meteor.setTimeout(function() {
       switch (game.playPhase) {
         case GameState.PLAY_PHASE.IDLE:
-          Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.REVEAL_CARDS}});
-          GameState.nextPlayPhase(game._id);
+          game.nextPlayPhase(GameState.PLAY_PHASE.REVEAL_CARDS);
           break;
         case GameState.PLAY_PHASE.REVEAL_CARDS:
           playRevealCards(game);
@@ -94,7 +161,6 @@ GameState = {
           break;
         case GameState.PLAY_PHASE.REPAIRS:
           playRepairs(game);
-          GameState.nextGamePhase(game._id);
           break;
       }
     }, _NEXT_PHASE_DELAY);
@@ -116,7 +182,6 @@ GameState = {
         Players.update(players[i]._id, {$set: {playedCards: playedCards}});
       }
     }
-
     GameState.nextPlayPhase(game._id);
   }
 
@@ -149,8 +214,7 @@ GameState = {
       Meteor.wrapAsync(GameLogic.playCard)(players, player, card);
     });
 
-    Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOARD}});
-    GameState.nextPlayPhase(game._id);
+    game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBoard(game) {
@@ -160,15 +224,13 @@ GameState = {
     Meteor.wrapAsync(GameLogic.executeGears)(players);
     Meteor.wrapAsync(GameLogic.executePushers)(players);
 
-    Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.LASERS}});
-    GameState.nextPlayPhase(game._id);
+    game.nextPlayPhase(GameState.PLAY_PHASE.LASERS);
   }
 
   function playLasers(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeLasers)(players);
-    Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.CHECKPOINTS}});
-    GameState.nextPlayPhase(game._id);
+    game.nextPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
   }
 
   function playCheckpoints(game) {
@@ -177,12 +239,9 @@ GameState = {
         Games.update(game._id,
           { $set: {playPhase: GameState.PLAY_PHASE.REVEAL_CARDS}, $inc: {playPhaseCount: 1} }
         );
-        GameState.nextPlayPhase(game._id);
+        game.nextPlayPhase();
       } else {
-        Games.update(game._id,
-          { $set: {playPhase: GameState.PLAY_PHASE.REPAIRS} }
-        );
-        GameState.nextPlayPhase(game._id);
+        game.nextPlayPhase(GameState.PLAY_PHASE.REPAIRS);
       }
     }
   }
@@ -190,6 +249,7 @@ GameState = {
   function playRepairs(game) {
     var players = Players.find({gameId: game._id}).fetch();
     Meteor.wrapAsync(GameLogic.executeRepairs)(players);
+    game.nextGamePhase();
   }
 
   function checkCheckpoints(player,game) {
@@ -245,14 +305,76 @@ GameState = {
       ended = true;
     }
     messages.forEach(function(msg) {
-      console.log(msg);
-      Chat.insert({
-        gameId: game._id,
-        message: msg,
-        submitted: new Date().getTime()
-      });
+      game.chat(msg);
     });
     return ended;
   }
 
+
+  // respawn phases
+  scope.nextRespawnPhase = function(gameId) {
+    var game = Games.findOne(gameId);
+    Meteor.setTimeout(function() {
+      switch (game.respawnPhase) {
+        case GameState.RESPAWN_PHASE.CHOOSE_POSITION:
+          prepareChooseRespawnPosition(game);
+          break;
+        case GameState.RESPAWN_PHASE.CHOOSE_DIRECTION:
+          prepareChooseRespawnDirection(game);
+          break;
+      }
+    }, _NEXT_PHASE_DELAY);
+  };
+
+
+  function prepareChooseRespawnPosition(game) {
+    var player = Players.findOne(game.respawnPlayerId);
+    var selectOptions = [];
+    var x = player.start.x;
+    var y = player.start.y;
+    for (var dx = -1; dx<=1; ++dx) {
+      for (var dy = -1; dy<=1; dy++)  {
+        if (!game.isPlayerOnTile(x+dx,y+dy) && game.board().getTile(x+dx,y+dy).type !== Tile.VOID) {
+          selectOptions.push({x:x+dx, y:y+dy});
+        }
+      }
+    }
+    Games.update(game._id, {$set: {
+      selectOptions: selectOptions,
+      respawnUserId: player.userId
+    }});
+  }
+
+  function prepareChooseRespawnDirection(game) {
+    var player = Players.findOne(game.respawnPlayerId);
+    var selectOptions = [];
+    var x = player.position.x;
+    var y = player.position.y;
+    var step;
+    if (player.start.x != x && player.start.y != y) {
+      for (var i=0; i<4; ++i) {
+        step = Board.to_step(i);
+        if (noPlayerOnNextThree(x,y,step.x,step.y, game))
+          selectOptions.push({x: x+step.x, y:y+step+y, dir: i});
+      }
+    } else {
+      for (var j=0; j<4; ++j) {
+        step = Board.to_step(j);
+        selectOptions.push({
+          x: x+step.x,
+          y: y+step.y,
+          dir: j
+        });
+      }
+    }
+    Games.update(game._id, {$set: {
+      selectOptions: selectOptions,
+      respawnUserId: player.userId
+    }});
+  }
+
+
+  function noPlayerOnNextThree(x,y,dx,dy, game) {
+    return  !game.isPlayerOnTile(x+dx,y+dy) && !game.isPlayerOnTile(x+2*dx,y+2*dy) && !game.isPlayerOnTile(x+3*dx,y+3*dy);
+  }
 })(GameState);

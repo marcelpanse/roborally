@@ -32,8 +32,39 @@ var player = {
   rotate: function(rotation) {
     this.direction += rotation + 4;
     this.direction %= 4;
+  },
+  chat: function(msg, debug_info) {
+    msg = this.name + ' ' + msg;
+    Chat.insert({
+      gameId: this.gameId,
+      message: msg,
+      submitted: new Date().getTime()
+    });
+    if (debug_info !== undefined)
+      msg += ' ' + debug_info;
+    console.log(msg);
+  },
+  togglePowerDown: function() {
+    switch (this.powerState) {
+      case GameLogic.DOWN:
+        if  (this.optionalInstantPowerDown)
+          this.powerState = GameLogic.OFF;
+        else
+          this.powerState = GameLogic.ON;
+        break;
+      case GameLogic.ON:
+        this.powerState = GameLogic.DOWN;
+        break;
+      case GameLogic.OFF:
+        if (this.optionalInstantPowerDown)
+          this.powerState = GameLogic.ON;
+    }
+    console.log("new power state "+this.powerState);
+    GameLogic.updatePowerState(this._id, this.powerState);
+  },
+  isPoweredDown: function() {
+    return this.powerState === GameLogic.OFF;
   }
-
 };
 
 
