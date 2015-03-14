@@ -18,8 +18,10 @@ Meteor.methods({
       started: false,
       gamePhase: GameState.PHASE.IDLE,
       playPhase: GameState.PLAY_PHASE.IDLE,
+      respawnPhase: GameState.RESPAWN_PHASE.CHOOSE_POSITION,
       playPhaseCount: 0,
-      boardId: 0
+      boardId: 0,
+      waitingForRespawn: []
     });
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)
@@ -54,15 +56,9 @@ Meteor.methods({
     var author = getUsername(user);
 
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
-      console.log('User ' + author + ' joining game ' + gameId);
       Players.insert({gameId: gameId, userId: user._id, name: author, lives: 3, damage: 0, visited_checkpoints: 0, needsRespawn: false, position: {x: -1, y: -1}});
     }
-
-    Chat.insert({
-      gameId: gameId,
-      message: author + ' joined the game',
-      submitted: new Date().getTime()
-    });
+    game.chat(author + ' joined the game', gameId);
   },
 
   leaveGame: function(gameId) {
@@ -87,12 +83,7 @@ Meteor.methods({
         Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       }
     }
-
-    Chat.insert({
-      gameId: gameId,
-      message: author + ' left the game',
-      submitted: new Date().getTime()
-    });
+    game.chat(author + ' left the game');
   },
 
   selectBoard: function(boardName, gameId) {
@@ -110,12 +101,7 @@ Meteor.methods({
     Games.update(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
 
     var author = getUsername(user);
-    console.log('User ' + author + ' selected ' + boardName + " for game " + gameId);
-    Chat.insert({
-      gameId: gameId,
-      message: author + ' selected board ' + boardName,
-      submitted: new Date().getTime()
-    });
+    game.chat(author + ' selected board ' + boardName, 'for game' + gameId);
   },
 
   startGame: function(gameId) {
@@ -135,15 +121,7 @@ Meteor.methods({
       player.start = start;
       Players.update(player._id, player);
     }
-
-    console.log('set game started');
-
-    Chat.insert({
-      gameId: gameId,
-      message: 'Game started',
-      submitted: new Date().getTime()
-    });
-
+    game.chat('Game started');
     GameState.nextGamePhase(gameId);
   },
 
@@ -154,16 +132,29 @@ Meteor.methods({
 
     if (!player.submitted) {
       GameLogic.submitCards(player, attributes.cards);
-      Chat.insert({
-        gameId: player.gameId,
-        message: 'Player ' + player.name + ' submitted cards',
-        submitted: new Date().getTime()
-      });
+      player.chat('submitted cards');
     } else {
       console.log("Player already submitted his cards.");
     }
   },
 
+  selectRespawnPosition: function(gameId, x, y) {
+    var game = Games.findOne(gameId);
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
+    Games.update(game._id, {$set: {
+      playPhase: GameState.PLAY_PHASE.CHOOSE_DIRECTION
+    }});
+    player.chat('chose position',  '(' +x+ ',' +y+ ')');
+    GameState.nextRespawnPhase(game._id);
+  },
+  selectRespawnDirection: function(gameId, direction) {
+    var game = Games.findOne(gameId);
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    GameLogic.respawnPlayerWithDir(player, Number(direction));
+    player.chat('chose direction', direction);
+    GameState.nextGamePhase(game);
+  },
   addMessage: function(postAttributes) {
     var user = Meteor.user();
 

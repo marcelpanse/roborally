@@ -27,13 +27,8 @@ Meteor.startup(function () {
           console.log("Found disconnected player, waiting couple of seconds: " + game._id);
           Meteor.setTimeout(function() {
             if (!Meteor.users.findOne(player.userId).status.online) {
-              console.log("Forfeitting game with disconnected player: " + game._id);
-
-              Chat.insert({
-                gameId: game._id,
-                message: player.name + ' disconnected and left the game',
-                submitted: new Date().getTime()
-              });
+              debug_info = "Forfeitting game with disconnected player: " + game._id;
+              player.chat('disconnected and left the game', debug_info);
             }
           }, 5000);
         } else {

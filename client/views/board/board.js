@@ -30,12 +30,11 @@ Template.board.helpers({
     var m = [];
     var p_cnt = this.players.length;
     this.players.forEach(function(player) {
-      var new_pos = calcPosition(player.start.x, player.start.y);
       var deg = 360 / p_cnt * player.robotId;
       m.push({
         path: "/robots/marker_"+player.robotId.toString()+".png",
         marker_class: "m" + player.robotId.toString(),
-        position: 'top: '+ new_pos.y +'px; left:'+ new_pos.x +'px;',
+        position: cssPosition(player.start.x, player.start.y),
         direction: 'transform: rotate('+ deg + 'deg);',
       });
     });
@@ -56,7 +55,23 @@ Template.board.helpers({
   },
   boardHeight: function() {
     return this.game.board().height * 50;
-  }
+  },
+  selectOptions: function() {
+    var s = [];
+    var game = this.game;
+    console.log(game.respawnUserId);
+    if (this.game.respawnUserId === Meteor.userId()) {
+      game.selectOptions.forEach(function(opts) {
+        opts.position = cssPosition(opts.x+0.25, opts.y+0.25);
+        opts.gameId   = game._id;
+        if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_POSITION)opts.select_class = 'position-select';
+        else if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_DIRECTION)
+          opts.select_class = 'direction-select';
+        s.push(opts);
+      });
+    }
+    return s;
+  },
 });
 
 function animatePosition(element, x, y) {
@@ -128,6 +143,11 @@ function animateRotation(element, direction) {
   return '';
 }
 
+function cssPosition(x,y) {
+  var coord = calcPosition(x, y);
+  return 'top: '+ coord.y +'px; left:'+ coord.x +'px;';
+}
+
 function calcPosition(x, y) {
   var tileWidth = 50;//$("#board").width()/12;
   var tileHeight = 50;//$("#board").height()/12;
@@ -151,5 +171,17 @@ Template.board.events({
     } else {
       Router.go('gamelist.page');
     }
+  },
+  'click .position-select': function(e) {
+    Meteor.call('selectRespawnPosition', this.gameId, $(e.target).attr('data-x'), $(e.target).attr('data-y'), function(error) {
+      if (error)
+        alert(error.reason);
+    });
+  },
+  'click .direction-select': function(e) {
+    Meteor.call('selectRespawnDirection', this.gameId, $(e.target).attr('data-dir'), function(error) {
+      if (error)
+        alert(error.reason);
+    });
   }
 });
