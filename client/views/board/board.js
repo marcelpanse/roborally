@@ -62,11 +62,15 @@ Template.board.helpers({
     console.log(game.respawnUserId);
     if (this.game.respawnUserId === Meteor.userId()) {
       game.selectOptions.forEach(function(opts) {
-        opts.position = cssPosition(opts.x+0.25, opts.y+0.25);
+        opts.position = cssPosition(opts.x, opts.y);
         opts.gameId   = game._id;
-        if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_POSITION)opts.select_class = 'position-select';
-        else if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_DIRECTION)
-          opts.select_class = 'direction-select';
+        if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_POSITION) {
+          opts.select_class = 'position-select pointer';
+          opts.title = 'choose a starting position';
+        } else if (game.respawnPhase === GameState.RESPAWN_PHASE.CHOOSE_DIRECTION) {
+          opts.select_class = 'direction-select pointer';
+          opts.title = 'choose the direction you want to face';
+        }
         s.push(opts);
       });
     }

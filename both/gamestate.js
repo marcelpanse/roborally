@@ -92,7 +92,7 @@ GameState = {
         GameLogic.dealCards(players[i]);
     }
     game.setGamePhase(GameState.PHASE.PROGRAM);
-    var notPoweredDownCnt = Players.find({gameId: player.gameId, submitted: false}).count();
+    var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
       game.nextGamePhase();
   }
