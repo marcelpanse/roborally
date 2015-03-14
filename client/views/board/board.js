@@ -35,7 +35,7 @@ Template.board.helpers({
         path: "/robots/marker_"+player.robotId.toString()+".png",
         marker_class: "m" + player.robotId.toString(),
         position: cssPosition(player.start.x, player.start.y),
-        direction: 'transform: rotate('+ deg + 'deg);',
+        direction: cssRotate(deg)
       });
     });
     return m;
@@ -146,6 +146,11 @@ function animateRotation(element, direction) {
 function cssPosition(x,y) {
   var coord = calcPosition(x, y);
   return 'top: '+ coord.y +'px; left:'+ coord.x +'px;';
+}
+
+function cssRotate(deg) {
+  var rotate = "rotate(" +deg+ "deg);";
+  return 'transform: '+rotate+' -webkit-transform: '+rotate+' -ms-transform: '+rotate;
 }
 
 function calcPosition(x, y) {
