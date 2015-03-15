@@ -14,9 +14,9 @@ meteorhacks:zones
 mquandalle:jade
 linto:fontawesome
 spiderable
-percolatestudio:segment.io@1.1.0_1
 fourseven:scss
 ian:accounts-ui-bootstrap-3
 mrt:moment
 coffeescript
 chfritz:easycron
+rollick:mixpanel
