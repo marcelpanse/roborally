@@ -42,7 +42,7 @@ class @Tile
         "If you end your hand on a repair site, one damage will be repaired."
       when Tile.GEAR
         msg = "This gear will turn you "
-        msg += if @gear_type is "cw" then "left" else "right"
+        msg += if @gear_type is "cw" then "right" else "left"
         msg += " when ending here after a card has been played."
       when Tile.PUSHER
         msg = "This pusher will push you 1 space away from it, but only after card "
@@ -51,7 +51,6 @@ class @Tile
   path: () ->
     p = "/tiles/#{@type}"
     p += switch @type
-      when 'empty' then "-1"
       when 'gear' then "-#{@gear_type}"
       when 'pusher'
         if @pusher_type == 0

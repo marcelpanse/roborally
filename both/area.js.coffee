@@ -93,7 +93,7 @@ class @Area
       @addLaser 1,2, 'd', 2
       @addDoubleLaser 0,1, 'r', 1
 
-    default: () ->
+    cross: () ->
       @setVoid 9, 2
       @setVoid 1, 4
       @setVoid 2, 4
@@ -375,4 +375,49 @@ class @Area
       @setVoid 4,6
       @setVoid 4,7
       @setVoid 5,7
+      Area.boundaryWalls.call(@)
+
+    exchange: () ->
+      @setGear 10,1, 'cw'
+      @setGear 10,10, 'cw'
+      @setGear 3,3, 'ccw'
+      @setGear 3,8, 'ccw'
+      @setGear 8,8, 'ccw'
+
+      @setRepair 0,0
+      @setRepair 11,11
+      @setOption 7,7
+
+      @setRoller 0,1, 'l'
+      @setRoller 0,3, 'rrr'
+      @setRoller 4,5, 'lllll'
+      @setRoller 11,5, 'lllll'
+      @setRoller 1,6, 'rrrr'
+      @setRoller 2,8, 'lll'
+      @setRoller 3,2, 'uuu'
+      @setRoller 3,11, 'uuu'
+      @setRoller 5,0, 'ddddd'
+      @setRoller 6,4, 'uuuuu'
+      @setRoller 6,10, 'uuuu'
+      @setRoller 8,0, 'dddd'
+      @setRoller 8,9, 'ddd'
+      @setRoller 10,0, 'u'
+      @setRoller 11,1, 'l'
+      @setRoller 11,8, 'lll'
+      @setRoller 11,10, 'r'
+      @setRoller 10,11, 'u'
+      @setExpressRoller 5,7, 'ddddd'
+      @setExpressRoller 7,6, 'rrrrr'
+      @setExpressRoller 9,3, 'rrr'
+
+      @setVoid 2,1
+      @setVoid 0,10
+
+      @addLaser 9,2, 'r', 3
+      @addWall 4,4, 'right-down'
+      @addWall 4,7, 'up-right'
+      @addWall 7,7, 'left-up'
+      @addWall 7,4, 'left-down'
+      @addWall 1,10, 'down'
+      @addWall 10,9, 'up'
       Area.boundaryWalls.call(@)
