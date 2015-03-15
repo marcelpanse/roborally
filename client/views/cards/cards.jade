@@ -11,20 +11,22 @@ template(name="cards")
       | Playing
     div.playing
       if poweredDown
-        img.powerBtn(src=ownPowerState)
+        p Your robot is powered down
+        .small Click the play cards button to stay powered down, any other action will cancel the power down. 
       else
         each chosenCards
           +card
         each lockedCardsHtml
           +card
-    div.power
-      h5
-        | Power state
-      img.powerBtn(src=ownPowerState)
     if showPlayButton
       if poweredDown
+        a.btn.btn-warning.powerBtn #{ownPowerStateName}
+        &nbsp;
         a.btn.btn-success.playBtn play cards
       else
+        a.btn.powerBtn(class= ownPowerStateStyle, data-toggle='tooltip' data-placement='left' title="A player with a damaged robot may choose to power down. A power down announced this turn takes effect on the next turn. At the beginning of the turn when your robot powers down, all your damage is removed. You can't play any cards while powered down.") 
+          | #{ownPowerStateName}
+        &nbsp;
         a.btn.btn-success.playBtn.disabled play cards
   else
     each players
@@ -34,7 +36,7 @@ template(name="cards")
           each playedCardsHtml
             +card
           if showPowerState
-            img.power-state(src=powerState)
+            p Power down played
 template(name="card")
   if emptyCard
     .card(class="empty #{selected}" data-toggle='tooltip' title='#{title}')

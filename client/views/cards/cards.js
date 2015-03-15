@@ -16,19 +16,9 @@ Template.cards.helpers({
   showPowerState: function() {
     return this.powerState != GameLogic.ON;
   },
-  powerState: function() {
-    switch (this.powerState) {
-      case GameLogic.DOWN:
-        return  '/Power_Down.png';
-      case GameLogic.OFF:
-        return  '/Power_Off.png';
-      case GameLogic.ON:
-        return  '/Power_On.png';
-    }
-  },
   showCards: function() {
     var cards = this.cards || [];
-    if(this.game.gamePhase == GameState.PHASE.PROGRAM && 
+    if(this.game.gamePhase == GameState.PHASE.PROGRAM &&
        Players.findOne({userId: Meteor.userId()}) &&
        !Players.findOne({userId: Meteor.userId()}).submitted) {
       if(cards.length>0) {
@@ -117,15 +107,24 @@ Template.cards.helpers({
     console.log(this.game.gamePhase, this.game.playPhase, this.game.respawnPhase);
     return "Problem?";
   },
-  ownPowerState: function() {
+  ownPowerStateName: function() {
     var player = Players.findOne({userId: Meteor.userId()});
     switch (player.powerState) {
       case GameLogic.DOWN:
-        return  '/Power_Down.png';
       case GameLogic.OFF:
-        return  '/Power_Off.png';
+        return  'cancel announce power down';
       case GameLogic.ON:
-        return  '/Power_On.png';
+        return  'announce power down';
+    }
+  },
+  ownPowerStateStyle: function() {
+    var player = Players.findOne({userId: Meteor.userId()});
+    switch (player.powerState) {
+      case GameLogic.DOWN:
+      case GameLogic.OFF:
+        return  'btn-danger';
+      case GameLogic.ON:
+        return  'btn-warning';
     }
   },
   poweredDown: function() {
