@@ -51,7 +51,6 @@ class @Tile
   path: () ->
     p = "/tiles/#{@type}"
     p += switch @type
-      when 'empty' then "-1"
       when 'gear' then "-#{@gear_type}"
       when 'pusher'
         if @pusher_type == 0
