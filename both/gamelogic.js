@@ -452,7 +452,7 @@ GameLogic = {
         player.needsRespawn=true;
         player.optionalInstantPowerDown=true;
         Players.update(player._id, player);
-        if (player.damage > 0) {
+        if (player.lives > 0) {
           var game = player.game();
           game.waitingForRespawn.push(player._id);
           Games.update(game._id, game);

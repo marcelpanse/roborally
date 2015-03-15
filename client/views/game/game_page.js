@@ -41,10 +41,11 @@ Template.gamePageActions.events({
   'click .start': function(e) {
     e.preventDefault();
 
+    var game = this;
     Meteor.call('startGame', this._id, function(error) {
       if (error)
         return alert(error.reason);
-      mixpanel.track("game-started", {name: this.name, author: this.author, boardId: this.boardId});
+      mixpanel.track("game-started", {name: game.name, author: game.author, boardId: game.boardId});
     });
   },
 });
