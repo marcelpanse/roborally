@@ -1,6 +1,7 @@
 class @BoardBox
   @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
-               'option_world', 'oddest_sea', 'dizzy_dash', 'twister' ]
+               'option_world', 'oddest_sea', 'dizzy_dash', 'twister',
+               'island_hop', 'death_trap', 'around_the_world', 'island_king' ]
                #moving_targets'
 
   @cache = []
@@ -143,4 +144,49 @@ class @BoardBox
       board.addCheckpoint 3,2
       board.addCheckpoint 9,2
       board.addCheckpoint 8,9
+      return board
+    island_hop: () ->
+      board = new Board(2,8)
+      board.name = 'island_hop'
+      board.title = 'Island Hop'
+      board.length = 'medium'
+      board.addRallyArea('island')
+      board.addStartArea('simple')
+      board.addCheckpoint 6,1
+      board.addCheckpoint 1,6
+      board.addCheckpoint 11,4
+      return board
+    death_trap: () ->
+      board = new Board(2,4)
+      board.name = 'death_trap'
+      board.title = 'Death Trap'
+      board.length = 'short'
+      board.addRallyArea('island')
+      board.addStartArea('simple')
+      board.addCheckpoint 7,7
+      board.addCheckpoint 0,4
+      board.addCheckpoint 6,5
+      return board
+    around_the_world: () ->
+      board = new Board(5,8,12,28)
+      board.name = 'around_the_world'
+      board.title = 'Around the World'
+      board.length = 'long'
+      board.addRallyArea('island',0,0,180)
+      board.addRallyArea('spin_zone',0,12,90)
+      board.addStartArea('simple',0,24)
+      board.addCheckpoint 9,12
+      board.addCheckpoint 6,1
+      board.addCheckpoint 5,22
+      return board
+    island_king: () ->
+      board = new Board(2,8)
+      board.name = 'island_king'
+      board.title = 'Island King'
+      board.length = 'short'
+      board.addRallyArea('island',0,0,180)
+      board.addStartArea('simple')
+      board.addCheckpoint 5,4
+      board.addCheckpoint 7,7
+      board.addCheckpoint 5,6
       return board
