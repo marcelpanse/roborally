@@ -21,12 +21,12 @@ template(name="cards")
     if showPlayButton
       if poweredDown
         a.btn.btn-warning.powerBtn #{ownPowerStateName}
-        &nbsp;
+        | &nbsp;
         a.btn.btn-success.playBtn play cards
       else
         a.btn.powerBtn(class= ownPowerStateStyle, data-toggle='tooltip' data-placement='left' title="A player with a damaged robot may choose to power down. A power down announced this turn takes effect on the next turn. At the beginning of the turn when your robot powers down, all your damage is removed. You can't play any cards while powered down.") 
           | #{ownPowerStateName}
-        &nbsp;
+        | &nbsp;
         a.btn.btn-success.playBtn.disabled play cards
   else
     each players

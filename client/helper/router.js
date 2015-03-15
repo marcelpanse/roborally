@@ -1,13 +1,20 @@
 Router.configure({
-  layoutTemplate: 'applicationLayout',
-  trackPageView: true
+  layoutTemplate: 'applicationLayout'
+});
+
+Meteor.startup(function() {
+  document.title = "RoboRally online!";
+
+  if (Meteor.settings && Meteor.settings.public.mixpanelEnabled) {
+    mixpanel.init('2ea215e4a5be057fa7ec3dd2a0e2100a');
+  }
 });
 
 Router.route('/', {
   name: 'home.page',
   layoutTemplate: 'home',
   action: function() {
-    analytics.page("home");
+    mixpanel.track("Viewed home Page");
     if (Meteor.isCordova) {
       Router.go('gamelist.page');
     }
@@ -19,12 +26,20 @@ Router.route('/online', {
   loadingTemplate: 'loading',
 
   waitOn: function() {
-    return Meteor.subscribe('games');
+    return [Meteor.subscribe('games'),
+      Meteor.subscribe('chat', "global")];
   },
 
   action: function() {
+    mixpanel.track("Viewed game list Page");
     this.render('gameList');
     this.render('gameItemPostForm', {to: 'rightPanel'});
+    this.render('chat', {
+      to: 'rightPanel2',
+      data: function() {
+        return {messages: Chat.find(), gameId: "global"};
+      }
+    });
   }
 });
 
@@ -34,11 +49,11 @@ Router.route('/select/:_id', {
 
   waitOn: function() {
     return [Meteor.subscribe('games'),
-      Meteor.subscribe('players', this.params._id),
-      Meteor.subscribe('chat', this.params._id)];
+      Meteor.subscribe('players', this.params._id)];
   },
 
   action: function() {
+    mixpanel.track("Viewed change board Page");
     this.render('boardselect', {
       data: function() {
         var game = Games.findOne(this.params._id);
@@ -68,7 +83,6 @@ Router.route('/select/:_id', {
   }
 });
 
-
 Router.route('/games/:_id', {
   name: 'game.page',
   loadingTemplate: 'loading',
@@ -78,7 +92,6 @@ Router.route('/games/:_id', {
       Meteor.subscribe('players', this.params._id),
       Meteor.subscribe('chat', this.params._id)];
   },
-
 
   action: function() {
     this.render('chat', {
