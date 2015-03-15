@@ -22,6 +22,7 @@ Template.board.helpers({
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
+        poweredDown: player.isPoweredDown()
       });
     });
     return r;
@@ -39,6 +40,72 @@ Template.board.helpers({
       });
     });
     return m;
+  },
+  shots: function() {
+    var laserWidth = 4;
+    var tileWidth = 50;
+    var startOffset = 5;
+    var s = [];
+    if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
+      this.players.forEach(function(player,i) {
+        if (!player.isPoweredDown()) {
+          var offsetY;
+          var offsetX;
+          var animate = {};
+          var animateRev = {};
+          var style = '';
+          var lc = 'l'+i;
+          switch (player.direction%2) {
+            case 0:  // up or down
+              animate.height = tileWidth*player.shotDistance + "px";
+              animateRev.height = "0px";
+              style   = 'width: '+laserWidth+'px;';
+              style   += 'height: 0px;';
+              offsetX = (tileWidth-laserWidth)/2;
+              break;
+            case 1: // left or right
+              animate.width = tileWidth*player.shotDistance + "px";
+              animateRev.width = "0px";
+              style   = 'height: '+laserWidth+'px;';
+              style   += 'width: 0px;';
+              offsetY = (tileWidth-laserWidth)/2;
+              break;
+          }
+
+          switch (player.direction) {
+            case GameLogic.UP:
+              offsetY = startOffset;
+              animate.top = "-=" + (tileWidth*player.shotDistance-startOffset) + "px";
+              break;
+            case GameLogic.LEFT:
+              offsetX = startOffset;
+              animate.left = "-="+ (tileWidth*player.shotDistance-startOffset) + "px";
+              break;
+            case GameLogic.DOWN:
+              animateRev.top = "+=" + (tileWidth*player.shotDistance-startOffset) + "px";
+              offsetY = tileWidth-startOffset;
+              break;
+            case GameLogic.RIGHT:
+              animateRev.left = "+=" + (tileWidth*player.shotDistance-startOffset) + "px";
+              offsetX = tileWidth-startOffset;
+              break;
+          }
+          style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
+          Tracker.afterFlush(function() {
+            var once = false;
+            $('.'+lc).stop();
+            $('.'+lc).animate(animate, {duration: 400, queue: false, progress: function(anim, progress, remainingMs) {
+              if (remainingMs <= 350 && !once) {
+                $('.'+lc).animate(animateRev, { duration: 400, queue: false });
+                once = true;
+              }
+            }});
+          });
+          s.push({shot:style, laser_class: lc});
+        }
+      });
+    }
+    return s;
   },
   getRobotId: function() {
     return Players.findOne({userId: Meteor.userId()}).robotId.toString();
@@ -147,8 +214,8 @@ function animateRotation(element, direction) {
   return '';
 }
 
-function cssPosition(x,y) {
-  var coord = calcPosition(x, y);
+function cssPosition(x,y, offsetX, offsetY) {
+  var coord = calcPosition(x, y, offsetX, offsetY);
   return 'top: '+ coord.y +'px; left:'+ coord.x +'px;';
 }
 
@@ -157,12 +224,17 @@ function cssRotate(deg) {
   return 'transform: '+rotate+' -webkit-transform: '+rotate+' -ms-transform: '+rotate;
 }
 
-function calcPosition(x, y) {
+function calcPosition(x, y, offsetX, offsetY) {
+  if (offsetX == null)
+    offsetX = 0;
+  if (offsetY == null)
+    offsetY = 0;
+
   var tileWidth = 50;//$("#board").width()/12;
   var tileHeight = 50;//$("#board").height()/12;
 
-  x = (tileWidth*x);
-  y = (tileHeight*y);
+  x = (tileWidth*x)+offsetX;
+  y = (tileHeight*y)+offsetY;
 
   return {x: x, y: y};
 }

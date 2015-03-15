@@ -168,7 +168,7 @@ Meteor.methods({
   },
   togglePowerDown: function(gameId) {
      var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
-     player.togglePowerDown();
+     return player.togglePowerDown();
   },
   addMessage: function(postAttributes) {
     var user = Meteor.user();

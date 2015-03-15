@@ -47,20 +47,18 @@ var player = {
   togglePowerDown: function() {
     switch (this.powerState) {
       case GameLogic.DOWN:
-        if  (this.optionalInstantPowerDown)
-          this.powerState = GameLogic.OFF;
-        else
-          this.powerState = GameLogic.ON;
+        this.powerState = GameLogic.ON;
         break;
       case GameLogic.ON:
         this.powerState = GameLogic.DOWN;
         break;
       case GameLogic.OFF:
-        if (this.optionalInstantPowerDown)
-          this.powerState = GameLogic.ON;
+        this.powerState = GameLogic.ON;
+				break;
     }
     console.log("new power state "+this.powerState);
-    GameLogic.updatePowerState(this._id, this.powerState);
+    Players.update(this._id, {$set:{powerState: this.powerState}});
+    return this.powerState;
   },
   isPoweredDown: function() {
     return this.powerState === GameLogic.OFF;

@@ -325,17 +325,20 @@ GameLogic = {
     }
     var x = player.position.x;
     var y = player.position.y;
-
+    var shotDistance = 0;
     while (board.onBoard(x+step.x,y+step.y) && board.canMove(x, y, step) ) {
       x += step.x;
       y += step.y;
+      shotDistance++;
       var victim = isPlayerOnTile(players,x,y);
       if (victim) {
         debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
         victim.chat('was shot by '+ player.name +', Total damage: '+ (victim.damage+1), debug_info);
+        Players.update(player._id,{$set: {shotDistance:shotDistance}});
         return victim;
       }
     }
+    Players.update(player._id,{$set: {shotDistance:shotDistance}});
     return false;
   };
 
@@ -469,8 +472,9 @@ GameLogic = {
 
   function removePlayerWithDelay(player, callback) {
     Meteor.setTimeout(function() {
-      player.position.x = -1;
-      player.position.y = 0;
+      player.position.x = player.board().width-1;
+      player.position.y = player.board().height;
+      player.direction = GameLogic.UP;
       Players.update(player._id, player);
       console.log("removing player", player.name);
       Players.update(player._id, player);
