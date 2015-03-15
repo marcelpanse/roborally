@@ -146,7 +146,7 @@ GameState = {
     cardsToPlay.forEach(function(card) {
       Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
       var player = Players.findOne(card.playerId);
-      Meteor.wrapAsync(GameLogic.playCard)(players, player, card);
+      Meteor.wrapAsync(GameLogic.playCard)(player, card);
     });
 
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOARD}});
