@@ -19,12 +19,19 @@ Router.route('/online', {
   loadingTemplate: 'loading',
 
   waitOn: function() {
-    return Meteor.subscribe('games');
+    return [Meteor.subscribe('games'),
+      Meteor.subscribe('chat', "global")];
   },
 
   action: function() {
     this.render('gameList');
     this.render('gameItemPostForm', {to: 'rightPanel'});
+    this.render('chat', {
+      to: 'rightPanel2',
+      data: function() {
+        return {messages: Chat.find(), gameId: "global"};
+      }
+    });
   }
 });
 
@@ -34,8 +41,7 @@ Router.route('/select/:_id', {
 
   waitOn: function() {
     return [Meteor.subscribe('games'),
-      Meteor.subscribe('players', this.params._id),
-      Meteor.subscribe('chat', this.params._id)];
+      Meteor.subscribe('players', this.params._id)];
   },
 
   action: function() {
@@ -68,7 +74,6 @@ Router.route('/select/:_id', {
   }
 });
 
-
 Router.route('/games/:_id', {
   name: 'game.page',
   loadingTemplate: 'loading',
@@ -78,7 +83,6 @@ Router.route('/games/:_id', {
       Meteor.subscribe('players', this.params._id),
       Meteor.subscribe('chat', this.params._id)];
   },
-
 
   action: function() {
     this.render('chat', {
