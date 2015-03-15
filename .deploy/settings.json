@@ -1,11 +1,6 @@
 {
   "public": {
-    "mixpanelEnabled": true
-  },
-  "private": {
-    "mailChimp": {
-      "apiKey": "a60d564b0fe2e7cd1e698d446600fda4-us8",
-      "listId": "796ad51299"
-    }
+    "mixpanelEnabled": true,
+    "kadiraEnabled": true
   }
 }
