@@ -1,7 +1,8 @@
 class @BoardBox
   @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
                'option_world', 'oddest_sea', 'dizzy_dash', 'twister',
-               'island_hop', 'death_trap', 'around_the_world', 'island_king' ]
+               'island_hop', 'death_trap', 'around_the_world', 'island_king'
+               'risky_exchange', 'pilgrimage' ]
                #moving_targets'
 
   @cache = []
@@ -21,7 +22,7 @@ class @BoardBox
     @cache[boardId]
 
   @getBoardId: (name) ->
-    if name == 'test'
+    if name == 'test-mode'
       @test_board_id
     else
       @CATALOG.indexOf(name)
@@ -37,7 +38,7 @@ class @BoardBox
       board.name = 'default'
       board.title = 'Default'
       board.length = 'short'
-      board.addRallyArea('default')
+      board.addRallyArea('cross')
       board.addStartArea('simple')
       board.addCheckpoint(7, 3)
       board.addCheckpoint(1, 8)
@@ -189,4 +190,27 @@ class @BoardBox
       board.addCheckpoint 5,4
       board.addCheckpoint 7,7
       board.addCheckpoint 5,6
+      return board
+    risky_exchange: () ->
+      board = new Board(2,8)
+      board.name = 'risky_exchange'
+      board.title = "Risky Exchange"
+      board.length = 'medium'
+      board.addRallyArea 'exchange'
+      board.addStartArea 'roller'
+      board.addCheckpoint 7,1
+      board.addCheckpoint 9,7
+      board.addCheckpoint 1,4
+      return board
+    pilgrimage: () ->
+      board = new Board(2,8,12,28)
+      board.name = 'pilgrimage'
+      board.title = 'Pilgrimage'
+      board.length = 'long'
+      board.addRallyArea 'cross'
+      board.addRallyArea 'exchange',0,12,180
+      board.addStartArea 'simple',0,24
+      board.addCheckpoint 4,8
+      board.addCheckpoint 9,19
+      board.addCheckpoint 2,14
       return board
