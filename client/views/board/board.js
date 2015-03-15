@@ -52,17 +52,20 @@ Template.board.helpers({
           var offsetY;
           var offsetX;
           var animate = {};
+          var animateRev = {};
           var style = '';
           var lc = 'l'+i;
           switch (player.direction%2) {
             case 0:  // up or down
               animate.height = tileWidth*player.shotDistance + "px";
+              animateRev.height = "0px";
               style   = 'width: '+laserWidth+'px;';
               style   += 'height: 0px;';
               offsetX = (tileWidth-laserWidth)/2;
               break;
             case 1: // left or right
               animate.width = tileWidth*player.shotDistance + "px";
+              animateRev.width = "0px";
               style   = 'height: '+laserWidth+'px;';
               style   += 'width: 0px;';
               offsetY = (tileWidth-laserWidth)/2;
@@ -79,16 +82,24 @@ Template.board.helpers({
               animate.left = "-="+ (tileWidth*player.shotDistance-startOffset) + "px";
               break;
             case GameLogic.DOWN:
+              animateRev.top = "+=" + (tileWidth*player.shotDistance-startOffset) + "px";
               offsetY = tileWidth-startOffset;
               break;
             case GameLogic.RIGHT:
+              animateRev.left = "+=" + (tileWidth*player.shotDistance-startOffset) + "px";
               offsetX = tileWidth-startOffset;
               break;
           }
           style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
           Tracker.afterFlush(function() {
+            var once = false;
             $('.'+lc).stop();
-            $('.'+lc).animate(animate);
+            $('.'+lc).animate(animate, {duration: 400, queue: false, progress: function(anim, progress, remainingMs) {
+              if (remainingMs <= 350 && !once) {
+                $('.'+lc).animate(animateRev, { duration: 400, queue: false });
+                once = true;
+              }
+            }});
           });
           s.push({shot:style, laser_class: lc});
         }
