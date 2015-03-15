@@ -196,7 +196,7 @@ GameLogic = {
     }
   };
 
-  scope.playCard = function(players, player, card, callback) {
+  scope.playCard = function(player, card, callback) {
     if(!player.needsRespawn) {
       console.log("trying to play next card for player " + player.name);
 
@@ -212,6 +212,7 @@ GameLogic = {
           var step = Math.min(cardType.position, 1);
           for (var j = 0; j < Math.abs(cardType.position); j++) {
             var timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY; //don't delay if there is another step to execute
+            var players = Players.find({gameId: player.gameId}).fetch();
             executeStep(players, player, step, timeout);
             if (player.needsRespawn) {
               break; //player respawned, don't continue playing out this card.
@@ -471,8 +472,9 @@ GameLogic = {
 
   function removePlayerWithDelay(player, callback) {
     Meteor.setTimeout(function() {
-      player.position.x = -1;
-      player.position.y = 0;
+      player.position.x = player.board().width-1;
+      player.position.y = player.board().height;
+      player.direction = GameLogic.UP;
       Players.update(player._id, player);
       console.log("removing player", player.name);
       Players.update(player._id, player);

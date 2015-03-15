@@ -22,6 +22,7 @@ Template.board.helpers({
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
+        poweredDown: player.isPoweredDown()
       });
     });
     return r;
@@ -47,50 +48,51 @@ Template.board.helpers({
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
       this.players.forEach(function(player,i) {
-        var offsetY;
-        var offsetX;
-        var animate = {};
-        var style = '';
-        var lc = 'l'+i;
-        switch (player.direction%2) {
-          case 0:  // up or down
-            animate.height = tileWidth*player.shotDistance + "px";
-            style   = 'width: '+laserWidth+'px;';
-            style   += 'height: 0px;';
-            offsetX = (tileWidth-laserWidth)/2;
-            break;
-          case 1: // left or right
-            animate.width = tileWidth*player.shotDistance + "px";
-            style   = 'height: '+laserWidth+'px;';
-            style   += 'width: 0px;';
-            offsetY = (tileWidth-laserWidth)/2;
-            break;
-        }
+        if (!player.isPoweredDown()) {
+          var offsetY;
+          var offsetX;
+          var animate = {};
+          var style = '';
+          var lc = 'l'+i;
+          switch (player.direction%2) {
+            case 0:  // up or down
+              animate.height = tileWidth*player.shotDistance + "px";
+              style   = 'width: '+laserWidth+'px;';
+              style   += 'height: 0px;';
+              offsetX = (tileWidth-laserWidth)/2;
+              break;
+            case 1: // left or right
+              animate.width = tileWidth*player.shotDistance + "px";
+              style   = 'height: '+laserWidth+'px;';
+              style   += 'width: 0px;';
+              offsetY = (tileWidth-laserWidth)/2;
+              break;
+          }
 
-        switch (player.direction) {
-          case GameLogic.UP:
-            offsetY = startOffset;
-            animate.top = "-=" + (tileWidth*player.shotDistance-startOffset) + "px";
-            break;
-          case GameLogic.LEFT:
-            offsetX = startOffset;
-            animate.left = "-="+ (tileWidth*player.shotDistance-startOffset) + "px";
-            break;
-          case GameLogic.DOWN:
-            offsetY = tileWidth-startOffset;
-            break;
-          case GameLogic.RIGHT:
-            offsetX = tileWidth-startOffset;
-            break;
+          switch (player.direction) {
+            case GameLogic.UP:
+              offsetY = startOffset;
+              animate.top = "-=" + (tileWidth*player.shotDistance-startOffset) + "px";
+              break;
+            case GameLogic.LEFT:
+              offsetX = startOffset;
+              animate.left = "-="+ (tileWidth*player.shotDistance-startOffset) + "px";
+              break;
+            case GameLogic.DOWN:
+              offsetY = tileWidth-startOffset;
+              break;
+            case GameLogic.RIGHT:
+              offsetX = tileWidth-startOffset;
+              break;
+          }
+          style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
+          Tracker.afterFlush(function() {
+            $('.'+lc).stop();
+            $('.'+lc).animate(animate);
+          });
+          s.push({shot:style, laser_class: lc});
         }
-        style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
-        Tracker.afterFlush(function() {
-          $('.'+lc).stop();
-          $('.'+lc).animate(animate);
-        });
-        s.push({shot:style, laser_class: lc});
       });
-
     }
     return s;
   },
