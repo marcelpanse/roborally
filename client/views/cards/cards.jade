@@ -10,14 +10,22 @@ template(name="cards")
     h5
       | Playing
     div.playing
-      each chosenCards
-        +card
-      each lockedCardsHtml
-        +card
-    //- div.power
-      //- img.powerBtn(src=powerState)
+      if poweredDown
+        img.powerBtn(src=ownPowerState)
+      else
+        each chosenCards
+          +card
+        each lockedCardsHtml
+          +card
+    div.power
+      h5
+        | Power state
+      img.powerBtn(src=ownPowerState)
     if showPlayButton
-      a.btn.btn-success.playBtn.disabled play cards
+      if poweredDown
+        a.btn.btn-success.playBtn play cards
+      else
+        a.btn.btn-success.playBtn.disabled play cards
   else
     each players
       h5 
@@ -25,7 +33,11 @@ template(name="cards")
         div
           each playedCardsHtml
             +card
-
+          if showPowerState
+            img.power-state(src=powerState)
 template(name="card")
-  .card(class="#{type} #{class} #{cardId}" data-toggle='tooltip' title='#{title}')
-    span= priority
+  if emptyCard
+    .card(class="empty #{selected}" data-toggle='tooltip' title='#{title}')
+  else
+    .card(class="#{type} #{class} #{cardId}" data-toggle='tooltip' title='#{title}')
+      span= priority

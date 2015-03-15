@@ -194,7 +194,7 @@ describe 'GameLogic', ->
         when 'turn left'  then 2
         when 'turn right' then 1
         when 'u-turn'     then 0
-      Meteor.wrapAsync(GameLogic.playCard)(players, players[0], card)
+      Meteor.wrapAsync(GameLogic.playCard)(players[0], card)
 
     describe 'forward', ->
       it 'moves robot', ->

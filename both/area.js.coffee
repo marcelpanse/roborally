@@ -333,3 +333,46 @@ class @Area
       @addLaser 8,5,'d',4
       @addLaser 5,8,'r',2
       Area.boundaryWalls.call(@)
+    island: () ->
+      @setGear 2,9, 'cw'
+      @setGear 9,9, 'cw'
+
+      @setGear 3,3, 'ccw'
+      @setGear 3,8, 'ccw'
+      @setGear 8,3, 'ccw'
+      @setGear 8,8, 'ccw'
+
+      @setRepair 0,11
+      @setRepair 11,2
+      @setOption 5,6
+
+      @setRoller 3,2, 'rrrrrrr'
+      @setRoller 9,3, 'dddddd'
+      @setRoller 8,9, 'llllll'
+      @setRoller 2,8, 'uuuuuuu'
+      @setRoller 7,3, 'llll'
+      @setRoller 4,8, 'rrrr'
+      @setRoller 3,4, 'dddd'
+      @setRoller 5,5, 'lld'
+      @setRoller 8,7, 'uuuu'
+      @setRoller 6,6, 'rru'
+
+      @setVoid 1,1
+      @setVoid 2,1
+      @setVoid 1,2
+      @setVoid 9,1
+      @setVoid 10,1
+      @setVoid 10,2
+      @setVoid 1,9
+      @setVoid 1,10
+      @setVoid 2,10
+      @setVoid 10,9
+      @setVoid 10,10
+      @setVoid 9,10
+      @setVoid 6,4
+      @setVoid 7,4
+      @setVoid 7,5
+      @setVoid 4,6
+      @setVoid 4,7
+      @setVoid 5,7
+      Area.boundaryWalls.call(@)

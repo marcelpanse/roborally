@@ -60,7 +60,8 @@ var player = {
           this.powerState = GameLogic.ON;
     }
     console.log("new power state "+this.powerState);
-    GameLogic.updatePowerState(this._id, this.powerState);
+    Players.update(this._id, {$set:{powerState: this.powerState}});
+    return this.powerState;
   },
   isPoweredDown: function() {
     return this.powerState === GameLogic.OFF;
