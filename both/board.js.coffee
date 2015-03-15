@@ -103,25 +103,20 @@ class @Board
     (to_dir(direction) + (@orientation/90)) % 4
 
   col: (x,y) ->
-    x += @x_offset
-    y += @y_offset
-
-    switch @orientation
+    res = switch @orientation
       when 0 then x
-      when 90 then y
+      when 90 then @area_height-1-y
       when 180 then @area_width-1-x
       when 270 then y
+    res + @x_offset
 
   row: (x,y) ->
-    x += @x_offset
-    y += @y_offset
-
-    switch @orientation
+    res = switch @orientation
       when 0 then y
       when 90 then x
       when 180 then @area_height-1-y
       when 270 then @area_width-1-x
-
+    res + @y_offset
 
   setVoid: (x,y) ->
     @tile(x,y).setType Tile.VOID
@@ -130,8 +125,8 @@ class @Board
       nx = x+step.x
       ny = y+step.y
       if @onBoard(nx, ny) && @tile(nx, ny).type == Tile.VOID
-        @tile(nx, ny).updateVoidType(opp_dir(i))
-        @tile(x,y).updateVoidType(i)
+        @tile(nx, ny).updateVoidType(@absolute_dir(opp_dir(i)))
+        @tile(x,y).updateVoidType(@absolute_dir(i))
 
   setRoller: (x, y, route, speed=1) ->
     cur_dir = route.charAt(0)
