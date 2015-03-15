@@ -296,7 +296,7 @@ GameState = {
       messages.push("All robots are dead");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
       ended = true;
-    } else if (livingPlayers === 1 && game.name !== 'test-mode') {
+    } else if (livingPlayers === 1 && players.length > 1) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
       Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
       ended = true;

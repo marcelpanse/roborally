@@ -34,7 +34,7 @@ class @BoardBox
 
   @boards:
     default: () ->
-      board = new Board()
+      board = new Board(1)
       board.name = 'default'
       board.title = 'Default'
       board.length = 'short'
