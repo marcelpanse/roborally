@@ -262,6 +262,9 @@ GameState = {
       }
       Players.update(player._id, player);
       return true;
+    } else if (tile.repair) {
+      player.updateStartPosition();
+      Players.update(player._id, player);
     }
     return false;
   }

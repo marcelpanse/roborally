@@ -281,7 +281,7 @@ GameLogic = {
         console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
         checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
       }
-      if (!player.isPoweredDown()) {
+      if (!player.isPoweredDown() && !player.needsRespawn) {
         victims.push(scope.shootRobotLaser(players, player));
       }
     });
@@ -297,7 +297,6 @@ GameLogic = {
   scope.executeRepairs = function(players, callback) {
     players.forEach(function(player) {
       if (player.tile().repair) {
-        player.updateStartPosition();
         if (player.damage > 0)
           player.damage--;
         Players.update(player._id, player);

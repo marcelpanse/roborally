@@ -153,11 +153,8 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
-    Games.update(game._id, {$set: {
-      playPhase: GameState.PLAY_PHASE.CHOOSE_DIRECTION
-    }});
     player.chat('chose position',  '(' +x+ ',' +y+ ')');
-    GameState.nextRespawnPhase(game._id);
+    game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
   },
   selectRespawnDirection: function(gameId, direction) {
     var game = Games.findOne(gameId);
