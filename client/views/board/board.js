@@ -48,7 +48,7 @@ Template.board.helpers({
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
       this.players.forEach(function(player,i) {
-        if (!player.isPoweredDown()) {
+        if (!player.isPoweredDown() && !player.needsRespawn) {
           var offsetY;
           var offsetX;
           var animate = {};

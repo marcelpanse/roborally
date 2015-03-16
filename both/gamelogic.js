@@ -297,7 +297,6 @@ GameLogic = {
   scope.executeRepairs = function(players, callback) {
     players.forEach(function(player) {
       if (player.tile().repair) {
-        player.updateStartPosition();
         if (player.damage > 0)
           player.damage--;
         Players.update(player._id, player);
