@@ -281,7 +281,7 @@ GameLogic = {
         console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
         checkRespawnsAndUpdateDb(player, _CARD_PLAY_DELAY);
       }
-      if (!player.isPoweredDown()) {
+      if (!player.isPoweredDown() && !player.needsRespawn) {
         victims.push(scope.shootRobotLaser(players, player));
       }
     });
