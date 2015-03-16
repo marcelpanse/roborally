@@ -232,7 +232,9 @@ GameLogic = {
       //check if is on roller
       var tile = player.tile();
       var moving = (tile.type === Tile.ROLLER);
-      roller_moves.push(rollerMove(player, tile, moving));
+      if (!player.needsRespawn) {
+        roller_moves.push(rollerMove(player, tile, moving));
+      }
     });
     tryToMovePlayersOnRollers(roller_moves);
     callback();
@@ -245,7 +247,9 @@ GameLogic = {
       //check if is on roller
       var tile = player.tile();
       var moving  = (tile.type === Tile.ROLLER && tile.speed === 2);
-      roller_moves.push(rollerMove(player, tile, moving));
+      if (!player.needsRespawn) {
+        roller_moves.push(rollerMove(player, tile, moving));
+      }
     });
     tryToMovePlayersOnRollers(roller_moves);
     callback();
@@ -405,7 +409,12 @@ GameLogic = {
 
   function tryToMovePlayersOnRollers(moves) {
     var move_canceled = true;
+    var max = 0;
     while (move_canceled) {  // if a move was canceled we have to check for other conflicts again
+      max++;
+      if (max > 100) {
+        console.log("Infinite loop detected.. cancelling..");
+      }
       move_canceled = false;
       for (var i=0;i<moves.length;++i) {
         for (var j=i+1;j<moves.length;++j) {
