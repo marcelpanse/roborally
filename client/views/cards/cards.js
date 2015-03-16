@@ -39,6 +39,8 @@ Template.cards.helpers({
       timerHandle = Meteor.setInterval(function() {
         Session.set("timeLeft", Math.max(0, Session.get("timeLeft") - 1));
       }, 1000);
+      if (!Players.findOne({userId: Meteor.userId()}).submitted)
+        $(document).find('.col-md-4.well').addClass('countdown');
     }
     if (this.game.timer === 0) {
       console.log("game timer = 0");
@@ -46,6 +48,10 @@ Template.cards.helpers({
       Session.set("timeLeft", 0);
       Meteor.clearInterval(timerHandle);
       timerHandle = null;
+    }
+    if (timerHandle &&  Session.get("timeLeft") <= 5 && !Players.findOne({userId: Meteor.userId()}).submitted)  {
+      $(document).find('.col-md-4.well').removeClass('countdown');
+      $(document).find('.col-md-4.well').addClass('finish');
     }
     if (this.game.timer === -1) {
       console.log("game timer = -1");
@@ -110,8 +116,9 @@ Template.cards.helpers({
   ownPowerStateName: function() {
     var player = Players.findOne({userId: Meteor.userId()});
     switch (player.powerState) {
-      case GameLogic.DOWN:
       case GameLogic.OFF:
+        return  'cancel power down';
+      case GameLogic.DOWN:
         return  'cancel announce power down';
       case GameLogic.ON:
         return  'announce power down';
@@ -259,6 +266,7 @@ function allowSubmit() {
 function submitCards(game) {
   var chosenCards = getChosenCards();
   console.log("submitting cards", chosenCards);
+  $(document).find('.col-md-4.well').removeClass('countdown').removeClass('finish');
   Meteor.call('playCards', {gameId: game._id, cards: chosenCards}, function(error) {
     Session.set("chosenCnt", false);
     Session.set("chosenCards", false);
