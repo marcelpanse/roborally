@@ -414,6 +414,7 @@ GameLogic = {
       max++;
       if (max > 100) {
         console.log("Infinite loop detected.. cancelling..");
+        break;
       }
       move_canceled = false;
       for (var i=0;i<moves.length;++i) {
