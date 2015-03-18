@@ -37,9 +37,12 @@ template(name="cards")
             +card
           if showPowerState
             p Power down played
+            
 template(name="card")
   if emptyCard
-    .card(class="empty #{selected}" data-toggle='tooltip' title='#{title}')
+    .card(class="empty #{selected}")
+      if isSelected
+        .cardTimer #{timer}
   else
     .card(class="#{type} #{class} #{cardId}" data-toggle='tooltip' title='#{title}')
       span= priority
