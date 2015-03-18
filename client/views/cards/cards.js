@@ -146,8 +146,16 @@ Template.card.helpers({
   },
   selected: function() {
     return this.slot === getSlotIndex() ? 'selected' : '';
+  },
+  isSelected: function() {
+    return this.slot === getSlotIndex();
+  },
+  timer: function() {
+    var timeLeft = Session.get("timeLeft") || 0;
+    return timeLeft > 0 ? "("+ timeLeft +")" : "";
   }
 });
+
 Template.card.events({
   'click .available': function(e) {
     var player = Players.findOne({userId: Meteor.userId()});
@@ -200,7 +208,6 @@ Template.cards.events({
     });
   }
 });
-
 
 function chooseCard(card) {
   var chosenCards = getChosenCards();
