@@ -6,12 +6,14 @@ Template.chat.events({
       message: $(event.target).find('[name=message]').val()
     };
 
-    Meteor.call('addMessage', message, function(error) {
-      if (error)
-        return alert(error.reason);
+    if (message.message.length > 0) {
+      Meteor.call('addMessage', message, function(error) {
+        if (error)
+          return alert(error.reason);
 
-      $(event.target).find('[name=message]').val('');
-    });
+        $(event.target).find('[name=message]').val('');
+      });
+    }
   }
 });
 
