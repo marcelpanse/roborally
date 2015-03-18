@@ -44,5 +44,11 @@ Meteor.startup(function () {
       }
 
     });
+
+    //cleanup inactive users
+    var d = new Date();
+    d.setMinutes(d.getMinutes() - 30);
+    Meteor.users.update({"status.lastActivity": {$lt: d}}, {$set: {"status.online": false}});
+
   }, {});
 });
