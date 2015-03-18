@@ -29,6 +29,9 @@ Template.cards.helpers({
       }
     }
   },
+  status: function() {
+    return "(lives: " + this.lives +', damage: ' +this.damage+')';
+  },
   showPlayButton: function() {
     return !Players.findOne({userId: Meteor.userId()}).submitted;
   },

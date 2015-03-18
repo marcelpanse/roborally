@@ -30,8 +30,10 @@ template(name="cards")
         a.btn.btn-success.playBtn.disabled play cards
   else
     each players
-      h5 
+      h5.player-status
+        img(class="robot-icon", src="/robots/robot_#{robotId}.png")
         | #{name}: 
+        = status
         div
           each playedCardsHtml
             +card
