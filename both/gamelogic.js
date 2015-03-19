@@ -123,7 +123,7 @@ GameLogic = {
     if (player.isPoweredDown()) {
       Players.update(player._id, {$set: {
         submitted: true,
-        damage: 0,
+        damage: 0
       }});
     } else {
       //check if all played cards are available from original hand...
@@ -335,7 +335,7 @@ GameLogic = {
       shotDistance++;
       var victim = isPlayerOnTile(players,x,y);
       if (victim) {
-        debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
+        var debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
         victim.chat('was shot by '+ player.name +', Total damage: '+ (victim.damage+1), debug_info);
         Players.update(player._id,{$set: {shotDistance:shotDistance}});
         return victim;

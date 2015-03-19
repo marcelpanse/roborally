@@ -45,7 +45,7 @@ GameState = {
           if (game.waitingForRespawn.length > 0) {
             Games.update(game._id, {$set: {
               watingForRespawn: game.waitingForRespawn.reverse(),
-              gamePhase: GameState.PHASE.RESPAWN,
+              gamePhase: GameState.PHASE.RESPAWN
             }});
             game.nextGamePhase();
           } else {
@@ -71,7 +71,7 @@ GameState = {
         playedCards: [],
         submittedCards: [],
         submittedLockedCards: [],
-        submitted: false,
+        submitted: false
       };
       if (players[i].powerState === GameLogic.OFF) {
         // player was powered down last turn

@@ -142,7 +142,7 @@ Template.board.helpers({
       });
     }
     return s;
-  },
+  }
 });
 
 function animatePosition(element, x, y) {

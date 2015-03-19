@@ -159,8 +159,6 @@ Template.card.helpers({
 Template.card.events({
   'click .available': function(e) {
     var player = Players.findOne({userId: Meteor.userId()});
-    //TODO: Avoid this call, probably higher overhead than needed.
-    var playerCards = Cards.findOne({playerId: player._id});
     if (!player.submitted && getChosenCnt() < 5) {
       chooseCard(this);
       $(e.currentTarget).hide();
@@ -257,7 +255,7 @@ function getLockedCnt() {
 }
 
 function emptySelection() {
-  arr = Array.apply(null, Array(5-getLockedCnt()));
+  var arr = Array.apply(null, new Array(5-getLockedCnt()));
   arr = arr.map(function (x, i) {
     return {cardType: -1, type:'empty', slot:i};
   });
