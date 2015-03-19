@@ -93,10 +93,13 @@ Template.board.helpers({
           style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
           Tracker.afterFlush(function() {
             var once = false;
-            $('.'+lc).stop();
-            $('.'+lc).animate(animate, {duration: 400, queue: false, progress: function(anim, progress, remainingMs) {
-              if (remainingMs <= 350 && !once) {
-                $('.'+lc).animate(animateRev, { duration: 400, queue: false });
+            var laserDiv = $('.'+lc);
+            laserDiv.stop();
+            var duration = player.shotDistance * 26;
+            console.log('shot duration', duration);
+            laserDiv.animate(animate, {duration: duration, queue: false, progress: function(anim, progress, remainingMs) {
+              if (remainingMs <= duration - (duration/7) && !once) {
+                laserDiv.animate(animateRev, { duration: duration, queue: false });
                 once = true;
               }
             }});
