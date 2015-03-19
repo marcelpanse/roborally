@@ -43,6 +43,10 @@ template(name="card")
     .card(class="empty #{selected}")
       if isSelected
         .cardTimer #{timer}
+  else if dmgCard
+    .card(class="damage", data-toggle='tooltip' data-placement='bottom' title="This card can't be used because you have received damage. You can consider a power down to remove all damage.")
   else
     .card(class="#{type} #{class} #{cardId}" data-toggle='tooltip' title='#{title}')
-      span= priority
+      span.priority= priority
+      if this.locked
+        img.locked(src="/damage-token.png", width="35", data-container="body" data-toggle='tooltip' data-placement='top' title="This card is locked in place because you have received 5 or more damage. You should probably power down before you die at 10 damage.")
