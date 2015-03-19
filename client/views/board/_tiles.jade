@@ -7,7 +7,7 @@ template(name="_tiles")
         if this.finish
           div(src='/finish.png', data-toggle="tooltip" data-placement="bottom" data-container="body" title="Make sure to hit the checkpoints before finishing here and win the game!")        
             img.board-item(src='/finish.png')        
-        else if this.checkpoint
+        if this.checkpoint
           .checkpoint(class="{{visited_checkpoint this.checkpoint}}", data-toggle="tooltip" data-placement="bottom" data-container="body" title="This is checkpoint no.#{this.checkpoint}.")
             = this.checkpoint
 
