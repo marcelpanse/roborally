@@ -8,6 +8,12 @@ var player = {
   tile: function() {
     return this.board().getTile(this.position.x, this.position.y);
   },
+  getHandCards: function() {
+    return Cards.findOne({playerId: this._id});
+  },
+  updateHandCards: function(cards) {
+    Cards.upsert({playerId: this._id}, cards);
+  }
 	isOnBoard: function() {
 		var a = this.board().onBoard(this.position.x, this.position.y);
     if (!a) {
@@ -62,6 +68,25 @@ var player = {
   },
   isPoweredDown: function() {
     return this.powerState === GameLogic.OFF;
+  },
+
+  lockedCnt: function() {
+    return  Math.max(0, GameLogic.CARD_SLOTS + this.damage - CardLogic._MAX_NUMBER_OF_CARDS);
+  },
+  lockedCards: function() {
+    if (this.lockedCnt() > 0)
+      return this.submittedCards.slice(GameLogic.CARD_SLOTS-this.lockedCnt(), this.lockedCnt());
+    else
+      return [];
+  }
+  notLockedCards: function() {
+    if (this.lockedCnt() == GameLogic.CARD_SLOTS)
+      return []
+    else
+      return this.submittedCards.slice(0, GameLogic.CARD_SLOTS-this.lockedCnt()-1);
+  }
+  playedCards: function() {
+    return this.submittedCards.slice(this.playedCardsCnt);
   }
 };
 

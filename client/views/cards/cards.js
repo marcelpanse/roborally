@@ -8,10 +8,10 @@ Template.cards.helpers({
     return addUIData(this.cards, true);
   },
   lockedCardsHtml: function() {
-    return addUIData(this.lockedCards || [], false);
+    return addUIData(this.lockedCards() || [], false);
   },
   playedCardsHtml: function() {
-    return addUIData(this.playedCards || [], false);
+    return addUIData(this.playedCards() || [], false);
   },
   showPowerState: function() {
     return this.powerState != GameLogic.ON;

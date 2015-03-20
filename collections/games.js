@@ -56,6 +56,9 @@ var game = {
     Games.update(this._id, {$set: {
       respawnPhase: phase
     }});
+  },
+  getDeck: function() {
+    return Deck.findOne({gameId: this._id});
   }
 };
 

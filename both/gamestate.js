@@ -68,9 +68,7 @@ GameState = {
     for (var i in players) {
       dealCards = players[i].lives > 0;
       var options = {
-        playedCards: [],
-        submittedCards: [],
-        submittedLockedCards: [],
+        playedCardsCnt: 0,
         submitted: false,
       };
       if (players[i].powerState === GameLogic.OFF) {
@@ -172,14 +170,8 @@ GameState = {
     var players = Players.find({gameId: game._id}).fetch();
     // play 1 card per player
     for (var i in players) {
-      var playedCards = players[i].playedCards || [];
-      if (players[i].submittedCards[0] || players[i].submittedLockedCards[0]) {
-        if(players[i].submittedCards[0]) {
-          playedCards.push(players[i].submittedCards[0]);
-        } else {
-          playedCards.push(players[i].submittedLockedCards[0]);
-        }
-        Players.update(players[i]._id, {$set: {playedCards: playedCards}});
+      if (players[i].submittedCards[0] ) {
+        Players.update(players[i]._id, {$inc: {playedCardsCnt: 1}});
       }
     }
     GameState.nextPlayPhase(game._id);
@@ -191,16 +183,12 @@ GameState = {
     var cardsToPlay = [];
 
     players.forEach(function(player) {
-      var submittedLockedCards = player.submittedLockedCards;
       var submittedCards = player.submittedCards;
       var card = null;
-      if(submittedCards.length>0) {
-        card = submittedCards.shift();
-      } else {
-        card = submittedLockedCards.shift();
-      }
+      card = submittedCards[player.playedCardsCnt-1];
+      submittedCards[player.playedCardsCnt-1] = null;
       if (card) {
-        Players.update(player._id, {$set: {submittedCards: submittedCards, submittedLockedCards: submittedLockedCards}});
+        Players.update(player._id, {$set: {submittedCards: submittedCards}});
         card.playerId = player._id;
         cardsToPlay.push(card);
       }
