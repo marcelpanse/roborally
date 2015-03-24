@@ -521,4 +521,3 @@ class @Area
       @addWall 11, 4, 'r'
       @addWall 11, 7, 'r'
       @addWall 11, 9, 'r'
-  

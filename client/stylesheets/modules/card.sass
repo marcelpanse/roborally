@@ -1,7 +1,9 @@
+$card-height: 153/99
+
 .card
   width: 20%
   height: 0
-  padding-top: 30.909090909% // 153/99*25
+  padding-top: $card-height*20%
   display: inline-block
   background-size: 100%
   position: relative
@@ -13,30 +15,41 @@
 
   // margin-right: 5px
 
-  &.f1
+  &.step-forward
     background-image: url('/cards/f1.png')
-  &.f2
+  &.step-forward-2
     background-image: url('/cards/f2.png')
-  &.f3
+  &.step-forward-3
     background-image: url('/cards/f3.png')
-  &.r
+  &.turn-right
     background-image: url('/cards/r.png')
-  &.l
+  &.turn-left
     background-image: url('/cards/l.png')
-  &.b
+  &.step-backward
     background-image: url('/cards/b.png')
-  &.u
+  &.u-turn
     background-image: url('/cards/u.png')
 
   &.empty
     width: 19%
+    padding-top: $card-height*19%
     margin-left: 1%
     border: 1px dashed #e3e3e3
     border-radius: 5px
     opacity: 0.7
 
+  &.covered
+    width: 19%
+    margin-left: 1%
+    padding-top: $card-height*19%
+    border: 1px solid #e3e3e3
+    border-radius: 5px
+    background-color: #000
+    opacity: 0.7
+
   &.damage
     width: 19%
+    padding-top: $card-height*19%
     margin-left: 1%
     border: 1px dashed #e3e3e3
     border-radius: 5px
@@ -68,8 +81,50 @@
   &.selected
     background: #449d44
 
+
+.small
+  margin-left: 15px
+  text-align: left
+  clear: both
+  .card
+    &:hover
+      transform: none
+    width: 13%
+    padding-top: $card-height*13%
+
+    span.priority
+      font-size: 7px
+
 .hand
   min-height: 230px
 
 .playing
   min-height: 115px
+
+.glyphicon-heart
+  color: #B40A24
+  margin-top: 2px
+
+h5.player-status
+  margin-bottom: 2px
+
+.damage-status
+  margin-left: 15px
+  margin-bottom: 1px
+  height: 14px;
+  .damage-card-slot
+    width: 14%
+    float: left
+  .damage-slot
+    float: left
+    width: 7%
+  .status
+    width: 14px
+    height: 14px
+    border-radius: 7px
+    border: 3px solid #B40A24
+    margin-left: auto
+    margin-right: auto
+  .damaged
+    background-color: #B40A24
+

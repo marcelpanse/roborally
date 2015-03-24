@@ -9,11 +9,46 @@ var player = {
     return this.board().getTile(this.position.x, this.position.y);
   },
   getHandCards: function() {
-    return Cards.findOne({playerId: this._id});
+    var c = Cards.findOne({playerId: this._id});
+    return c ? c.handCards : [];
+  },
+  getChosenCards: function() {
+    var c = Cards.findOne({playerId: this._id});
+    return c ? c.chosenCards : [];
   },
   updateHandCards: function(cards) {
-    Cards.upsert({playerId: this._id}, cards);
-  }
+    Cards.upsert({playerId: this._id}, {$set:{handCards:cards}});
+  },
+  chooseCard: function(card, index) {
+    var cards = this.getChosenCards();
+    var inc = 0;
+    if (cards[index] === CardLogic.EMPTY)
+      inc = 1;
+    cards[index] = card;
+    console.log("update chosen cards", index,card);
+    Cards.update({playerId: this._id}, {
+      $set:{chosenCards:cards},
+    });
+    this.cards[index] = CardLogic.COVERED;
+    Players.update(this._id, {
+      $set:{cards: this.cards},
+      $inc:{chosenCardsCnt:inc}
+    });
+  },
+  unchooseCard: function(index) {
+    var cards = this.getChosenCards();
+    if (cards[index] !== CardLogic.EMPTY) {
+      cards[index] = CardLogic.EMPTY;
+      Cards.update({playerId: this._id}, {
+        $set:{chosenCards:cards},
+      });
+      this.cards[index] = CardLogic.EMPTY;
+      Players.update(this._id, {
+        $set:{cards: this.cards},
+        $inc:{chosenCardsCnt:-1}
+      });
+    }
+  },
 	isOnBoard: function() {
 		var a = this.board().onBoard(this.position.x, this.position.y);
     if (!a) {
@@ -73,20 +108,43 @@ var player = {
   lockedCnt: function() {
     return  Math.max(0, GameLogic.CARD_SLOTS + this.damage - CardLogic._MAX_NUMBER_OF_CARDS);
   },
+  notLockedCnt: function() {
+    return  GameLogic.CARD_SLOTS - this.lockedCnt();
+  },
   lockedCards: function() {
     if (this.lockedCnt() > 0)
-      return this.submittedCards.slice(GameLogic.CARD_SLOTS-this.lockedCnt(), this.lockedCnt());
+      return this.submittedCards().slice(this.notLockedCnt(), this.lockedCnt());
     else
       return [];
-  }
+  },
   notLockedCards: function() {
     if (this.lockedCnt() == GameLogic.CARD_SLOTS)
-      return []
+      return [];
     else
-      return this.submittedCards.slice(0, GameLogic.CARD_SLOTS-this.lockedCnt()-1);
-  }
+      return this.getChosenCards().slice(0, this.notLockedCnt());
+  },
   playedCards: function() {
-    return this.submittedCards.slice(this.playedCardsCnt);
+    return this.getChosenCards().slice(0,this.playedCardsCnt);
+  },
+  isActive: function() {
+    return !this.isPoweredDown() && !this.needsRespawn && this.lives > 0;
+  },
+  addDamage: function(inc) {
+    this.damage += inc;
+    if (this.isPoweredDown() && this.lockedCnt() > 0) {
+      // powered down robot has no cards so we have to draw from deck to get locked cards
+      var deck = this.game().getDeck();
+      var chosenCards = this.getChosenCards();
+      for (var i=0;i<this.lockedCnt();i++) {
+        this.cards[this.notLockedCnt()+i] = deck.cards.shift();
+        chosenCards = this.cards[this.notLockedCnt()+i];
+      }
+      Deck.update(deck._id, deck);
+      Players.update( this._id, this);
+      Cards.update( {playerId: this._id}, { $set: {
+            chosenCards: chosenCards
+          }});
+    }
   }
 };
 

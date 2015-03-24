@@ -1,101 +1,101 @@
 class @CardLogic
   @_MAX_NUMBER_OF_CARDS = 9
-  @_CARD_PLAY_DELAY = 500
-  EMPTY = -1
-  COVERED = -2
+  @EMPTY   = -1
+  @COVERED = -2
+  @DAMAGE  = -3
 
   @_cardTypes =
-    0: {direction: 2, position: 0, name: "U_TURN"}
-    1: {direction: 1, position: 0, name: "TURN_RIGHT"}
-    2: {direction: -1, position: 0, name: "TURN_LEFT"}
-    3: {direction: 0, position: -1, name: "STEP_BACKWARD"}
-    4: {direction: 0, position: 1, name: "STEP_FORWARD"}
-    5: {direction: 0, position: 2, name: "STEP_FORWARD_2"}
-    6: {direction: 0, position: 3, name: "STEP_FORWARD_3"}
+    0: {direction: 2, position: 0, name: "u-turn"}
+    1: {direction: 1, position: 0, name: "turn-right"}
+    2: {direction: -1, position: 0, name: "turn-left"}
+    3: {direction: 0, position: -1, name: "step-backward"}
+    4: {direction: 0, position: 1, name: "step-forward"}
+    5: {direction: 0, position: 2, name: "step-forward-2"}
+    6: {direction: 0, position: 3, name: "step-forward-3"}
+
+  @_8_deck = [
+    6,  # u turn
+    18, # right turn
+    18, # left turn
+    6,  # step back
+    18, # step 1
+    12, # step 2
+    6   # step 3
+  ]
+
+  @_12_deck = [
+    9,  # u turn
+    27, # right turn
+    27, # left turn
+    9,  # step back
+    27, # step 1
+    18, # step 2
+    9   # step 3
+  ]
   
   @discardCards: (game, players) ->
     deck = game.getDeck()
-    if !deck?
-      for player in players
-        for unusedCard in player.getHandCards()
-          deck.cards.push unusedCard
-            priority: unusedCard.priority, 
-            cardType: unusedCard.cardType
 
-    
+    for player in players
+      if playerCards = Cards.findOne({playerId: player._id})
+        for unusedCard in playerCards.handCards
+          if unusedCard >= 0
+            deck.cards.push unusedCard
+        chosenCards = playerCards.chosenCards
         for discardCard, i in player.notLockedCards()
           # Rule note: You don't keep a discard pile. You always use the complete deck
-          deck.cards.push discardCard
-            priority: discardCard.priority, 
-            cardType: discardCard.cardType
-          player.submittedCards[i] = null
+          if discardCard >= 0
+            deck.cards.push discardCard
+          player.cards[i] = @EMPTY
+          chosenCards[i] = @EMPTY
 
-        Players.update(player._id, {$set: {submittedCards: player.submittedCards}})
-        player.updateHandCards([])
+        Players.update player._id,
+          $set:
+            cards: player.cards
+            playedCardsCnt: 0,
+            chosenCardsCnt: player.lockedCnt()
+        Cards.update {playerId: player._id},
+          $set:
+            handCards: [],
+            chosenCards: chosenCards
       
-      console.log "Returned cards, new total: "+deck.cards.length
-      Deck.upsert({gameId: game._id}, deck)
+    console.log "Returned cards, new total: "+deck.cards.length
+    deck.cards = _.shuffle(deck.cards)
+    Deck.upsert({gameId: game._id}, deck)
 
-  @makeDeck: (gameId) ->
+  @dealCards: (game, player) ->
     deck = game.getDeck()
-    if deck?
-      deck.cards = _.shuffle(deck.cards)
-      Deck.upsert({gameId: gameId}, deck)
-    else
-       Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck)}})
-    return deck
+    handCards = []
 
-  @dealCards: (player) ->
-    deck = game.getDeck()
-    playerCards = player.getCards()
+    #for every damage you get a card less
+    nrOfNewCards = (@_MAX_NUMBER_OF_CARDS - player.damage)
+    #grab card from deck, so it can't be handed out twice
+    handCards.push deck.cards.shift() for i in [1..nrOfNewCards]
+    console.log('handCards ' + handCards.length)
 
-    if !playerCards
-      playerCards = 
-        gameId: player.gameId, 
-        playerId: player._id, 
-        userId: player.userId, 
-        cards: [],
-        submittedCards: Array.apply(null, new Array(5))
-    
-    nrOfNewCards = (_MAX_NUMBER_OF_CARDS - player.damage) #for every damage you get a card less
-
-    for card, i in playerCards.cards
-      if card >= 0
-        cardId = deck.cards.splice(0, 1)[0] #grab card from deck, so it can't be handed out twice
-        playerCards.cards[i] = cardId
-          
-    player.updateCards playerCards    
+    Cards.update {playerId: player._id},
+      $set:
+        handCards: handCards
     Deck.update(deck._id, deck)
-
-  @selectCard: (player, card, index) ->
-    if index <= player.un
-    player.submittedCards[index] = COVERED
-
-    #TODO update player
-    # don't allow update of locked cards
-
-  @deselectCard: (player, index) ->
-    player.submittedCards[index] = null
 
   @submitCards: (player) ->
     console.log('player ' + player.name + ' submitted cards: ')
 
-    if (player.isPoweredDown()) 
-      Players.update(player._id, {$set: {
-        submitted: true,
-        damage: 0,
-      }})
+    if (player.isPoweredDown())
+      Players.update player._id,
+        $set:
+          submitted: true
+          damage: 0
     else
       approvedCards = verifySubmittedCards(player)
 
       Players.update(player._id, {$set: {
-        submittedCards: approvedCards
         submitted: true,
-        optionalInstantPowerDown: false
+        optionalInstantPowerDown: false,
       }})
 
-    playerCnt = Players.find({gameId: player.gameId}).count();
-    readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count();
+    playerCnt = Players.find({gameId: player.gameId}).count()
+    readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count()
     if readyPlayerCnt == playerCnt
       Games.update(player.gameId, {$set: {timer: -1}})
       GameState.nextGamePhase(player.gameId)
@@ -104,15 +104,15 @@ class @CardLogic
       Games.update(player.gameId, {$set: {timer: 1}})
       Meteor.setTimeout ->
         if Games.findOne(player.gameId).timer == 1
-          console.log("time up! setting timer to 0");
+          console.log("time up! setting timer to 0")
           Games.update(player.gameId, {$set: {timer: 0}})
 
           # wait for player to auto-submit selected cards..
           Meteor.setTimeout ->
             # if nothing happened the system to should auto-submit random cards..
-            if PlayErs.find({gameId: player.gameId, submitted: true}).count() == 1
-              unsubmittedPlayer = Players.findOne({gameId: player.gameId, submitted: false});
-              CardLogic.submitCards(unsubmittedPlayer, []);
+            if Players.find({gameId: player.gameId, submitted: true}).count() == 1
+              unsubmittedPlayer = Players.findOne({gameId: player.gameId, submitted: false})
+              CardLogic.submitCards(unsubmittedPlayer, [])
               console.log("Player " + unsubmittedPlayer.name + " did not respond, submitting random cards")
           , 2500
 
@@ -122,86 +122,36 @@ class @CardLogic
     # check if all played cards are available from original hand...
     # Except locked cards, those are not in the hand.
     availableCards = player.getHandCards()
-      
+    submittedCards = player.getChosenCards()
     for card, i in player.notLockedCards()
       found = false
-      if card 
+      if card
         for j in [0,availableCards.length-1]
-          if card.cardId == availableCards[j].cardId
-            availableCards.splice(j, 1);
-            console.log(_cardTypes[card.cardType].name + ' ')
-            found = true;
-            break;
+          if card == availableCards[j]
+            availableCards.splice(j, 1)
+            found = true
+            break
         if !found
           console.log("illegal card detected! (removing card)")
-
-      else 
+      else
         console.log("Not enough cards submitted")
 
       if !card || !found
-        cardFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0] # grab card from hand
-        console.log("Handing out random card", cardFromHand)
-        player.submittedCards[i] = 
-          cardId: Meteor.uuid() 
-          cardType: cardFromHand.cardType
-          priority: cardFromHand.priority
+        # grab card from hand
+        cardIdFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]
+        console.log("Handing out random card", cardIdFromHand)
+        submittedCards[i] = cardIdFromHand
 
     player.updateHandCards(availableCards)
-    return player.submittedCards
+    return submittedCards
 
-         
-  @playCard: (player, card, callback) ->
-    if !player.needsRespawn
-      console.log("trying to play next card for player " + player.name);
-
-      if !card?
-        cardType = _cardTypes[card.cardType];
-        console.log('playing card ' + cardType.name + ' for player ' + player.name)
-
-        player.rotate(cardType.direction)
-
-        if cardType.position == 0
-          Meteor.wrapAsync(checkRespawnsAndUpdateDb)(player, _CARD_PLAY_DELAY);
-        else 
-          step = Math.min(cardType.position, 1)
-          for j in [0..(Math.abs(cardType.position)-1)]
-            timeout = if j+1 < Math.abs(cardType.position) then 0 else _CARD_PLAY_DELAY 
-            #don't delay if there is another step to execute
-            players = Players.find({gameId: player.gameId}).fetch();
-            executeStep(players, player, step, timeout)
-            if player.needsRespawn
-              break # player respawned, don't continue playing out this card.
-            
-      else 
-        console.log("card is not playable " + card + " player " + player.name);
-  
-    callback()
-
-  @cardType:  (index, playerCnt) ->
+  @cardType:  (cardId, playerCnt) ->
     deck = if playerCnt <= 8 then @_8_deck else @_12_deck
     cnt  = 0
     for cardTypeCnt, index in deck
       cnt += cardTypeCnt
-      if index < cnt
-        return _cardTypes[index]
+      if cardId < cnt
+        return @_cardTypes[index]
 
   @priority: (index) ->
     (index+1)*10
-
-  @_8_deck = [
-    6,  # u turn
-    36, # turnturn
-    6,  # step_back
-    18, # step 1
-    12, # step 2
-    6   # step 3
-  ]
-  @_12_deck = [
-    9,  # u turn
-    54, # turnturn
-    9,  # step_back
-    27, # step 1
-    18, # step 2
-    9   # step 3
-  ]
-  

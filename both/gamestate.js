@@ -63,8 +63,7 @@ GameState = {
   function playDealPhase(game) {
     var players = Players.find({gameId: game._id}).fetch();
     var dealCards;
-    GameLogic.discardCards(game,players);
-    GameLogic.makeDeck(game._id);
+
     for (var i in players) {
       dealCards = players[i].lives > 0;
       var options = {
@@ -86,8 +85,9 @@ GameState = {
       }
 
       Players.update(players[i]._id, {$set: options});
+      CardLogic.discardCards(game,players);
       if (dealCards)
-        GameLogic.dealCards(players[i]);
+        CardLogic.dealCards(game, players[i]);
     }
     game.setGamePhase(GameState.PHASE.PROGRAM);
     var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
@@ -170,8 +170,12 @@ GameState = {
     var players = Players.find({gameId: game._id}).fetch();
     // play 1 card per player
     for (var i in players) {
-      if (players[i].submittedCards[0] ) {
-        Players.update(players[i]._id, {$inc: {playedCardsCnt: 1}});
+      if (players[i].isActive()) {
+        var cards = players[i].cards;
+        var cardIndex = players[i].playedCardsCnt;
+        console.log("reveal", cardIndex, players[i].getChosenCards()[cardIndex]);
+        cards[cardIndex] = players[i].getChosenCards()[cardIndex];
+        Players.update(players[i]._id, {$set: {cards: cards}});
       }
     }
     GameState.nextPlayPhase(game._id);
@@ -183,23 +187,22 @@ GameState = {
     var cardsToPlay = [];
 
     players.forEach(function(player) {
-      var submittedCards = player.submittedCards;
-      var card = null;
-      card = submittedCards[player.playedCardsCnt-1];
-      submittedCards[player.playedCardsCnt-1] = null;
-      if (card) {
-        Players.update(player._id, {$set: {submittedCards: submittedCards}});
+      var card = {
+        cardId: player.getChosenCards()[player.playedCardsCnt]
+      };
+      if (card.cardId) {
+        Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
         cardsToPlay.push(card);
       }
     });
 
-    cardsToPlay = _.sortBy(cardsToPlay, 'priority').reverse();
+    cardsToPlay = _.sortBy(cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
 
     cardsToPlay.forEach(function(card) {
       Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
       var player = Players.findOne(card.playerId);
-      Meteor.wrapAsync(GameLogic.playCard)(player, card);
+      Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
     });
 
     game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);

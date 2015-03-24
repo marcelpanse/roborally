@@ -46,7 +46,8 @@ describe 'GameLogic', ->
       visited_checkpoints: 0,
       needsRespawn: false,
       position: {x: x, y: y},
-      direction: dir
+      direction: dir,
+      cards: []
     })
 
 
