@@ -27,7 +27,7 @@ Meteor.startup(function () {
           console.log("Found disconnected player, waiting couple of seconds: " + game._id);
           Meteor.setTimeout(function() {
             if (!Meteor.users.findOne(player.userId).status.online) {
-              debug_info = "Forfeitting game with disconnected player: " + game._id;
+              var debug_info = "Forfeitting game with disconnected player: " + game._id;
               player.chat('disconnected and left the game', debug_info);
             }
           }, 5000);
@@ -44,5 +44,11 @@ Meteor.startup(function () {
       }
 
     });
+
+    //cleanup inactive users
+    var d = new Date();
+    d.setMinutes(d.getMinutes() - 30);
+    Meteor.users.update({"status.lastActivity": {$lt: d}}, {$set: {"status.online": false}}, {multi: true});
+
   }, {});
 });

@@ -6,5 +6,5 @@ Template.thumbnail.helpers({
           return player;
         }
       }
-    },
+    }
 });

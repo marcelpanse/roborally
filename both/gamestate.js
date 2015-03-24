@@ -45,7 +45,7 @@ GameState = {
           if (game.waitingForRespawn.length > 0) {
             Games.update(game._id, {$set: {
               watingForRespawn: game.waitingForRespawn.reverse(),
-              gamePhase: GameState.PHASE.RESPAWN,
+              gamePhase: GameState.PHASE.RESPAWN
             }});
             game.nextGamePhase();
           } else {

@@ -17,7 +17,7 @@ Template.boardselect.helpers({
               });
     }
     return b;
-  },
+  }
 });
 
 Template.boardselect.events({

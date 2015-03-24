@@ -10,11 +10,11 @@ template(name="board")
 
       br
       each markers
-        div(class=marker_class, style=position )
+        div(class=marker_class, style=position, data-toggle="tooltip" data-placement="top" data-container="body" title="This is a respawn location")
           img(src= path, style=direction )
       each robots
         div(class=robot_class, style=position )
-          img(src= path, style=direction )
+          img(src= path, style=direction, data-toggle="tooltip" data-placement="top" data-container="body" title=dmgTitle)
           if poweredDown
             img(src='/Power_Off.png',class='robot-off')
       each shots

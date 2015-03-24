@@ -5,6 +5,9 @@ var game = {
   players: function() {
     return Players.find({gameId: this._id}).fetch();
   },
+  playerCnt: function() {
+    return Players.find({gameId: this._id}).count();
+  },
   isPlayerOnTile: function(x,y) {
     var found = null;
     this.players().forEach(function(player) {

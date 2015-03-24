@@ -12,7 +12,7 @@ GameLogic = {
 (function (scope) {
 
   scope.discardCards = function(game,players) {
-    var deck = 
+    var deck = Deck.findOne({gameId: game._id});
     if(typeof deck !== "undefined") {
       for (var i in players) {
         var playerCards=Cards.findOne({playerId: players[i]._id});
@@ -50,7 +50,10 @@ GameLogic = {
     var deck = Deck.findOne({gameId: gameId});
     //create/shuffle new deck (cards are returned from hands)
     if(typeof deck === "undefined") {
-      Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck), discards: []}});
+      if (Players.find({gameId: player.gameId}).count() > 8)
+        Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_12_deck), discards: []}});
+      else
+        Deck.upsert({gameId: gameId}, {$set: {cards: _.shuffle(_deck), discards: []}});
     } else if(deck.cards.length===0) {
       deck.cards=_.shuffle(deck.discards);
       deck.discards=[];

@@ -1,6 +1,8 @@
 class @CardLogic
   @_MAX_NUMBER_OF_CARDS = 9
   @_CARD_PLAY_DELAY = 500
+  EMPTY = -1
+  COVERED = -2
 
   @_cardTypes =
     0: {direction: 2, position: 0, name: "U_TURN"}
@@ -16,14 +18,14 @@ class @CardLogic
     if !deck?
       for player in players
         for unusedCard in player.getHandCards()
-          deck.cards.push
+          deck.cards.push unusedCard
             priority: unusedCard.priority, 
             cardType: unusedCard.cardType
 
     
         for discardCard, i in player.notLockedCards()
           # Rule note: You don't keep a discard pile. You always use the complete deck
-          deck.cards.push 
+          deck.cards.push discardCard
             priority: discardCard.priority, 
             cardType: discardCard.cardType
           player.submittedCards[i] = null
@@ -53,23 +55,22 @@ class @CardLogic
         playerId: player._id, 
         userId: player.userId, 
         cards: [],
-        submittedCards: Array.apply(null, Array(5))
+        submittedCards: Array.apply(null, new Array(5))
     
     nrOfNewCards = (_MAX_NUMBER_OF_CARDS - player.damage) #for every damage you get a card less
 
     for card, i in playerCards.cards
-      if !card
-        cardFromDeck = deck.cards.splice(0, 1)[0] #grab card from deck, so it can't be handed out twice
-        playerCards.cards[i] = 
-          cardId: Meteor.uuid(),
-          cardType: cardFromDeck.cardType,
-          priority: cardFromDeck.priority
-
+      if card >= 0
+        cardId = deck.cards.splice(0, 1)[0] #grab card from deck, so it can't be handed out twice
+        playerCards.cards[i] = cardId
+          
     player.updateCards playerCards    
     Deck.update(deck._id, deck)
 
   @selectCard: (player, card, index) ->
-    player.submittedCards[index] = card
+    if index <= player.un
+    player.submittedCards[index] = COVERED
+
     #TODO update player
     # don't allow update of locked cards
 
@@ -176,89 +177,31 @@ class @CardLogic
   
     callback()
 
-  @_deck = [
-    { priority:  10, cardType: 0 },
-    { priority:  20, cardType: 0 },
-    { priority:  30, cardType: 0 },
-    { priority:  40, cardType: 0 },
-    { priority:  50, cardType: 0 },
-    { priority:  60, cardType: 0 },
-    { priority:  70, cardType: 2 },
-    { priority:  80, cardType: 1 },
-    { priority:  90, cardType: 2 },
-    { priority: 100, cardType: 1 },
-    { priority: 110, cardType: 2 },
-    { priority: 120, cardType: 1 },
-    { priority: 130, cardType: 2 },
-    { priority: 140, cardType: 1 },
-    { priority: 150, cardType: 2 },
-    { priority: 160, cardType: 1 },
-    { priority: 170, cardType: 2 },
-    { priority: 180, cardType: 1 },
-    { priority: 190, cardType: 2 },
-    { priority: 200, cardType: 1 },
-    { priority: 210, cardType: 2 },
-    { priority: 220, cardType: 1 },
-    { priority: 230, cardType: 2 },
-    { priority: 240, cardType: 1 },
-    { priority: 250, cardType: 2 },
-    { priority: 260, cardType: 1 },
-    { priority: 270, cardType: 2 },
-    { priority: 280, cardType: 1 },
-    { priority: 290, cardType: 2 },
-    { priority: 300, cardType: 1 },
-    { priority: 310, cardType: 2 },
-    { priority: 320, cardType: 1 },
-    { priority: 330, cardType: 2 },
-    { priority: 340, cardType: 1 },
-    { priority: 350, cardType: 2 },
-    { priority: 360, cardType: 1 },
-    { priority: 370, cardType: 2 },
-    { priority: 380, cardType: 1 },
-    { priority: 390, cardType: 2 },
-    { priority: 400, cardType: 1 },
-    { priority: 410, cardType: 2 },
-    { priority: 420, cardType: 1 },
-    { priority: 430, cardType: 3 },
-    { priority: 440, cardType: 3 },
-    { priority: 450, cardType: 3 },
-    { priority: 460, cardType: 3 },
-    { priority: 470, cardType: 3 },
-    { priority: 480, cardType: 3 },
-    { priority: 490, cardType: 4 },
-    { priority: 500, cardType: 4 },
-    { priority: 510, cardType: 4 },
-    { priority: 520, cardType: 4 },
-    { priority: 530, cardType: 4 },
-    { priority: 540, cardType: 4 },
-    { priority: 550, cardType: 4 },
-    { priority: 560, cardType: 4 },
-    { priority: 570, cardType: 4 },
-    { priority: 580, cardType: 4 },
-    { priority: 590, cardType: 4 },
-    { priority: 600, cardType: 4 },
-    { priority: 610, cardType: 4 },
-    { priority: 620, cardType: 4 },
-    { priority: 630, cardType: 4 },
-    { priority: 640, cardType: 4 },
-    { priority: 650, cardType: 4 },
-    { priority: 660, cardType: 4 },
-    { priority: 670, cardType: 5 },
-    { priority: 680, cardType: 5 },
-    { priority: 690, cardType: 5 },
-    { priority: 700, cardType: 5 },
-    { priority: 710, cardType: 5 },
-    { priority: 720, cardType: 5 },
-    { priority: 730, cardType: 5 },
-    { priority: 740, cardType: 5 },
-    { priority: 750, cardType: 5 },
-    { priority: 760, cardType: 5 },
-    { priority: 770, cardType: 5 },
-    { priority: 780, cardType: 5 },
-    { priority: 790, cardType: 6 },
-    { priority: 800, cardType: 6 },
-    { priority: 810, cardType: 6 },
-    { priority: 820, cardType: 6 },
-    { priority: 830, cardType: 6 },
-    { priority: 840, cardType: 6 }
-  ];
+  @cardType:  (index, playerCnt) ->
+    deck = if playerCnt <= 8 then @_8_deck else @_12_deck
+    cnt  = 0
+    for cardTypeCnt, index in deck
+      cnt += cardTypeCnt
+      if index < cnt
+        return _cardTypes[index]
+
+  @priority: (index) ->
+    (index+1)*10
+
+  @_8_deck = [
+    6,  # u turn
+    36, # turnturn
+    6,  # step_back
+    18, # step 1
+    12, # step 2
+    6   # step 3
+  ]
+  @_12_deck = [
+    9,  # u turn
+    54, # turnturn
+    9,  # step_back
+    27, # step 1
+    18, # step 2
+    9   # step 3
+  ]
+  
