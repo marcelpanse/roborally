@@ -20,3 +20,5 @@ mrt:moment
 coffeescript
 chfritz:easycron
 rollick:mixpanel
+sanjo:jasmine
+velocity:html-reporter

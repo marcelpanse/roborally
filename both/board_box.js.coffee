@@ -214,3 +214,13 @@ class @BoardBox
       board.addCheckpoint 9,19
       board.addCheckpoint 2,14
       return board
+    crowd_chess: () ->
+      board = new Board(8,12)
+      board.name = 'crowd_chess'
+      board.title = 'Crowd Chess'
+      board.length = 'short'
+      board.addRallyArea('crowd_chess')
+      board.addStartArea('crowd')
+      board.addCheckpoint(8,3)
+      board.addCheckpoint(3,8)
+      return board
