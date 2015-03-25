@@ -85,7 +85,7 @@ GameState = {
       }
 
       Players.update(players[i]._id, {$set: options});
-      CardLogic.discardCards(game,players);
+      CardLogic.discardCards(game,players[i]);
       if (dealCards)
         CardLogic.dealCards(game, players[i]);
     }

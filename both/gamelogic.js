@@ -30,7 +30,7 @@ GameLogic = {
             timeout = j+1 < Math.abs(cardType.position) ? 0 : _CARD_PLAY_DELAY;
             // don't delay if there is another step to execute
             players = Players.find({gameId: player.gameId}).fetch();
-            executeStep(players, player, step, timeout);
+            executeStep(players, player, step);
             if (player.needsRespawn)
               break; // player respawned, don't continue playing out this card.
           }
@@ -160,7 +160,7 @@ GameLogic = {
     return false;
   };
 
-  function executeStep(players, player, direction, timeout) {   // direction = 1 for step forward, -1 for step backwards
+  function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
     var step = { x: 0, y: 0 };
     switch (player.direction) {
       case GameLogic.UP:

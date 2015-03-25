@@ -33,31 +33,30 @@ class @CardLogic
     9   # step 3
   ]
   
-  @discardCards: (game, players) ->
+  @discardCards: (game, player) ->
     deck = game.getDeck()
 
-    for player in players
-      if playerCards = Cards.findOne({playerId: player._id})
-        for unusedCard in playerCards.handCards
-          if unusedCard >= 0
-            deck.cards.push unusedCard
-        chosenCards = playerCards.chosenCards
-        for discardCard, i in player.notLockedCards()
-          # Rule note: You don't keep a discard pile. You always use the complete deck
-          if discardCard >= 0
-            deck.cards.push discardCard
-          player.cards[i] = @EMPTY
-          chosenCards[i] = @EMPTY
+    if playerCards = Cards.findOne({playerId: player._id})
+      for unusedCard in playerCards.handCards
+        if unusedCard >= 0
+          deck.cards.push unusedCard
+      chosenCards = playerCards.chosenCards
+      for discardCard, i in player.notLockedCards()
+        # Rule note: You don't keep a discard pile. You always use the complete deck
+        if discardCard >= 0
+          deck.cards.push discardCard
+        player.cards[i] = @EMPTY
+        chosenCards[i] = @EMPTY
 
-        Players.update player._id,
-          $set:
-            cards: player.cards
-            playedCardsCnt: 0,
-            chosenCardsCnt: player.lockedCnt()
-        Cards.update {playerId: player._id},
-          $set:
-            handCards: [],
-            chosenCards: chosenCards
+      Players.update player._id,
+        $set:
+          cards: player.cards
+          playedCardsCnt: 0,
+          chosenCardsCnt: player.lockedCnt()
+      Cards.update {playerId: player._id},
+        $set:
+          handCards: [],
+          chosenCards: chosenCards
       
     console.log "Returned cards, new total: "+deck.cards.length
     deck.cards = _.shuffle(deck.cards)

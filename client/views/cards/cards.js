@@ -10,7 +10,7 @@ Template.cards.helpers({
     return addUIData(this.chosenCards, false, Players.findOne({userId: Meteor.userId()}).lockedCnt(), true);
   },
   availableCards: function() {
-    var cards = Cards.findOne().handCards;
+    var cards = this. handCards;
     if (cards.length < 9) {
         //add empty cards
         for (var j = cards.length; j < 9; j++) {
@@ -219,7 +219,6 @@ Template.card.events({
             return alert(error.reason);
           $(".playBtn").toggleClass("disabled", !allowSubmit());
         });
-
     }
   },
   'click .played': function(e) {
