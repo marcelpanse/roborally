@@ -12,7 +12,7 @@ template(name="cards")
         img(class="robot-icon", src="/robots/robot_#{robotId}.png")
         | Your robot
         each lives
-          span.glyphicon.glyphicon-heart(data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+          span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     div.playing
       if poweredDown
         p Your robot is powered down
@@ -42,7 +42,7 @@ template(name="playerStatus")
     img(class="robot-icon", src="/robots/robot_#{robotId}.png")
     | #{playerName}:
     each lives
-      span.glyphicon.glyphicon-heart(data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+      span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     = power
   .damage-status
     each damages
@@ -51,6 +51,14 @@ template(name="playerStatus")
   div.small
     each cardsHtml
       +card
+    .next-checkpoint
+      span.glyphicon.glyphicon-arrow-right
+      if headingForFinish
+        img(class="finish" src='/finish.png' data-toggle="tooltip" data-placement="bottom" data-container="body" title="Hurry up! #{this.name} is on the way to the finish line.")
+      else
+        .checkpoint(data-toggle="tooltip" data-placement="bottom" data-container="body" title="#{this.name}'s next checkpoint")
+          = nextCheckpoint
+
 
 template(name="card")
   if emptyCard
