@@ -22,8 +22,7 @@ Template.board.helpers({
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
-        poweredDown: player.isPoweredDown(),
-        dmgTitle: "Lives: " + player.lives + ", Damage: " + player.damage
+        poweredDown: player.isPoweredDown()
       });
     });
     return r;

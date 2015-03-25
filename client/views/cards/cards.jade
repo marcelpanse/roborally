@@ -10,9 +10,20 @@ template(name="cards")
     with player
       h5.player-status
         img(class="robot-icon", src="/robots/robot_#{robotId}.png")
-        | Your robot
+        | Your robot:
         each lives
           span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+        br
+        span.small
+          | damage: #{damage}
+        span.small
+          | next checkpoint:
+        span.next-checkpoint
+          if headingForFinish
+            img(class="finish" src='/finish.png' data-toggle="tooltip" data-placement="bottom" data-container="body" title="Good! On your way to the finish line!")
+          else
+            .checkpoint(data-toggle="tooltip" data-placement="bottom" data-container="body" title="Your next checkpoint")
+              = nextCheckpoint
     div.playing
       if poweredDown
         p Your robot is powered down
@@ -44,21 +55,20 @@ template(name="playerStatus")
     each lives
       span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     = power
-  .damage-status
-    each damages
-      div(class=slot)
-        div(class=status, data-toggle="tooltip" data-placement="top" data-container="body" title="You will start with 2 damage when re-assembling on a start point. Additionally you will receive 1 damage by laser fire. For every received damage you will be dealt 1 card less. For your 5th damage and every damage after a card will lock in the register. At 10 damage you will explode and re-assemble on a start point.")
-  div.small
-    each cardsHtml
-      +card
-    .next-checkpoint
-      span.glyphicon.glyphicon-arrow-right
+    br
+    span.small
+      | damage: #{damage}
+    span.small
+      | next checkpoint:
+    span.next-checkpoint
       if headingForFinish
         img(class="finish" src='/finish.png' data-toggle="tooltip" data-placement="bottom" data-container="body" title="Hurry up! #{this.name} is on the way to the finish line.")
       else
         .checkpoint(data-toggle="tooltip" data-placement="bottom" data-container="body" title="#{this.name}'s next checkpoint")
           = nextCheckpoint
-
+  div.small
+    each cardsHtml
+      +card
 
 template(name="card")
   if emptyCard

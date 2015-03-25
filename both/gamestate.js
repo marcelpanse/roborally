@@ -23,7 +23,7 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 500;
+  var _NEXT_PHASE_DELAY = 1000;
 
   // game phases:
 

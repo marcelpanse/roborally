@@ -10,7 +10,7 @@ GameLogic = {
 };
 
 (function (scope) {
-  _CARD_PLAY_DELAY = 500;
+  _CARD_PLAY_DELAY = 1000;
 
   scope.playCard = function(player, card, callback) {
     if (!player.needsRespawn)

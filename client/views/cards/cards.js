@@ -7,7 +7,7 @@ Template.cards.helpers({
     return Players.find({gameId: this.game._id, userId: {$ne: Meteor.userId()}});
   },
   chosenCards: function() {
-    return addUIData(this.chosenCards, false, player().lockedCnt(), true);
+    return addUIData(this.chosenCards, false, getPlayer().lockedCnt(), true);
   },
   availableCards: function() {
     var cards = this. handCards;
@@ -21,10 +21,10 @@ Template.cards.helpers({
   },
   showCards: function() {
     return (this.game.gamePhase == GameState.PHASE.PROGRAM &&
-       player() && !player().submitted);
+       getPlayer() && !getPlayer().submitted);
   },
   showPlayButton: function() {
-    return !player().submitted;
+    return !getPlayer().submitted;
   },
   timer: function() {
     if (this.game.timer === 1 && timerHandle === null) {
@@ -43,7 +43,7 @@ Template.cards.helpers({
       Meteor.clearInterval(timerHandle);
       timerHandle = null;
     }
-    if (timerHandle &&  Session.get("timeLeft") <= 5 && !player().submitted)  {
+    if (timerHandle &&  Session.get("timeLeft") <= 5 && !getPlayer().submitted)  {
       $(document).find('.col-md-4.well').removeClass('countdown');
       $(document).find('.col-md-4.well').addClass('finish');
     }
@@ -65,7 +65,7 @@ Template.cards.helpers({
       case GameState.PHASE.ENDED:
         return "Game over";
       case GameState.PHASE.PROGRAM:
-        var player = player();
+        var player = getPlayer();
         if (player.isPoweredDown() && !player.optionalInstantPowerDown)
           return "Powered down";
         else
@@ -108,7 +108,7 @@ Template.cards.helpers({
     return "Problem?";
   },
   ownPowerStateName: function() {
-    switch (player().powerState) {
+    switch (getPlayer().powerState) {
       case GameLogic.OFF:
         return  'cancel power down';
       case GameLogic.DOWN:
@@ -118,7 +118,7 @@ Template.cards.helpers({
     }
   },
   ownPowerStateStyle: function() {
-    switch (player().powerState) {
+    switch (getPlayer().powerState) {
       case GameLogic.DOWN:
       case GameLogic.OFF:
         return  'btn-danger';
@@ -127,17 +127,23 @@ Template.cards.helpers({
     }
   },
   poweredDown: function() {
-    return player().isPoweredDown();
+    return getPlayer().isPoweredDown();
   },
   lives: function() {
     l = [];
     for(var i=0;i<3;i++)
-      if (i<player().lives)
+      if (i<getPlayer().lives)
         l.push('glyphicon-heart');
       else
         l.push('glyphicon-heart-empty');
     return l;
   },
+  headingForFinish: function() {
+    return this.visited_checkpoints == this.board().checkpoints.length-1;
+  },
+  nextCheckpoint: function() {
+    return this.visited_checkpoints+1;
+  }
 });
 
 Template.card.helpers({
@@ -187,24 +193,6 @@ Template.playerStatus.helpers({
     else if (this.powerState == GameLogic.DOWN)
       return 'power down played';
   },
-  damages: function() {
-    var d = [];
-    for (var i=0;i<CardLogic._MAX_NUMBER_OF_CARDS;i++) {
-      damage = {};
-      slotClass = 'damage';
-      if (i<GameLogic.CARD_SLOTS)
-        slotClass += '-card-slot';
-      else
-        slotClass += '-slot';
-      damage.slot = slotClass;
-      if (i<CardLogic._MAX_NUMBER_OF_CARDS-this.damage)
-        damage.status = 'status';
-      else
-        damage.status = 'status damaged';
-      d.push(damage);
-    }
-    return d;
-  },
   headingForFinish: function() {
     return this.visited_checkpoints == this.board().checkpoints.length-1;
   },
@@ -213,10 +201,9 @@ Template.playerStatus.helpers({
   }
 });
 
-
 Template.card.events({
   'click .available': function(e) {
-    var player = player();
+    var player = getPlayer();
     console.log('Chosen count: ', getChosenCnt());
     if (!player.submitted && getChosenCnt() < 5 && $(e.currentTarget).css("opacity") == 1) {
       chooseCard(player.gameId, this.cardId, getSlotIndex());
@@ -232,14 +219,14 @@ Template.card.events({
     }
   },
   'click .played': function(e) {
-    var player = player();
+    var player = getPlayer();
     if (!player.submitted && this.class.indexOf("locked") == -1) {
       unchooseCard(player.gameId, this.slot);
       $('.available.' + this.cardId).css("opacity", "1");
     }
   },
   'click .empty': function(e) {
-    if (!player().submitted) {
+    if (!getPlayer().submitted) {
       Session.set("selectedSlot", this.slot);
     }
   }
@@ -258,14 +245,14 @@ Template.cards.events({
           if (item.type !== 'empty')
             $('.available.' + item.cardId).show();
         });
-        unchooseAllCards(player());
+        unchooseAllCards(getPlayer());
       }
       $(".playBtn").toggleClass("disabled", !allowSubmit());
     });
   }
 });
 
-function player() {
+function getPlayer() {
     return Players.findOne({userId: Meteor.userId()});
 }
 
@@ -303,7 +290,7 @@ function unchooseAllCards(player) {
 }
 
 function getChosenCnt() {
-  return player().chosenCardsCnt;
+  return getPlayer().chosenCardsCnt;
 }
 
 function getSlotIndex() {
@@ -311,11 +298,11 @@ function getSlotIndex() {
 }
 
 function getLockedCnt() {
-  return player().lockedCnt();
+  return getPlayer().lockedCnt();
 }
 
 function allowSubmit() {
-  return getChosenCnt() == 5 || player().isPoweredDown();
+  return getChosenCnt() == 5 || getPlayer().isPoweredDown();
 }
 
 function submitCards(game) {
@@ -330,7 +317,7 @@ function submitCards(game) {
 }
 
 function addUIData(cards, available, locked, selectable) {
-  var playerCnt = player().game().playerCnt();
+  var playerCnt = getPlayer().game().playerCnt();
   var uiCards = [];
   cards.forEach(function(card, i) {
     var cardProp = {

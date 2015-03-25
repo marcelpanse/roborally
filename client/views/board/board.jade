@@ -14,7 +14,7 @@ template(name="board")
           img(src= path, style=direction )
       each robots
         div(class=robot_class, style=position )
-          img(src= path, style=direction, data-toggle="tooltip" data-placement="top" data-container="body" title=dmgTitle)
+          img(src= path, style=direction)
           if poweredDown
             img(src='/Power_Off.png',class='robot-off')
       each shots
