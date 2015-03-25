@@ -215,7 +215,7 @@ class @BoardBox
       board.addCheckpoint 2,14
       return board
     crowd_chess: () ->
-      board = new Board(5,8)
+      board = new Board(8,12)
       board.name = 'crowd_chess'
       board.title = 'Crowd Chess'
       board.length = 'short'
