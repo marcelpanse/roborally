@@ -216,7 +216,7 @@ Template.playerStatus.helpers({
 
 Template.card.events({
   'click .available': function(e) {
-    var player = player();
+    var player = Players.findOne({userId: Meteor.userId()});
     console.log('Chosen count: ', getChosenCnt());
     if (!player.submitted && getChosenCnt() < 5 && $(e.currentTarget).css("opacity") == 1) {
       chooseCard(player.gameId, this.cardId, getSlotIndex());
@@ -232,14 +232,14 @@ Template.card.events({
     }
   },
   'click .played': function(e) {
-    var player = player();
+    var player = Players.findOne({userId: Meteor.userId()});
     if (!player.submitted && this.class.indexOf("locked") == -1) {
       unchooseCard(player.gameId, this.slot);
       $('.available.' + this.cardId).css("opacity", "1");
     }
   },
   'click .empty': function(e) {
-    if (!player().submitted) {
+    if (!Players.findOne({userId: Meteor.userId()}).submitted) {
       Session.set("selectedSlot", this.slot);
     }
   }
@@ -258,7 +258,7 @@ Template.cards.events({
           if (item.type !== 'empty')
             $('.available.' + item.cardId).show();
         });
-        unchooseAllCards(player());
+        unchooseAllCards(Players.findOne({userId: Meteor.userId()}));
       }
       $(".playBtn").toggleClass("disabled", !allowSubmit());
     });
@@ -266,7 +266,7 @@ Template.cards.events({
 });
 
 function player() {
-    return Players.findOne({userId: Meteor.userId()});
+  return Players.findOne({userId: Meteor.userId()});
 }
 
 function chooseCard(gameId, card, slot) {

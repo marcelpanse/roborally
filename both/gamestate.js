@@ -24,6 +24,7 @@ GameState = {
 
 (function (scope) {
   var _NEXT_PHASE_DELAY = 500;
+  var _NEXT_CARD_DELAY = 1000;
 
   // game phases:
 
@@ -196,16 +197,21 @@ GameState = {
         cardsToPlay.push(card);
       }
     });
-
     cardsToPlay = _.sortBy(cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
+    playMoveBot(game, cardsToPlay);
+  }
 
-    cardsToPlay.forEach(function(card) {
-      Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
-      var player = Players.findOne(card.playerId);
-      Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
-    });
-
-    game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+  function playMoveBot(game,cardsToPlay) {
+    if (cardsToPlay.length > 0) {
+      var card = cardsToPlay.shift();
+      Meteor.setTimeout(function() {
+        var player = Players.findOne(card.playerId);
+        Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
+        playMoveBot(game, cardsToPlay);
+      },
+      _NEXT_CARD_DELAY);
+    } else
+      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBoard(game) {
