@@ -50,15 +50,42 @@ game =
       CardLogic._8_deck
     else
       CardLogic._12_deck
-    
+
     deckSize = 0
     for cardTypeCnt in deck
       deckSize += cardTypeCnt
-      
+
     return {
       gameId: this._id,
       cards: [0..deckSize-1]
     }
+  startAnnounce: () ->
+    Games.update this._id,
+      $set:
+        announce: true
+  stopAnnounce: () ->
+    Games.update this._id,
+      $set:
+        announce: false
+  activePlayers: () ->
+    Players.find
+      gameId: this._id,
+      needsRespawn: false,
+      lives: {$gt: 0},
+      powerState: {$ne:GameLogic.OFF}
+    .fetch()
+  livingPlayers: () ->
+    Players.find
+      gameId: this._id,
+      lives: {$gt: 0},
+    .fetch()
+  playersOnBoard: () ->
+    Players.find
+      gameId: this._id,
+      needsRespawn: false,
+      lives: {$gt: 0},
+    .fetch()
+
 
 
 @Games = new Meteor.Collection('games',

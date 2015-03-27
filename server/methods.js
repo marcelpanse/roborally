@@ -21,7 +21,9 @@ Meteor.methods({
       respawnPhase: GameState.RESPAWN_PHASE.CHOOSE_POSITION,
       playPhaseCount: 0,
       boardId: 0,
-      waitingForRespawn: []
+      waitingForRespawn: [],
+      announce: false,
+      cardsToPlay: [],
     });
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)

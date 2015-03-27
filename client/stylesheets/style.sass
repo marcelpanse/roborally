@@ -80,7 +80,7 @@ a.white
     &.visited
       background-color: #449d44
 
-  div
+  .robot, .marker, .laser
     position: absolute
     width: $tile
     height: $tile
@@ -93,13 +93,15 @@ a.white
 #board
   +board($tile-size, 19px)
 
-  div.position-select
+  .position-select
+    position: absolute
     background-color: #336699
     width: 50px
     height: 50px
     opacity: 0.7
 
-  div.direction-select
+  .direction-select
+    position: absolute
     background-color: #336699
     width: 50px
     height: 50px
@@ -111,6 +113,22 @@ a.white
     left: $tile-size/4
     width: 50%
     height: 50%
+
+  .announce
+    position: absolute
+    top: 100px
+    left: 100px
+    width: 400px
+    background: rgba(44, 62, 80, 0.8);
+    .phase
+      width: 100%;
+      font-size: 25px
+      text-align: left
+      .glyphicon
+        width: 45px
+      .next-move
+        text-align: center
+
 
 .board-thumbnail
   +board($preview-tile-size, 9px)

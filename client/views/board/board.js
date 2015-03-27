@@ -145,6 +145,63 @@ Template.board.helpers({
       });
     }
     return s;
+  },
+  playPhases: function() {
+    var game = this.game;
+    var pUIData = [];
+    var phases = [
+      GameState.PLAY_PHASE.MOVE_BOTS,
+      GameState.PLAY_PHASE.MOVE_BOARD,
+      GameState.PLAY_PHASE.LASERS,
+      GameState.PLAY_PHASE.CHECKPOINTS,
+    ];
+    if (game.playPhaseCount == 5)
+      phases.push(GameState.PLAY_PHASE.REPAIRS);
+
+    var finished = true;
+    phases.forEach(function(phase) {
+      var phaseProp = {
+        announceCard: false
+      };
+      switch (phase) {
+        case GameState.PLAY_PHASE.MOVE_BOTS:
+          phaseProp.phaseName = "Moving bots";
+          break;
+        case GameState.PLAY_PHASE.MOVE_BOARD:
+          phaseProp.phaseName =  "Moving board elements";
+          break;
+        case GameState.PLAY_PHASE.LASERS:
+          phaseProp.phaseName = "Shooting lasers";
+          break;
+        case GameState.PLAY_PHASE.CHECKPOINTS:
+          phaseProp.phaseName =  "Checkpoints";
+          break;
+        case GameState.PLAY_PHASE.REPAIRS:
+          phaseProp.phaseName =  "Repairing bots";
+          break;
+      }
+      if (phase === game.playPhase) {
+        finished = false;
+        phaseProp.status = 'glyphicon-arrow-right';
+        if (phase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
+          var cardId = game.cardsToPlay[0].cardId;
+          var player = Players.findOne(game.cardsToPlay[0].playerId);
+          phaseProp.announceCard = {
+            class: 'played',
+            priority: CardLogic.priority(cardId),
+            type: CardLogic.cardType(cardId, game.playerCnt()).name,
+            playerName: player.name,
+            robotId: player.robotId.toString()
+          };
+        }
+      } else if (finished) {
+        phaseProp.status = 'glyphicon-ok';
+      } else {
+        phaseProp.status = '';
+      }
+      pUIData.push(phaseProp);
+    });
+    return pUIData;
   }
 });
 

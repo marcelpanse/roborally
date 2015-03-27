@@ -24,7 +24,8 @@ GameState = {
 
 (function (scope) {
   var _NEXT_PHASE_DELAY = 1000;
-  var _NEXT_CARD_DELAY = 1000;
+  var _ANNOUNCE_NEXT_PHASE = 2000;
+  var _ANNOUNCE_NEXT_CARD = 3000;
 
   // game phases:
 
@@ -150,25 +151,33 @@ GameState = {
           playMoveBots(game);
           break;
         case GameState.PLAY_PHASE.MOVE_BOARD:
-          playMoveBoard(game);
+          announce(game, playMoveBoard);
           break;
         case GameState.PLAY_PHASE.LASERS:
-          playLasers(game);
+          announce(game, playLasers);
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
-          playCheckpoints(game);
+          announce(game, playCheckpoints);
           break;
         case GameState.PLAY_PHASE.REPAIRS:
-          playRepairs(game);
+          announce(game, playRepairs);
           break;
       }
     }, _NEXT_PHASE_DELAY);
   };
 
+  function announce(game, callback) {
+    game.startAnnounce();
+    Meteor.setTimeout(function() {
+      game.stopAnnounce();
+      callback(game);
+    }, _ANNOUNCE_NEXT_PHASE);
+  }
+
   function playRevealCards(game) {
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
 
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.livingPlayers();
     // play 1 card per player
     for (var i in players) {
       if (players[i].isActive()) {
@@ -183,9 +192,9 @@ GameState = {
   }
 
   function playMoveBots(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.activePlayers();
     // play 1 card per player
-    var cardsToPlay = [];
+    game.cardsToPlay = [];
 
     players.forEach(function(player) {
       var card = {
@@ -194,28 +203,36 @@ GameState = {
       if (card.cardId) {
         Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
-        cardsToPlay.push(card);
+        game.cardsToPlay.push(card);
       }
     });
-    cardsToPlay = _.sortBy(cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
-    playMoveBot(game, cardsToPlay);
+    game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
+    Games.update(game._id, {$set: {
+      cardsToPlay: game.cardsToPlay,
+      announce: false
+    }});
+    playMoveBot(game);
   }
 
-  function playMoveBot(game,cardsToPlay) {
-    if (cardsToPlay.length > 0) {
-      var card = cardsToPlay.shift();
+  function playMoveBot(game) {
+    if (game.cardsToPlay.length > 0) {
+      game.startAnnounce();
       Meteor.setTimeout(function() {
+        var card = game.cardsToPlay.shift();
+        Games.update(game._id, {$set: {
+          cardsToPlay: game.cardsToPlay,
+          announce: false
+        }});
         var player = Players.findOne(card.playerId);
         Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
-        playMoveBot(game, cardsToPlay);
-      },
-      _NEXT_CARD_DELAY);
+        playMoveBot(game);
+      }, _ANNOUNCE_NEXT_CARD);
     } else
       game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBoard(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeRollers)(players);
     Meteor.wrapAsync(GameLogic.executeExpressRollers)(players);
     Meteor.wrapAsync(GameLogic.executeGears)(players);
@@ -225,7 +242,7 @@ GameState = {
   }
 
   function playLasers(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeLasers)(players);
     game.nextPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
   }
@@ -244,7 +261,7 @@ GameState = {
   }
 
   function playRepairs(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeRepairs)(players);
     game.nextGamePhase();
   }
