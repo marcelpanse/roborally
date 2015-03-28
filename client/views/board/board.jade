@@ -10,18 +10,33 @@ template(name="board")
 
       br
       each markers
-        div(class=marker_class, style=position, data-toggle="tooltip" data-placement="top" data-container="body" title="This is a respawn location")
+        .marker(class=marker_class, style=position, data-toggle="tooltip" data-placement="top" data-container="body" title="This is a respawn location")
           img(src= path, style=direction )
       each robots
-        div(class=robot_class, style=position )
+        .robot(class=robot_class, style=position )
           img(src= path, style=direction)
           if poweredDown
             img(src='/Power_Off.png',class='robot-off')
       each shots
-        div(class="laser #{laser_class}", style=shot)
+        .laser(class=laser_class, style=shot)
       each selectOptions
         div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, 
           data-toggle="tooltip" data-placement="top" data-container="body" title=title)
+      if game.announce
+        .well.announce
+          h3 Register phase #{game.playPhaseCount}
+          each playPhases
+            .phase
+              span.glyphicon(class=status)
+              span
+                = phaseName
+              with announceCard
+                .next-move
+                  h5
+                    img(class="robot-icon", src="/robots/robot_#{robotId}.png")
+                    = playerName
+                  .card(class="#{type} #{class}")
+
   .myRobot
     if inGame
       a.btn.btn-danger.cancel Leave game

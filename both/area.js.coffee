@@ -90,9 +90,9 @@ class @Area
       @addStart  7, 2, 'up'
       @addStart  3, 2, 'up'
       @addStart  8, 2, 'up'
-      @addStart  3, 2, 'up'
       @addStart  2, 2, 'up'
       @addStart  9, 2, 'up'
+      @addStart  1, 2, 'up'
       @addStart 10, 2, 'up'
       @addStart  0, 2, 'up'
       @addStart 11, 2, 'up'
@@ -446,6 +446,53 @@ class @Area
       @addWall 7,4, 'left-down'
       @addWall 1,10, 'down'
       @addWall 10,9, 'up'
+      Area.boundaryWalls.call(@)
+    chop_shop: () ->
+      @setGear 5,3, 'cw'
+      @setGear 8,7, 'cw'
+      @setGear 5,9, 'cw'
+      @setGear 8,3, 'ccw'
+      @setGear 4,5, 'ccw'
+      @setGear 8,6, 'ccw'
+      @setGear 6,9, 'ccw'
+
+      @setRepair 0,11
+      @setRepair 11,0
+      @setOption 4,2
+      @setOption 5,6
+      @setOption 9,9
+
+      @setVoid 3,2
+      @setVoid 9,2
+      @setVoid 6,4
+      @setVoid 9,6
+      @setVoid 1,10
+
+      @setRoller 1,0, 'ddrr'
+      @setRoller 5,0, 'ddd'
+      @setRoller 8,0, 'ddd'
+      @setRoller 0,3, 'rrr'
+      @setRoller 9,3, 'rrr'
+      @setRoller 5,4, 'drrr'
+      @setRoller 3,5, 'llll'
+      @setRoller 4,6, 'u'
+      @setRoller 11,8, 'lll'
+      @setRoller 5,10, 'dd'
+      @setRoller 6,11, 'urrrr'
+      @setRoller 11,10, 'r'
+      @setExpressRoller 7,8, 'llllllll'
+      @setExpressRoller 0,6, 'rrddl'
+
+      @addLaser 4,3, 'r', 3
+      @addLaser 10,2, 'd', 3
+      @addLaser 1,6, 'd', 3
+      @addLaser 2,9, 'r', 6
+      @addDoubleLaser 8,5, 'd', 4
+      @addLaser 10,10, 'd', 1, 3
+
+      @addWall 6,1, 'r'
+      @addWall 5,5, 'd'
+      @addWall 3,6, 'right-down'
       Area.boundaryWalls.call(@)
     crowd_chess: () ->
       @setVoid 3, 3

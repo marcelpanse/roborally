@@ -10,7 +10,7 @@ Template.cards.helpers({
     return addUIData(this.chosenCards, false, getPlayer().lockedCnt(), true);
   },
   availableCards: function() {
-    var cards = this. handCards;
+    var cards = this.handCards;
     if (cards.length < 9) {
         //add empty cards^
         for (var j = cards.length; j < 9; j++) {

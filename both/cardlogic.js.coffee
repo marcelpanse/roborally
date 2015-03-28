@@ -125,13 +125,14 @@ class @CardLogic
     for card, i in player.notLockedCards()
       found = false
       if card
-        for j in [0,availableCards.length-1]
+        for j in [0..availableCards.length-1]
+          console.log(availableCards[j], ",")
           if card == availableCards[j]
             availableCards.splice(j, 1)
             found = true
             break
         if !found
-          console.log("illegal card detected! (removing card)")
+          console.log("illegal card detected: "+card+"! (removing card)")
       else
         console.log("Not enough cards submitted")
 

@@ -2,7 +2,7 @@ class @BoardBox
   @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
                'option_world', 'oddest_sea', 'dizzy_dash', 'twister',
                'island_hop', 'death_trap', 'around_the_world', 'island_king'
-               'risky_exchange', 'pilgrimage' ]
+               'risky_exchange', 'pilgrimage', 'crowd_chess', 'robot_stew' ]
                #moving_targets'
 
   @cache = []
@@ -223,4 +223,15 @@ class @BoardBox
       board.addStartArea('crowd')
       board.addCheckpoint(8,3)
       board.addCheckpoint(3,8)
+      return board
+    robot_stew: () ->
+      board = new Board(2,4)
+      board.name = 'robot_stew'
+      board.title = "Robot Stew"
+      board.length = 'medium'
+      board.addRallyArea('chop_shop')
+      board.addStartArea('roller')
+      board.addCheckpoint(0,4)
+      board.addCheckpoint(9,7)
+      board.addCheckpoint(2,10)
       return board
