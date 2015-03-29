@@ -147,6 +147,31 @@ Template.board.helpers({
     }
     return s;
   },
+  registerPhases: function() {
+    var phases = [1,2,3,4,5];
+    var pUIData = [];
+    var game = this.game;
+
+    phases.forEach(function(phase) {
+      var pclass = false;
+      var pstatus = 'glyphicon-record';
+      if (game.playPhaseCount === phase) {
+        pclass = 'active';
+        pstatus = 'glyphicon-circle-arrow-right';
+      } else if (game.playPhaseCount > phase) {
+        pclass = 'finished';
+        pstatus = 'glyphicon-ok-circle';
+      }
+      pUIData.push({
+        phaseClass: pclass,
+        phaseName: "register " + phase,
+        status: pstatus,
+        width: (game.board().width * 50) / phases.length
+      });
+    });
+    console.log(pUIData);
+    return pUIData;
+  },
   playPhases: function() {
     var game = this.game;
     var pUIData = [];
@@ -156,34 +181,36 @@ Template.board.helpers({
       GameState.PLAY_PHASE.LASERS,
       GameState.PLAY_PHASE.CHECKPOINTS,
     ];
-    if (game.playPhaseCount == 5)
-      phases.push(GameState.PLAY_PHASE.REPAIRS);
+    //if (game.playPhaseCount == 5)
+    //  phases.push(GameState.PLAY_PHASE.REPAIRS);
 
     var finished = true;
     phases.forEach(function(phase) {
       var phaseProp = {
-        announceCard: false
+        announceCard: false,
+        width: (game.board().width * 50) / phases.length
       };
       switch (phase) {
         case GameState.PLAY_PHASE.MOVE_BOTS:
-          phaseProp.phaseName = "Moving bots";
+          phaseProp.phaseName = "moving bots";
           break;
         case GameState.PLAY_PHASE.MOVE_BOARD:
-          phaseProp.phaseName =  "Moving board elements";
+          phaseProp.phaseName =  "moving board";
           break;
         case GameState.PLAY_PHASE.LASERS:
-          phaseProp.phaseName = "Shooting lasers";
+          phaseProp.phaseName = "shooting lasers";
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
-          phaseProp.phaseName =  "Checkpoints";
+          phaseProp.phaseName =  "checkpoints";
           break;
         case GameState.PLAY_PHASE.REPAIRS:
-          phaseProp.phaseName =  "Repairing bots";
+          phaseProp.phaseName =  "repairing bots";
           break;
       }
       if (phase === game.playPhase) {
         finished = false;
-        phaseProp.status = 'glyphicon-arrow-right';
+        phaseProp.status = 'glyphicon-circle-arrow-right';
+        phaseProp.phaseClass = 'active';
         if (phase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
           var cardId = game.cardsToPlay[0].cardId;
           var player = Players.findOne(game.cardsToPlay[0].playerId);
@@ -196,13 +223,30 @@ Template.board.helpers({
           };
         }
       } else if (finished) {
-        phaseProp.status = 'glyphicon-ok';
+        phaseProp.status = 'glyphicon-ok-circle';
+        phaseProp.phaseClass = 'finished';
       } else {
-        phaseProp.status = '';
+        phaseProp.status = 'glyphicon-record';
+        phaseProp.phaseClass = false;
       }
       pUIData.push(phaseProp);
     });
     return pUIData;
+  },
+  cardPlaying: function() {
+    var game = this.game;
+    if (game.playPhase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
+      var cardId = game.cardsToPlay[0].cardId;
+      var player = Players.findOne(game.cardsToPlay[0].playerId);
+      return {
+        class: 'played',
+        priority: CardLogic.priority(cardId),
+        type: CardLogic.cardType(cardId, game.playerCnt()).name,
+        playerName: player.name,
+        robotId: player.robotId.toString()
+      };
+    }
+    return false;
   }
 });
 

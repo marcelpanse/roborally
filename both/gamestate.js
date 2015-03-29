@@ -38,9 +38,11 @@ GameState = {
           playDealPhase(game);
           break;
         case GameState.PHASE.DEAL:
+          game.stopAnnounce();
           playDealPhase(game);
           break;
         case GameState.PHASE.PROGRAM:
+          game.startAnnounce();
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
@@ -56,7 +58,7 @@ GameState = {
           break;
         case GameState.PHASE.RESPAWN:
           playNextRespawn(game);
-        break;
+          break;
       }
     }, _NEXT_PHASE_DELAY);
   };
@@ -167,9 +169,9 @@ GameState = {
   };
 
   function announce(game, callback) {
-    game.startAnnounce();
+    //game.startAnnounce();
     Meteor.setTimeout(function() {
-      game.stopAnnounce();
+      //game.stopAnnounce();
       callback(game);
     }, _ANNOUNCE_NEXT_PHASE);
   }
@@ -209,19 +211,19 @@ GameState = {
     game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
     Games.update(game._id, {$set: {
       cardsToPlay: game.cardsToPlay,
-      announce: false
+      //announce: false
     }});
     playMoveBot(game);
   }
 
   function playMoveBot(game) {
     if (game.cardsToPlay.length > 0) {
-      game.startAnnounce();
+      //game.startAnnounce();
       Meteor.setTimeout(function() {
         var card = game.cardsToPlay.shift();
         Games.update(game._id, {$set: {
           cardsToPlay: game.cardsToPlay,
-          announce: false
+          //announce: false
         }});
         var player = Players.findOne(card.playerId);
         Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);

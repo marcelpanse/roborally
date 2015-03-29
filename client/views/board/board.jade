@@ -5,7 +5,21 @@ template(name="board")
       hr.star-well
       h4 #{game.winner} has won the game!
   else
-    div(id="board", style="width: #{boardWidth}px; height: #{boardHeight}px;")
+    if game.announce
+      .announce-bar(style="width: #{boardWidth}px; height: 74px;")
+        div(style="width: 100%")
+          each registerPhases
+            span.phase(class=phaseClass, style="width: #{width}px;")
+              span.glyphicon(class=status)
+              span
+                = phaseName
+        div(style="width: 100%")
+          each playPhases
+            span.phase(class=phaseClass, style="width: #{width}px;")
+              span.glyphicon(class=status)
+              span
+                = phaseName
+    #board(style="width: #{boardWidth}px; height: #{boardHeight}px;")
       +_tiles(rows=tiles show_start=false)
 
       br
@@ -21,20 +35,15 @@ template(name="board")
         .laser(class=laser_class, style=shot)
       each selectOptions
         div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, data-tooltip-direction="n" data-tooltip=title)
-      if game.announce
+      if cardPlaying
         .well.announce
-          h3 Register phase #{game.playPhaseCount}
-          each playPhases
-            .phase
-              span.glyphicon(class=status)
-              span
-                = phaseName
-              with announceCard
-                .next-move
-                  h5
-                    img(class="robot-icon", src="/robots/robot_#{robotId}.png")
-                    = playerName
-                  .card(class="#{type} #{class}")
+          | test
+          with cardPlaying
+            .next-move
+              h5
+                img(class="robot-icon", src="/robots/robot_#{robotId}.png")
+                = playerName
+              .card(class="#{type} #{class}")
 
   .myRobot
     if inGame
