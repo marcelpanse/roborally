@@ -12,7 +12,7 @@ template(name="cards")
         img(class="robot-icon", src="/robots/robot_#{robotId}.png")
         | Your robot:
         each lives
-          span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+          span.glyphicon(class=this, data-tooltip-direction="n" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
         br
         span.small(style="color: #fff")
           | #{dmgPercentage}% damaged
@@ -22,7 +22,7 @@ template(name="cards")
           if headingForFinish
             img(class="finish" src='/finish.png' data-toggle="tooltip" data-placement="bottom" data-container="body" title="Good! On your way to the finish line!")
           else
-            .checkpoint(data-toggle="tooltip" data-placement="bottom" data-container="body" title="Your next checkpoint")
+            .checkpoint(data-tooltip-direction="s" data-tooltip="Your next checkpoint")
               = nextCheckpoint
     div.playing
       if poweredDown
@@ -37,7 +37,7 @@ template(name="cards")
         | &nbsp;
         a.btn.btn-success.playBtn play cards
       else
-        a.btn.powerBtn(class= ownPowerStateStyle, data-toggle='tooltip' data-placement='left' title="A player with a damaged robot may choose to power down. A power down announced this turn takes effect on the next turn. At the beginning of the turn when your robot powers down, all your damage is removed. You can't play any cards while powered down.") 
+        a.btn.powerBtn(class= ownPowerStateStyle, data-tooltip-direction='w' data-tooltip="A player with a damaged robot may choose to power down. A power down announced this turn takes effect on the next turn. At the beginning of the turn when your robot powers down, all your damage is removed. You can't play any cards while powered down.")
           | #{ownPowerStateName}
         | &nbsp;
         a.btn.btn-success.playBtn.disabled play cards
@@ -53,7 +53,7 @@ template(name="playerStatus")
     img(class="robot-icon", src="/robots/robot_#{robotId}.png")
     | #{playerName}:
     each lives
-      span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
+      span.glyphicon(class=this, data-tooltip-direction="top" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     = power
     br
     span.small(style="color: #fff")
@@ -62,9 +62,9 @@ template(name="playerStatus")
       | next checkpoint:
     span.next-checkpoint
       if headingForFinish
-        img(class="finish" src='/finish.png' data-toggle="tooltip" data-placement="bottom" data-container="body" title="Hurry up! #{this.name} is on the way to the finish line.")
+        img(class="finish" src='/finish.png' data-tooltip-direction="s" data-tooltip="Hurry up! #{this.name} is on the way to the finish line.")
       else
-        .checkpoint(data-toggle="tooltip" data-placement="bottom" data-container="body" title="#{this.name}'s next checkpoint")
+        .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
   div.small
     each cardsHtml
@@ -78,9 +78,9 @@ template(name="card")
   else if coveredCard
     .card(class="covered")
   else if dmgCard
-    .card(class="damage", data-toggle='tooltip' data-placement='bottom' title="This card can't be used because you have received damage. You can consider a power down to remove all damage.")
+    .card(class="damage", data-tooltip-direction='bottom' data-tooltip="This card can't be used because you have received damage. You can consider a power down to remove all damage.")
   else
-    .card(class="#{type} #{class} #{cardId}" data-toggle='tooltip' title='#{title}')
+    .card(class="#{type} #{class} #{cardId}" data-tooltip='#{title}')
       span.priority= priority
       if this.locked
-        img.locked(src="/damage-token.png", width="35", data-container="body" data-toggle='tooltip' data-placement='top' title="This card is locked in place because you have received 5 or more damage. You should probably power down before you die at 10 damage.")
+        img.locked(src="/damage-token.png", width="35", data-tooltip-direction='top' data-tooltip="This card is locked in place because you have received 5 or more damage. You should probably power down before you die at 10 damage.")

@@ -319,9 +319,3 @@ Template.board.events({
     });
   }
 });
-
-Template.board.rendered = function() {
-  $('body').tooltip({
-    selector: '[data-toggle=tooltip]'
-  });
-};

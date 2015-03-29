@@ -76,6 +76,8 @@ a.white
     border-radius: $tile/4.54
     margin-top: $tile*0.28
     margin-left: $tile*0.28
+    position: absolute
+    top: 0px
 
     &.visited
       background-color: #449d44
@@ -179,3 +181,18 @@ img#robot
 
 h5.player-status
   text-align: left
+
+.tooltip
+  z-index: 1001
+  pointer-events: none
+  transition: opacity .5s ease-out
+  opacity: 0
+  background-color: #000
+  color: #fff
+  padding: 5px
+  border-radius: 5px
+  max-width: 300px
+  &.hide
+    opacity: 0
+  &.show
+    opacity: 1

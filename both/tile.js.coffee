@@ -131,4 +131,4 @@ class Item
         "This is a double laser!! It hurts a lot and you will gain two damages."
       when 'triplelaser'
         "This is a triple laser!!! It hurts like hell and you will gain three damages."
-      else ''
+      else false

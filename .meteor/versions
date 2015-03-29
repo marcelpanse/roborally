@@ -45,6 +45,7 @@ linto:fontawesome@4.2.6
 livedata@1.0.13
 localstorage@1.0.3
 logging@1.0.7
+lookback:tooltips@0.2.1
 meteor@1.1.5
 meteor-platform@1.2.2
 meteorhacks:inject-initial@1.0.0
