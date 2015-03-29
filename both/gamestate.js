@@ -70,7 +70,7 @@ GameState = {
       dealCards = players[i].lives > 0;
       var options = {
         playedCardsCnt: 0,
-        submitted: false,
+        submitted: false
       };
       if (players[i].powerState === GameLogic.OFF) {
         // player was powered down last turn

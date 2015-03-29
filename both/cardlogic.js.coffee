@@ -93,8 +93,8 @@ class @CardLogic
         optionalInstantPowerDown: false,
       }})
 
-    playerCnt = Players.find({gameId: player.gameId}).count()
-    readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true}).count()
+    playerCnt = Players.find({gameId: player.gameId, lives: {$gt: 0}}).count()
+    readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true, lives: {$gt: 0}}).count()
     if readyPlayerCnt == playerCnt
       Games.update(player.gameId, {$set: {timer: -1}})
       GameState.nextGamePhase(player.gameId)
