@@ -228,13 +228,6 @@ function animatePosition(element, x, y) {
       });
     }
   }
-
-  Tracker.afterFlush(function() {
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-  });
-
   return "left: " + oldX + "px; top: " + oldY + "px;";
 }
 
@@ -326,3 +319,9 @@ Template.board.events({
     });
   }
 });
+
+Template.board.rendered = function() {
+  $('body').tooltip({
+    selector: '[data-toggle=tooltip]'
+  });
+};

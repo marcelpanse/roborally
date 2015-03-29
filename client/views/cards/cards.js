@@ -138,6 +138,9 @@ Template.cards.helpers({
         l.push('glyphicon-heart-empty');
     return l;
   },
+  dmgPercentage: function() {
+    return this.damage * 10;
+  },
   headingForFinish: function() {
     return this.visited_checkpoints == this.board().checkpoints.length-1;
   },
@@ -186,6 +189,9 @@ Template.playerStatus.helpers({
       else
         l.push('glyphicon-heart-empty');
     return l;
+  },
+  dmgPercentage: function() {
+    return this.damage * 10;
   },
   power: function() {
     if (this.powerState == GameLogic.OFF)

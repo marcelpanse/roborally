@@ -14,9 +14,9 @@ template(name="cards")
         each lives
           span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
         br
-        span.small
-          | damage: #{damage}
-        span.small
+        span.small(style="color: #fff")
+          | #{dmgPercentage}% damaged
+        span.small(style="color: #fff")
           | next checkpoint:
         span.next-checkpoint
           if headingForFinish
@@ -56,9 +56,9 @@ template(name="playerStatus")
       span.glyphicon(class=this, data-toggle="tooltip" data-placement="top" data-container="body" title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
     = power
     br
-    span.small
-      | damage: #{damage}
-    span.small
+    span.small(style="color: #fff")
+      | #{dmgPercentage}% damaged
+    span.small(style="color: #fff")
       | next checkpoint:
     span.next-checkpoint
       if headingForFinish
