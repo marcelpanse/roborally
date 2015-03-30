@@ -213,7 +213,7 @@ Template.card.events({
     console.log('Chosen count: ', getChosenCnt());
     if (!player.submitted && getChosenCnt() < 5 && $(e.currentTarget).css("opacity") == 1) {
       chooseCard(player.gameId, this.cardId, getSlotIndex());
-      console.log("choose card ",this.cardId,' for slot ',getSlotIndex());
+      console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
       $(e.currentTarget).css("opacity", "0.3");
 
       if (player.isPoweredDown())
@@ -263,32 +263,33 @@ function getPlayer() {
 }
 
 function chooseCard(gameId, card, slot) {
+  var emptySlots = getEmptySlots();
+  emptySlots[slot] = false;
+  Session.set("emptySlots",emptySlots);
+  Session.set("selectedSlot", getNextEmptySlotIndex());
+
   Meteor.call('selectCard', gameId, card, slot, function(error, chosenCards) {
     if (error)
       return alert(error.reason);
-    var nextSlot = -1;
-    for (var i=0;i<chosenCards.length;i++) {
-      if (chosenCards[i] === CardLogic.EMPTY) {
-        nextSlot = i;
-        break;
-      }
-    }
-    Session.set("selectedSlot", nextSlot);
     $(".playBtn").toggleClass("disabled", !allowSubmit());
   });
 }
 
 function unchooseCard(gameId, slot) {
+  Session.set("selectedSlot", slot);
+  var emptySlots = getEmptySlots();
+  emptySlots[slot] = true;
+  Session.set("emptySlots",emptySlots);
   Meteor.call('deselectCard', gameId, slot, function(error, chosenCards) {
     if (error)
       return alert(error.reason);
-    Session.set("selectedSlot", slot);
     $(".playBtn").toggleClass("disabled", !allowSubmit());
   });
 }
 
 function unchooseAllCards(player) {
   Session.set("selectedSlot", 0);
+  initEmptySlots();
   Meteor.call('deselectAllsCards', player.gameId, function(error) {
     if (error)
       return alert(error.reason);
@@ -301,6 +302,30 @@ function getChosenCnt() {
 
 function getSlotIndex() {
   return Session.get("selectedSlot") || 0;
+}
+
+function initEmptySlots() {
+  var emptySlots = [];
+  var emptyCnt = GameLogic.CARD_SLOTS - getLockedCnt();
+  for(var i=0;i<GameLogic.CARD_SLOTS;i++) {
+    emptySlots.push(i < emptyCnt);
+  }
+  Session.set("emptySlots", emptySlots);
+}
+
+function getEmptySlots() {
+  if (!Session.get("emptySlots")) {
+    initEmptySlots();
+  }
+  return Session.get("emptySlots");
+}
+
+function getNextEmptySlotIndex() {
+  var emptySlots = getEmptySlots();
+  for (var j=0;j<emptySlots.length;j++)
+    if (emptySlots[j])
+      return j;
+  return  0;
 }
 
 function getLockedCnt() {
@@ -317,6 +342,7 @@ function submitCards(game) {
   $(document).find('.col-md-4.well').removeClass('countdown').removeClass('finish');
   Meteor.call('playCards',  game._id, function(error) {
     Session.set("selectedSlot", 0);
+    Session.set("emptySlots",false);
     if (error)
       return alert(error.reason);
   });
