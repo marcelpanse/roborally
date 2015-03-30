@@ -211,17 +211,6 @@ Template.board.helpers({
         finished = false;
         phaseProp.status = 'glyphicon-circle-arrow-right';
         phaseProp.phaseClass = 'active';
-        if (phase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
-          var cardId = game.cardsToPlay[0].cardId;
-          var player = Players.findOne(game.cardsToPlay[0].playerId);
-          phaseProp.announceCard = {
-            class: 'played',
-            priority: CardLogic.priority(cardId),
-            type: CardLogic.cardType(cardId, game.playerCnt()).name,
-            playerName: player.name,
-            robotId: player.robotId.toString()
-          };
-        }
       } else if (finished) {
         phaseProp.status = 'glyphicon-ok-circle';
         phaseProp.phaseClass = 'finished';

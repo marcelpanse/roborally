@@ -24,7 +24,7 @@ GameState = {
 
 (function (scope) {
   var _NEXT_PHASE_DELAY = 1000;
-  var _ANNOUNCE_NEXT_PHASE = 2000;
+  var _ANNOUNCE_NEXT_PHASE = 1500;
   var _ANNOUNCE_NEXT_CARD = 3000;
 
   // game phases:
@@ -169,9 +169,7 @@ GameState = {
   };
 
   function announce(game, callback) {
-    //game.startAnnounce();
     Meteor.setTimeout(function() {
-      //game.stopAnnounce();
       callback(game);
     }, _ANNOUNCE_NEXT_PHASE);
   }
@@ -211,19 +209,16 @@ GameState = {
     game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
     Games.update(game._id, {$set: {
       cardsToPlay: game.cardsToPlay,
-      //announce: false
     }});
     playMoveBot(game);
   }
 
   function playMoveBot(game) {
     if (game.cardsToPlay.length > 0) {
-      //game.startAnnounce();
       Meteor.setTimeout(function() {
         var card = game.cardsToPlay.shift();
         Games.update(game._id, {$set: {
           cardsToPlay: game.cardsToPlay,
-          //announce: false
         }});
         var player = Players.findOne(card.playerId);
         Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);

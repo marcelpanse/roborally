@@ -23,7 +23,7 @@ Meteor.methods({
       boardId: 0,
       waitingForRespawn: [],
       announce: false,
-      cardsToPlay: [],
+      cardsToPlay: []
     });
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)
