@@ -78,8 +78,6 @@ class @CardLogic
     Deck.update(deck._id, deck)
 
   @submitCards: (player) ->
-    console.log('player ' + player.name + ' submitted cards: ')
-
     if (player.isPoweredDown())
       Players.update player._id,
         $set:
@@ -126,7 +124,6 @@ class @CardLogic
       found = false
       if card
         for j in [0..availableCards.length-1]
-          console.log(availableCards[j], ",")
           if card == availableCards[j]
             availableCards.splice(j, 1)
             found = true
