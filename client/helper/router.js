@@ -17,6 +17,8 @@ Router.route('/', {
     mixpanel.track("Viewed home Page");
     if (Meteor.isCordova) {
       Router.go('gamelist.page');
+    } else {
+      this.next();
     }
   }
 });

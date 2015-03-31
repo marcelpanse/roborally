@@ -13,7 +13,6 @@ meteorhacks:kadira
 meteorhacks:zones
 mquandalle:jade
 linto:fontawesome
-spiderable
 fourseven:scss
 ian:accounts-ui-bootstrap-3
 mrt:moment
@@ -24,3 +23,4 @@ sanjo:jasmine
 velocity:html-reporter
 lookback:tooltips
 joshowens:shareit
+spiderable
