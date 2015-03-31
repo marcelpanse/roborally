@@ -208,7 +208,7 @@ GameState = {
     });
     game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
     Games.update(game._id, {$set: {
-      cardsToPlay: game.cardsToPlay,
+      cardsToPlay: game.cardsToPlay
     }});
     playMoveBot(game);
   }
@@ -218,7 +218,7 @@ GameState = {
       Meteor.setTimeout(function() {
         var card = game.cardsToPlay.shift();
         Games.update(game._id, {$set: {
-          cardsToPlay: game.cardsToPlay,
+          cardsToPlay: game.cardsToPlay
         }});
         var player = Players.findOne(card.playerId);
         Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);

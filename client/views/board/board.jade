@@ -38,11 +38,10 @@ template(name="board")
       if cardPlaying
         .well.announce
           with cardPlaying
-            .next-move
-              h5
-                img(class="robot-icon", src="/robots/robot_#{robotId}.png")
-                = playerName
-              .card(class="#{type} #{class}")
+            h5
+              img(class="robot-icon", src="/robots/robot_#{robotId}.png")
+              = playerName
+            .card(style="width: 74%; height:80%;", class="#{type} #{class}")
 
   .myRobot
     if inGame

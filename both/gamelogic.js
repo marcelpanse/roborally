@@ -81,10 +81,9 @@ GameLogic = {
   };
 
   scope.executePushers = function(players, callback) {
-    var game = players[0].game();
     players.forEach(function(player) {
       var tile = player.tile();
-      if (tile.type === Tile.PUSHER &&  game.playPhaseCount % 2 === tile.pusher_type ) {
+      if (tile.type === Tile.PUSHER &&  player.game().playPhaseCount % 2 === tile.pusher_type ) {
         tryToMovePlayer(players, player, tile.move);
       }
     });
@@ -97,7 +96,7 @@ GameLogic = {
       var tile = player.tile();
       if (tile.damage > 0) {
         player.addDamage(tile.damage);
-        console.log(player.name + " got " + tile.damage + " on " + tile.type + "tile");
+        player.chat('was hit by a laser, total damage: '+ player.damage);
         checkRespawnsAndUpdateDb(player);
       }
       if (!player.isPoweredDown() && !player.needsRespawn) {
