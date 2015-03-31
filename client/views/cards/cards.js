@@ -203,7 +203,7 @@ Template.playerStatus.helpers({
     return this.visited_checkpoints == this.board().checkpoints.length-1;
   },
   nextCheckpoint: function() {
-    return this.visited_checkpoints+1;
+    return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
   }
 });
 
