@@ -358,6 +358,9 @@ function addUIData(cards, available, locked, selectable) {
     if (selectable)
       cardProp.slot = i;
     switch (card) {
+      case CardLogic.RANDOM:
+        cardProp.type = 'random';
+        break;
       case CardLogic.DAMAGE:
         cardProp.type = 'dmg';
         break;
