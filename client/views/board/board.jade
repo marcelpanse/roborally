@@ -7,6 +7,8 @@ template(name="board")
       p.share
         | Thank you for playing, please share this game with your friends:
         +share
+      if inGame
+        a.btn.btn-danger.cancel Leave game
 
   else if game.announce
     .announce-bar(style="width: #{boardWidth}px; height: 74px;")
@@ -47,9 +49,6 @@ template(name="board")
             = playerName
           .card(style="width: 74%; height:80%;", class="#{type} #{class}")
 
-  .myRobot
-    if inGame
-      a.btn.btn-danger.cancel Leave game
 
 template(name="share")
   +shareit shareData

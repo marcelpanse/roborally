@@ -1,3 +1,9 @@
+Template.chat.helpers({
+  inGame: function() {
+    return Players.findOne({gameId: this.gameId, userId: Meteor.userId(), robotId: {$ne:null}});
+  }
+});
+
 Template.chat.events({
   'submit form': function(event) {
     event.preventDefault();
@@ -14,7 +20,21 @@ Template.chat.events({
         $(event.target).find('[name=message]').val('');
       });
     }
-  }
+  },
+  'click .cancel': function() {
+    var game = Games.findOne(this.gameId);
+    if (game.gamePhase != GameState.PHASE.ENDED) {
+      if (confirm("If you leave, you will forfeit the game, are you sure you want to give up?")) {
+        Meteor.call('leaveGame', game._id, function(error) {
+          if (error)
+            alert(error.reason);
+          Router.go('gamelist.page');
+        });
+      }
+    } else {
+      Router.go('gamelist.page');
+    }
+  },
 });
 
 Template.chat.rendered = function() {
