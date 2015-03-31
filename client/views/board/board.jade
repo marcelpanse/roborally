@@ -4,6 +4,9 @@ template(name="board")
       h3 Game over
       hr.star-well
       h4 #{game.winner} has won the game!
+      p.share
+        | Thank you for playing, please share this game with your friends:
+        +share
   else
     if game.announce
       .announce-bar(style="width: #{boardWidth}px; height: 74px;")
@@ -46,3 +49,6 @@ template(name="board")
   .myRobot
     if inGame
       a.btn.btn-danger.cancel Leave game
+
+template(name="share")
+  +shareit shareData
