@@ -4,33 +4,51 @@ template(name="board")
       h3 Game over
       hr.star-well
       h4 #{game.winner} has won the game!
-  else
-    div(id="board", style="width: #{boardWidth}px; height: #{boardHeight}px;")
-      +_tiles(rows=tiles show_start=false)
+      p.share
+        | Thank you for playing, please share this game with your friends:
+        +share
+      if inGame
+        a.btn.btn-danger.cancel Leave game
 
-      br
-      each markers
-        div(class=marker_class, style=position )
-          img(src= path, style=direction )
-      each robots
-        div(class=robot_class, style=position )
-          img(src= path, style=direction )
-          if poweredDown
-            img(src='/Power_Off.png',class='robot-off')
-      each shots
-        div(class="laser #{laser_class}", style=shot)
-      each selectOptions
-        div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, 
-          data-toggle="tooltip" data-placement="top" data-container="body" title=title)
-  .myRobot
-    unless gameEnded
-      img#robot(src='/robots/robot_#{getRobotId}.png')
-      i.fa.fa-arrow-left  This is your robot
-    if inGame
-      a.btn.btn-danger.cancel Leave game
-    span(data-toggle="tooltip" data-placement="top" data-container="body" 
-          title="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
-      | Lives: #{player.lives}, 
-    span(data-toggle="tooltip" data-placement="top" data-container="body" 
-          title="You will start with 2 damage when re-assembling on a start point. Additionally you will receive 1 damage by laser fire. For every received damage you will be dealt 1 card less. For your 5th damage and every damage after a card will lock in the register. At 10 damage you will explode and re-assemble on a start point.")
-      | Damage: #{player.damage}
+  else if game.announce
+    .announce-bar(style="width: #{boardWidth}px; height: 74px;")
+      div(style="width: 100%")
+        each registerPhases
+          span.phase(class=phaseClass, style="width: #{width}px;")
+            span.glyphicon(class=status)
+            span
+              = phaseName
+      div(style="width: 100%")
+        each playPhases
+          span.phase(class=phaseClass, style="width: #{width}px;")
+            span.glyphicon(class=status)
+            span
+              = phaseName
+
+  #board(style="width: #{boardWidth}px; height: #{boardHeight}px;")
+    +_tiles(rows=tiles show_start=false)
+
+    br
+    each markers
+      .marker(class=marker_class, style=position, data-tooltip-direction="n" data-tooltip="This is a respawn location")
+        img(src= path, style=direction )
+    each robots
+      .robot(class=robot_class, style=position, data-tooltip= name)
+        img(src= path, style=direction)
+        if poweredDown
+          img(src='/Power_Off.png',class='robot-off')
+    each shots
+      .laser(class=laser_class, style=shot)
+    each selectOptions
+      div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, data-tooltip-direction="n" data-tooltip=title)
+    if cardPlaying
+      .well.announce
+        with cardPlaying
+          h5
+            img(class="robot-icon", src="/robots/robot_#{robotId}.png")
+            = playerName
+          .card(style="width: 74%; height:80%;", class="#{type} #{class}")
+
+
+template(name="share")
+  +shareit shareData

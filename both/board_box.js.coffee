@@ -1,10 +1,11 @@
 class @BoardBox
-  @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
-               'option_world', 'oddest_sea', 'dizzy_dash', 'twister',
-               'island_hop', 'death_trap', 'around_the_world', 'island_king'
-               'risky_exchange', 'pilgrimage' ]
+  @CATALOG = [ 'default', 'risky_exchange', 'checkmate', 'dizzy_dash',
+               'island_hop', 'chop_shop_challenge', 'twister', 'bloodbath_chess',
+               'around_the_world','death_trap', 'pilgrimage',
+               'whirlwind_tour','option_world',
+               'island_king' ,'crowd_chess', 'robot_stew', 'oddest_sea']
                #moving_targets'
-
+  @BEGINNER_COURSE_CNT = 11
   @cache = []
   @test_board_id = @CATALOG.length
 
@@ -202,6 +203,18 @@ class @BoardBox
       board.addCheckpoint 9,7
       board.addCheckpoint 1,4
       return board
+    chop_shop_challenge: () ->
+      board = new Board(2,4)
+      board.name = 'chop_shop_challenge'
+      board.title = 'Chop Shop Challenge'
+      board.length = 'medium'
+      board.addRallyArea('chop_shop',0,0,180)
+      board.addStartArea('simple')
+      board.addCheckpoint(4,9)
+      board.addCheckpoint(9,11)
+      board.addCheckpoint(1,10)
+      board.addCheckpoint(11,7)
+      return board
     pilgrimage: () ->
       board = new Board(2,8,12,28)
       board.name = 'pilgrimage'
@@ -213,4 +226,25 @@ class @BoardBox
       board.addCheckpoint 4,8
       board.addCheckpoint 9,19
       board.addCheckpoint 2,14
+      return board
+    crowd_chess: () ->
+      board = new Board(8,12)
+      board.name = 'crowd_chess'
+      board.title = 'Crowd Chess'
+      board.length = 'short'
+      board.addRallyArea('crowd_chess')
+      board.addStartArea('crowd')
+      board.addCheckpoint(8,3)
+      board.addCheckpoint(3,8)
+      return board
+    robot_stew: () ->
+      board = new Board(2,4)
+      board.name = 'robot_stew'
+      board.title = "Robot Stew"
+      board.length = 'medium'
+      board.addRallyArea('chop_shop')
+      board.addStartArea('roller')
+      board.addCheckpoint(0,4)
+      board.addCheckpoint(9,7)
+      board.addCheckpoint(2,10)
       return board

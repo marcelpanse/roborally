@@ -71,6 +71,32 @@ class @Area
       @addStart 10, 1, 'up'
       @addStart  0, 0, 'up'
       @addStart 11, 0, 'up'
+    crowd: () ->
+      @addWall  1, 2, 'left'
+      @addWall  3, 2, 'left'
+      @addWall  5, 2, 'left'
+      @addWall  6, 2, 'left'
+      @addWall  8, 2, 'left'
+      @addWall 10, 2, 'left'
+      @addWall 11, 2, 'left'
+      @addWall  2, 2, 'left'
+      @addWall  4, 2, 'left'
+      @addWall  7, 2, 'left'
+      @addWall  9, 2, 'left'
+
+      @addStart  5, 2, 'up'
+      @addStart  6, 2, 'up'
+      @addStart  4, 2, 'up'
+      @addStart  7, 2, 'up'
+      @addStart  3, 2, 'up'
+      @addStart  8, 2, 'up'
+      @addStart  2, 2, 'up'
+      @addStart  9, 2, 'up'
+      @addStart  1, 2, 'up'
+      @addStart 10, 2, 'up'
+      @addStart  0, 2, 'up'
+      @addStart 11, 2, 'up'
+
     test: () ->
       @addStart 0,0, 'up'
       @addStart 1,0, 'up'
@@ -421,3 +447,124 @@ class @Area
       @addWall 1,10, 'down'
       @addWall 10,9, 'up'
       Area.boundaryWalls.call(@)
+    chop_shop: () ->
+      @setGear 5,3, 'cw'
+      @setGear 8,7, 'cw'
+      @setGear 5,9, 'cw'
+      @setGear 8,3, 'ccw'
+      @setGear 4,5, 'ccw'
+      @setGear 8,6, 'ccw'
+      @setGear 6,9, 'ccw'
+
+      @setRepair 0,11
+      @setRepair 11,0
+      @setOption 4,2
+      @setOption 5,6
+      @setOption 9,9
+
+      @setVoid 3,2
+      @setVoid 9,2
+      @setVoid 6,4
+      @setVoid 9,6
+      @setVoid 1,10
+
+      @setRoller 1,0, 'ddrr'
+      @setRoller 5,0, 'ddd'
+      @setRoller 8,0, 'ddd'
+      @setRoller 0,3, 'rrr'
+      @setRoller 9,3, 'rrr'
+      @setRoller 5,4, 'drrr'
+      @setRoller 3,5, 'llll'
+      @setRoller 4,6, 'u'
+      @setRoller 11,8, 'lll'
+      @setRoller 5,10, 'dd'
+      @setRoller 6,11, 'urrrr'
+      @setRoller 11,10, 'r'
+      @setExpressRoller 7,8, 'llllllll'
+      @setExpressRoller 0,6, 'rrddl'
+
+      @addLaser 4,3, 'r', 3
+      @addLaser 10,2, 'd', 3
+      @addLaser 1,6, 'd', 3
+      @addLaser 2,9, 'r', 6
+      @addDoubleLaser 8,5, 'd', 4
+      @addLaser 10,10, 'd', 1, 3
+
+      @addWall 6,1, 'r'
+      @addWall 5,5, 'd'
+      @addWall 3,6, 'right-down'
+      Area.boundaryWalls.call(@)
+    crowd_chess: () ->
+      @setVoid 3, 3
+      @setVoid 6, 4
+      @setVoid 8, 6
+      @setVoid 5, 7
+
+      @setExpressRoller 2, 1, 'rrrrrrrrdddddddddllllllllluuuuuuuuurr'
+      @setRoller 2, 2, 'r'
+      @setRoller 2, 4, 'r'
+      @setRoller 2, 6, 'r'
+      @setRoller 2, 8, 'r'
+      @setRoller 4, 2, 'r'
+      @setRoller 4, 4, 'r'
+      @setRoller 4, 6, 'r'
+      @setRoller 4, 8, 'r'
+
+      @setRoller 3, 5, 'r'
+      @setRoller 3, 7, 'r'
+      @setRoller 3, 9, 'r'
+
+      @setRoller 5, 3, 'r'
+      @setRoller 5, 9, 'r'
+
+      @setRoller 7, 3, 'l'
+      @setRoller 7, 5, 'l'
+      @setRoller 7, 7, 'l'
+      @setRoller 7, 9, 'l'
+      @setRoller 9, 3, 'l'
+      @setRoller 9, 5, 'l'
+      @setRoller 9, 7, 'l'
+      @setRoller 9, 9, 'l'
+
+      @setRoller 8, 2, 'l'
+      @setRoller 8, 4, 'l'
+      @setRoller 8, 8, 'l'
+
+      @setRoller 6, 2, 'l'
+      @setRoller 6, 8, 'l'
+
+      @setOption 5, 5
+      @setOption 6, 6
+      @setRepair 11, 0
+      @setRepair  0,11
+
+
+      @addWall 3, 1, 'd'
+      @addWall 5, 1, 'd'
+      @addWall 6, 1, 'd'
+      @addWall 8, 1, 'd'
+      @addWall 3, 10, 'u'
+      @addWall 5, 10, 'u'
+      @addWall 6, 10, 'u'
+      @addWall 8, 10, 'u'
+      @addWall 1, 3, 'r'
+      @addWall 1, 5, 'r'
+      @addWall 1, 6, 'r'
+      @addWall 1, 8, 'r'
+      @addWall 10, 3, 'l'
+      @addWall 10, 5, 'l'
+      @addWall 10, 6, 'l'
+      @addWall 10, 8, 'l'
+
+      @addWall 2, 0, 'u'
+      @addWall 4, 0, 'u'
+      @addWall 7, 0, 'u'
+      @addWall 9, 0, 'u'
+      @addWall 0, 2, 'l'
+      @addWall 0, 4, 'l'
+      @addWall 0, 7, 'l'
+      @addWall 0, 9, 'l'
+      @addWall 11, 2, 'r'
+      @addWall 11, 4, 'r'
+      @addWall 11, 7, 'r'
+      @addWall 11, 9, 'r'

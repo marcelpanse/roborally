@@ -27,20 +27,29 @@ a.white
   border: none
   border-radius: 10px
 
+.countdown
+  background:  #780300
+  .well
+    background: #780300
+.finish
+  background: #aa0500
+  .well
+    background: #aa0500
+
 .chat
-  position:relative
-  margin:0 auto
-  overflow:hidden
+  position: relative
+  margin: 0 auto
+  overflow: hidden
   margin-bottom: 10px
 
   .messages
     width: 100%
     height: 300px
-    overflow:auto
+    overflow: auto
     text-align: left
 
     > div
-      padding:5px
+      padding: 5px
 
     .system
       color: #BBB
@@ -60,18 +69,20 @@ a.white
     height: $tile
 
   div.checkpoint
-    font-size: $font-size
+    font-size: $tile/3.12
     background-color: #336699
-    width: $tile/2
-    height: $tile/2
-    border-radius: $tile/4+1
-    margin-top: $tile/4
-    margin-left: $tile/4
+    width: $tile/2.27
+    height: $tile/2.27
+    border-radius: $tile/4.54
+    margin-top: $tile*0.28
+    margin-left: $tile*0.28
+    position: absolute
+    top: 0px
 
     &.visited
       background-color: #449d44
 
-  div
+  .robot, .marker, .laser
     position: absolute
     width: $tile
     height: $tile
@@ -83,14 +94,17 @@ a.white
 
 #board
   +board($tile-size, 19px)
+  clear: both
 
-  div.position-select
+  .position-select
+    position: absolute
     background-color: #336699
     width: 50px
     height: 50px
     opacity: 0.7
 
-  div.direction-select
+  .direction-select
+    position: absolute
     background-color: #336699
     width: 50px
     height: 50px
@@ -102,6 +116,31 @@ a.white
     left: $tile-size/4
     width: 50%
     height: 50%
+
+  .announce
+    position: absolute
+    top: 25%
+    left: 37%
+    width: 160px
+    height: 215px
+    background: rgba(44, 62, 80, 0.8)
+    text-align: center
+
+.announce-bar
+  background-color: #CCC
+  text-align: left
+  padding: 0px
+  margin: 0px
+  .phase
+    padding: 8px
+    background-color: rgb(113, 113, 113)
+    float: left
+    border-right: 1px solid #FFF
+    border-bottom: 1px solid #FFF
+  .finished
+    background-color: rgb(0, 79, 0)
+  .active
+    background-color: #67A50A
 
 .board-thumbnail
   +board($preview-tile-size, 9px)
@@ -124,17 +163,48 @@ span.players
 span.length
   float: right
 
-
 img#robot
   width: $tile-size
   height: $tile-size
 
-.myRobot
-  text-align: left
-  font-size: 18px
-  > img
-    display: inline
-    margin: 0
+.exit
+  margin-top: 35px
 
 .laser
   background: #f00
+
+.robot-icon
+  width: 15px
+  height: 15px
+  display: inline
+  margin: 0px 0px 2px 0px
+
+.cardTimer
+  top: 43%
+  position: absolute
+  text-align: center
+  width: 100%
+
+h5.player-status
+  text-align: left
+
+.tooltip
+  z-index: 1001
+  pointer-events: none
+  transition: opacity .5s ease-out
+  opacity: 0
+  background-color: #000
+  color: #fff
+  padding: 5px
+  border-radius: 5px
+  max-width: 300px
+  &.hide
+    opacity: 0
+  &.show
+    opacity: 1
+
+.share
+  font-size: 14px
+  padding-top: 14px
+  .btn
+    margin: 7px

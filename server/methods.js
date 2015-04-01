@@ -21,7 +21,9 @@ Meteor.methods({
       respawnPhase: GameState.RESPAWN_PHASE.CHOOSE_POSITION,
       playPhaseCount: 0,
       boardId: 0,
-      waitingForRespawn: []
+      waitingForRespawn: [],
+      announce: false,
+      cardsToPlay: []
     });
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)
@@ -37,13 +39,13 @@ Meteor.methods({
       submitted: new Date().getTime()
     });
     Meteor.call('joinGame', gameId, function(error) {
-      if (error)
+      if (error) {
         return alert(error.reason);
+      }
     });
 
     return gameId;
   },
-
   joinGame: function(gameId) {
     var user = Meteor.user();
 
@@ -54,9 +56,9 @@ Meteor.methods({
       throw new Meteor.Error(401, "Game id not found!");
 
     var author = getUsername(user);
-
+    var playerId;
     if (!Players.findOne({gameId: gameId, userId: user._id})) {
-      Players.insert({
+      playerId = Players.insert({
         gameId: gameId,
         userId: user._id,
         name: author,
@@ -66,10 +68,20 @@ Meteor.methods({
         needsRespawn: false,
         powerState: GameLogic.ON,
         optionalInstantPowerDown: false,
-        position: {x: -1, y: -1}
+        position: {x: -1, y: -1},
+        chosenCardsCnt: 0,
+        cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
+      });
+      Cards.insert({
+        gameId: gameId,
+        playerId: playerId,
+        userId: user._id,
+        chosenCards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; }),
+        handCards: []
       });
     }
     game.chat(author + ' joined the game', gameId);
+    return true;
   },
 
   leaveGame: function(gameId) {
@@ -136,13 +148,13 @@ Meteor.methods({
     GameState.nextGamePhase(gameId);
   },
 
-  playCards: function(attributes) {
-    var player = Players.findOne({gameId: attributes.gameId, userId: Meteor.userId()});
+  playCards: function(gameId) {
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     if (!player)
       throw new Meteor.Error(401, 'Game/Player not found! ' + attributes.gameId);
 
     if (!player.submitted) {
-      GameLogic.submitCards(player, attributes.cards);
+      CardLogic.submitCards(player);
       player.chat('submitted cards');
     } else {
       console.log("Player already submitted his cards.");
@@ -153,11 +165,8 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
-    Games.update(game._id, {$set: {
-      playPhase: GameState.PLAY_PHASE.CHOOSE_DIRECTION
-    }});
     player.chat('chose position',  '(' +x+ ',' +y+ ')');
-    GameState.nextRespawnPhase(game._id);
+    game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
   },
   selectRespawnDirection: function(gameId, direction) {
     var game = Games.findOne(gameId);
@@ -185,5 +194,22 @@ Meteor.methods({
       submitted: new Date().getTime()
     });
     Chat.insert(message);
-  }
+  },
+  selectCard: function(gameId, card, index) {
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    if (index < player.notLockedCnt())
+      player.chooseCard(card,index);
+    return player.getChosenCards();
+  },
+  deselectCard: function(gameId, index) {
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    if (index < player.notLockedCnt())
+      player.unchooseCard(index);
+    return player.getChosenCards();
+  },
+  deselectAllCards: function(gameId) {
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    for (i=0;i<player.notLockedCnt();i++)
+      player.unchooseCard(i);
+  },
 });

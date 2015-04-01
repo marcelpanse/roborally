@@ -47,7 +47,7 @@ Template.gamePageActions.events({
         return alert(error.reason);
       mixpanel.track("game-started", {name: game.name, author: game.author, boardId: game.boardId});
     });
-  },
+  }
 });
 
 Template.players.helpers({
@@ -64,7 +64,8 @@ Template.selectedBoard.helpers({
   ownGame: function() {
     return this.game.userId == Meteor.userId();
   }
-})
+});
+
 Template.selectedBoard.events({
  'click .select': function(e) {
     e.preventDefault();

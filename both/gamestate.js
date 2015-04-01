@@ -23,7 +23,9 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 500;
+  var _NEXT_PHASE_DELAY = 1000;
+  var _ANNOUNCE_NEXT_PHASE = 1500;
+  var _ANNOUNCE_NEXT_CARD = 3000;
 
   // game phases:
 
@@ -36,16 +38,18 @@ GameState = {
           playDealPhase(game);
           break;
         case GameState.PHASE.DEAL:
+          game.stopAnnounce();
           playDealPhase(game);
           break;
         case GameState.PHASE.PROGRAM:
+          game.startAnnounce();
           playProgramCardsSubmitted(game);
           break;
         case GameState.PHASE.PLAY:
           if (game.waitingForRespawn.length > 0) {
             Games.update(game._id, {$set: {
               watingForRespawn: game.waitingForRespawn.reverse(),
-              gamePhase: GameState.PHASE.RESPAWN,
+              gamePhase: GameState.PHASE.RESPAWN
             }});
             game.nextGamePhase();
           } else {
@@ -54,43 +58,38 @@ GameState = {
           break;
         case GameState.PHASE.RESPAWN:
           playNextRespawn(game);
-        break;
+          break;
       }
     }, _NEXT_PHASE_DELAY);
   };
 
 
   function playDealPhase(game) {
-    var players = Players.find({gameId: game._id}).fetch();
     var dealCards;
-    GameLogic.discardCards(game,players);
-    GameLogic.makeDeck(game._id);
-    for (var i in players) {
-      dealCards = players[i].lives > 0;
-      var options = {
-        playedCards: [],
-        submittedCards: [],
-        submittedLockedCards: [],
-        submitted: false,
-      };
-      if (players[i].powerState === GameLogic.OFF) {
+    game.players().forEach(function(player) {
+      dealCards = player.lives > 0;
+      player.playedCardsCnt = 0;
+      player.submitted = false;
+
+      if (player.powerState === GameLogic.OFF) {
         // player was powered down last turn
         // -> can choose to stay powered down this turn
-        options.optionalInstantPowerDown = true;
-      } else if (players[i].powerState == GameLogic.DOWN) {
+        player.optionalInstantPowerDown = true;
+      } else if (player.powerState == GameLogic.DOWN) {
         // player announced power down last turn
-        options.powerState = GameLogic.OFF;
-        if (!players[i].optionalInstantPowerDown) {
-          options.submitted = true;
-          options.damage = 0;
+        player.powerState = GameLogic.OFF;
+        if (!players.optionalInstantPowerDown) {
+          player.submitted = true;
+          player.damage = 0;
           dealCards = false;
         }
       }
 
-      Players.update(players[i]._id, {$set: options});
+      Players.update(player._id, player);
+      CardLogic.discardCards(game,player);
       if (dealCards)
-        GameLogic.dealCards(players[i]);
-    }
+        CardLogic.dealCards(game, player);
+    });
     game.setGamePhase(GameState.PHASE.PROGRAM);
     var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
@@ -151,74 +150,83 @@ GameState = {
           playMoveBots(game);
           break;
         case GameState.PLAY_PHASE.MOVE_BOARD:
-          playMoveBoard(game);
+          announce(game, playMoveBoard);
           break;
         case GameState.PLAY_PHASE.LASERS:
-          playLasers(game);
+          announce(game, playLasers);
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
-          playCheckpoints(game);
+          announce(game, playCheckpoints);
           break;
         case GameState.PLAY_PHASE.REPAIRS:
-          playRepairs(game);
+          announce(game, playRepairs);
           break;
       }
     }, _NEXT_PHASE_DELAY);
   };
 
+  function announce(game, callback) {
+    Meteor.setTimeout(function() {
+      callback(game);
+    }, _ANNOUNCE_NEXT_PHASE);
+  }
+
   function playRevealCards(game) {
     Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
 
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.livingPlayers();
     // play 1 card per player
     for (var i in players) {
-      var playedCards = players[i].playedCards || [];
-      if (players[i].submittedCards[0] || players[i].submittedLockedCards[0]) {
-        if(players[i].submittedCards[0]) {
-          playedCards.push(players[i].submittedCards[0]);
-        } else {
-          playedCards.push(players[i].submittedLockedCards[0]);
-        }
-        Players.update(players[i]._id, {$set: {playedCards: playedCards}});
+      if (players[i].isActive()) {
+        var cards = players[i].cards;
+        var cardIndex = players[i].playedCardsCnt;
+        console.log("reveal", cardIndex, players[i].getChosenCards()[cardIndex]);
+        cards[cardIndex] = players[i].getChosenCards()[cardIndex];
+        Players.update(players[i]._id, {$set: {cards: cards}});
       }
     }
     GameState.nextPlayPhase(game._id);
   }
 
   function playMoveBots(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.activePlayers();
     // play 1 card per player
-    var cardsToPlay = [];
+    game.cardsToPlay = [];
 
     players.forEach(function(player) {
-      var submittedLockedCards = player.submittedLockedCards;
-      var submittedCards = player.submittedCards;
-      var card = null;
-      if(submittedCards.length>0) {
-        card = submittedCards.shift();
-      } else {
-        card = submittedLockedCards.shift();
-      }
-      if (card) {
-        Players.update(player._id, {$set: {submittedCards: submittedCards, submittedLockedCards: submittedLockedCards}});
+      var card = {
+        cardId: player.getChosenCards()[player.playedCardsCnt]
+      };
+      if (card.cardId) {
+        Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
-        cardsToPlay.push(card);
+        game.cardsToPlay.push(card);
       }
     });
+    game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
+    Games.update(game._id, {$set: {
+      cardsToPlay: game.cardsToPlay
+    }});
+    playMoveBot(game);
+  }
 
-    cardsToPlay = _.sortBy(cardsToPlay, 'priority').reverse();
-
-    cardsToPlay.forEach(function(card) {
-      Games.update(game._id, {$set: {playPhase: GameState.PLAY_PHASE.MOVE_BOTS}});
-      var player = Players.findOne(card.playerId);
-      Meteor.wrapAsync(GameLogic.playCard)(player, card);
-    });
-
-    game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+  function playMoveBot(game) {
+    if (game.cardsToPlay.length > 0) {
+      Meteor.setTimeout(function() {
+        var card = game.cardsToPlay.shift();
+        Games.update(game._id, {$set: {
+          cardsToPlay: game.cardsToPlay
+        }});
+        var player = Players.findOne(card.playerId);
+        Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
+        playMoveBot(game);
+      }, _ANNOUNCE_NEXT_CARD);
+    } else
+      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBoard(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeRollers)(players);
     Meteor.wrapAsync(GameLogic.executeExpressRollers)(players);
     Meteor.wrapAsync(GameLogic.executeGears)(players);
@@ -228,7 +236,7 @@ GameState = {
   }
 
   function playLasers(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeLasers)(players);
     game.nextPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
   }
@@ -247,7 +255,7 @@ GameState = {
   }
 
   function playRepairs(game) {
-    var players = Players.find({gameId: game._id}).fetch();
+    var players = game.playersOnBoard();
     Meteor.wrapAsync(GameLogic.executeRepairs)(players);
     game.nextGamePhase();
   }
@@ -262,6 +270,9 @@ GameState = {
       }
       Players.update(player._id, player);
       return true;
+    } else if (tile.repair) {
+      player.updateStartPosition();
+      Players.update(player._id, player);
     }
     return false;
   }

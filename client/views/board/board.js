@@ -22,7 +22,8 @@ Template.board.helpers({
         robot_class: rclass,
         direction: animateRotation(rclass, player.direction),
         position: animatePosition(rclass, player.position.x, player.position.y),
-        poweredDown: player.isPoweredDown()
+        poweredDown: player.isPoweredDown(),
+        name: (player.userId === Meteor.userId()) ? "You" : player.name
       });
     });
     return r;
@@ -48,7 +49,7 @@ Template.board.helpers({
     var s = [];
     if (this.game.playPhase === GameState.PLAY_PHASE.CHECKPOINTS) {
       this.players.forEach(function(player,i) {
-        if (!player.isPoweredDown()) {
+        if (!player.isPoweredDown() && !player.needsRespawn) {
           var offsetY;
           var offsetX;
           var animate = {};
@@ -93,10 +94,13 @@ Template.board.helpers({
           style += cssPosition(player.position.x, player.position.y, offsetX, offsetY);
           Tracker.afterFlush(function() {
             var once = false;
-            $('.'+lc).stop();
-            $('.'+lc).animate(animate, {duration: 400, queue: false, progress: function(anim, progress, remainingMs) {
-              if (remainingMs <= 350 && !once) {
-                $('.'+lc).animate(animateRev, { duration: 400, queue: false });
+            var laserDiv = $('.'+lc);
+            laserDiv.stop();
+            var duration = player.shotDistance * 26;
+            console.log('shot duration', duration);
+            laserDiv.animate(animate, {duration: duration, queue: false, progress: function(anim, progress, remainingMs) {
+              if (remainingMs <= duration - (duration/7) && !once) {
+                laserDiv.animate(animateRev, { duration: duration, queue: false });
                 once = true;
               }
             }});
@@ -143,6 +147,96 @@ Template.board.helpers({
     }
     return s;
   },
+  registerPhases: function() {
+    var phases = [1,2,3,4,5];
+    var pUIData = [];
+    var game = this.game;
+
+    phases.forEach(function(phase) {
+      var pclass = false;
+      var pstatus = 'glyphicon-record';
+      if (game.playPhaseCount === phase) {
+        pclass = 'active';
+        pstatus = 'glyphicon-circle-arrow-right';
+      } else if (game.playPhaseCount > phase) {
+        pclass = 'finished';
+        pstatus = 'glyphicon-ok-circle';
+      }
+      pUIData.push({
+        phaseClass: pclass,
+        phaseName: "register " + phase,
+        status: pstatus,
+        width: (game.board().width * 50) / phases.length
+      });
+    });
+    console.log(pUIData);
+    return pUIData;
+  },
+  playPhases: function() {
+    var game = this.game;
+    var pUIData = [];
+    var phases = [
+      GameState.PLAY_PHASE.MOVE_BOTS,
+      GameState.PLAY_PHASE.MOVE_BOARD,
+      GameState.PLAY_PHASE.LASERS,
+      GameState.PLAY_PHASE.CHECKPOINTS,
+    ];
+    //if (game.playPhaseCount == 5)
+    //  phases.push(GameState.PLAY_PHASE.REPAIRS);
+
+    var finished = true;
+    phases.forEach(function(phase) {
+      var phaseProp = {
+        announceCard: false,
+        width: (game.board().width * 50) / phases.length
+      };
+      switch (phase) {
+        case GameState.PLAY_PHASE.MOVE_BOTS:
+          phaseProp.phaseName = "moving bots";
+          break;
+        case GameState.PLAY_PHASE.MOVE_BOARD:
+          phaseProp.phaseName =  "moving board";
+          break;
+        case GameState.PLAY_PHASE.LASERS:
+          phaseProp.phaseName = "shooting lasers";
+          break;
+        case GameState.PLAY_PHASE.CHECKPOINTS:
+          phaseProp.phaseName =  "checkpoints";
+          break;
+        case GameState.PLAY_PHASE.REPAIRS:
+          phaseProp.phaseName =  "repairing bots";
+          break;
+      }
+      if (phase === game.playPhase) {
+        finished = false;
+        phaseProp.status = 'glyphicon-circle-arrow-right';
+        phaseProp.phaseClass = 'active';
+      } else if (finished) {
+        phaseProp.status = 'glyphicon-ok-circle';
+        phaseProp.phaseClass = 'finished';
+      } else {
+        phaseProp.status = 'glyphicon-record';
+        phaseProp.phaseClass = false;
+      }
+      pUIData.push(phaseProp);
+    });
+    return pUIData;
+  },
+  cardPlaying: function() {
+    var game = this.game;
+    if (game.playPhase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
+      var cardId = game.cardsToPlay[0].cardId;
+      var player = Players.findOne(game.cardsToPlay[0].playerId);
+      return {
+        class: 'played',
+        priority: CardLogic.priority(cardId),
+        type: CardLogic.cardType(cardId, game.playerCnt()).name,
+        playerName: player.name,
+        robotId: player.robotId.toString()
+      };
+    }
+    return false;
+  }
 });
 
 function animatePosition(element, x, y) {
@@ -168,13 +262,6 @@ function animatePosition(element, x, y) {
       });
     }
   }
-
-  Tracker.afterFlush(function() {
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-  });
-
   return "left: " + oldX + "px; top: " + oldY + "px;";
 }
 
@@ -264,5 +351,16 @@ Template.board.events({
       if (error)
         alert(error.reason);
     });
+  }
+});
+
+Template.share.helpers({
+  shareData: function() {
+    return {
+      title: 'RoboRally Online',
+      author: 'roborally.com',
+      description: 'desc',
+      url: 'http://www.roborally.com'
+    }
   }
 });

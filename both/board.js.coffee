@@ -196,11 +196,11 @@ class @Board
     dir = @absolute_dir(direction)
 
     for i in [1..length]
+      @tile(x,y).addLaser dir, strength
       if i == 1  # lasers are always between walls
         @tile(x,y).addWall opp_dir(dir)
       if i == length
         @tile(x,y).addWall dir
-      @tile(x,y).addLaser dir, strength
 
       y = nextY(y,direction)
       x = nextX(x,direction)
