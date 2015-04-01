@@ -26,6 +26,7 @@ template(name='home')
             span.icon-bar
             span.icon-bar
           a.navbar-brand(href='#page-top') RoboRally
+          .fb-like(data-href="https://www.facebook.com/roborallyonline", data-layout="button_count", data-action="like", data-show-faces="true", data-share="true")
         // Collect the nav links, forms, and other content for toggling
         #bs-example-navbar-collapse-1.collapse.navbar-collapse
           ul.nav.navbar-nav.navbar-right
@@ -63,7 +64,7 @@ template(name='home')
                 | the issue tracker.
               | Any help is greatly appreciated.
             br
-            a(href="{{pathFor route='gamelist.page'}}").btn.btn-primary.btn-xlg Play RoboRally online!
+            a(href="{{pathFor 'gamelist.page'}}").btn.btn-primary.btn-xlg Play RoboRally online!
             br
             br
             p.small(style="text-align: center")
@@ -86,6 +87,7 @@ template(name='home')
           .col-lg-4
             p
               | In RoboRally players each control a different robot in a race through a dangerous factory floor. Several goals will be placed on the board and you must navigate your robot to them in a specific order. The boards can be combined in several different ways to accommodate different player counts and races can be as long or as short as player's desire.
+    #fb-root
     // Footer
     footer.text-center
       .footer-above
