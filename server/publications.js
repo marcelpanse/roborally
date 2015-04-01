@@ -3,7 +3,7 @@ Meteor.publish('games', function() {
 });
 
 Meteor.publish('chat', function(gameId) {
-  return Chat.find({ gameId: gameId });
+  return Chat.find({ gameId: gameId }, {limit: 100, sort: {submitted: -1}});
 });
 
 Meteor.publish("onlineUsers", function() {
