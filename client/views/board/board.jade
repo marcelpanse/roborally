@@ -7,48 +7,48 @@ template(name="board")
       p.share
         | Thank you for playing, please share this game with your friends:
         +share
-  else
-    if game.announce
-      .announce-bar(style="width: #{boardWidth}px; height: 74px;")
-        div(style="width: 100%")
-          each registerPhases
-            span.phase(class=phaseClass, style="width: #{width}px;")
-              span.glyphicon(class=status)
-              span
-                = phaseName
-        div(style="width: 100%")
-          each playPhases
-            span.phase(class=phaseClass, style="width: #{width}px;")
-              span.glyphicon(class=status)
-              span
-                = phaseName
-    #board(style="width: #{boardWidth}px; height: #{boardHeight}px;")
-      +_tiles(rows=tiles show_start=false)
+      if inGame
+        a.btn.btn-danger.cancel Leave game
 
-      br
-      each markers
-        .marker(class=marker_class, style=position, data-tooltip-direction="n" data-tooltip="This is a respawn location")
-          img(src= path, style=direction )
-      each robots
-        .robot(class=robot_class, style=position, data-tooltip= name)
-          img(src= path, style=direction)
-          if poweredDown
-            img(src='/Power_Off.png',class='robot-off')
-      each shots
-        .laser(class=laser_class, style=shot)
-      each selectOptions
-        div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, data-tooltip-direction="n" data-tooltip=title)
-      if cardPlaying
-        .well.announce
-          with cardPlaying
-            h5
-              img(class="robot-icon", src="/robots/robot_#{robotId}.png")
-              = playerName
-            .card(style="width: 74%; height:80%;", class="#{type} #{class}")
+  else if game.announce
+    .announce-bar(style="width: #{boardWidth}px; height: 74px;")
+      div(style="width: 100%")
+        each registerPhases
+          span.phase(class=phaseClass, style="width: #{width}px;")
+            span.glyphicon(class=status)
+            span
+              = phaseName
+      div(style="width: 100%")
+        each playPhases
+          span.phase(class=phaseClass, style="width: #{width}px;")
+            span.glyphicon(class=status)
+            span
+              = phaseName
 
-  .myRobot
-    if inGame
-      a.btn.btn-danger.cancel Leave game
+  #board(style="width: #{boardWidth}px; height: #{boardHeight}px;")
+    +_tiles(rows=tiles show_start=false)
+
+    br
+    each markers
+      .marker(class=marker_class, style=position, data-tooltip-direction="n" data-tooltip="This is a respawn location")
+        img(src= path, style=direction )
+    each robots
+      .robot(class=robot_class, style=position, data-tooltip= name)
+        img(src= path, style=direction)
+        if poweredDown
+          img(src='/Power_Off.png',class='robot-off')
+    each shots
+      .laser(class=laser_class, style=shot)
+    each selectOptions
+      div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, data-tooltip-direction="n" data-tooltip=title)
+    if cardPlaying
+      .well.announce
+        with cardPlaying
+          h5
+            img(class="robot-icon", src="/robots/robot_#{robotId}.png")
+            = playerName
+          .card(style="width: 74%; height:80%;", class="#{type} #{class}")
+
 
 template(name="share")
   +shareit shareData

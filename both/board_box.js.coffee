@@ -1,10 +1,11 @@
 class @BoardBox
-  @CATALOG = [ 'default', 'checkmate', 'bloodbath_chess', 'whirlwind_tour',
-               'option_world', 'oddest_sea', 'dizzy_dash', 'twister',
-               'island_hop', 'death_trap', 'around_the_world', 'island_king'
-               'risky_exchange', 'pilgrimage', 'crowd_chess', 'robot_stew' ]
+  @CATALOG = [ 'default', 'risky_exchange', 'checkmate', 'dizzy_dash',
+               'island_hop', 'chop_shop_challenge', 'twister', 'bloodbath_chess',
+               'around_the_world','death_trap', 'pilgrimage',
+               'whirlwind_tour','option_world',
+               'island_king' ,'crowd_chess', 'robot_stew', 'oddest_sea']
                #moving_targets'
-
+  @BEGINNER_COURSE_CNT = 11
   @cache = []
   @test_board_id = @CATALOG.length
 
@@ -201,6 +202,18 @@ class @BoardBox
       board.addCheckpoint 7,1
       board.addCheckpoint 9,7
       board.addCheckpoint 1,4
+      return board
+    chop_shop_challenge: () ->
+      board = new Board(2,4)
+      board.name = 'chop_shop_challenge'
+      board.title = 'Chop Shop Challenge'
+      board.length = 'medium'
+      board.addRallyArea('chop_shop',0,0,180)
+      board.addStartArea('simple')
+      board.addCheckpoint(4,9)
+      board.addCheckpoint(9,11)
+      board.addCheckpoint(1,10)
+      board.addCheckpoint(11,7)
       return board
     pilgrimage: () ->
       board = new Board(2,8,12,28)

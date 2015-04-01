@@ -203,7 +203,7 @@ Template.playerStatus.helpers({
     return this.visited_checkpoints == this.board().checkpoints.length-1;
   },
   nextCheckpoint: function() {
-    return this.visited_checkpoints+1;
+    return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
   }
 });
 
@@ -358,6 +358,9 @@ function addUIData(cards, available, locked, selectable) {
     if (selectable)
       cardProp.slot = i;
     switch (card) {
+      case CardLogic.RANDOM:
+        cardProp.type = 'random';
+        break;
       case CardLogic.DAMAGE:
         cardProp.type = 'dmg';
         break;

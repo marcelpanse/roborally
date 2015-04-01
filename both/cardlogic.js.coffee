@@ -3,6 +3,7 @@ class @CardLogic
   @EMPTY   = -1
   @COVERED = -2
   @DAMAGE  = -3
+  @RANDOM  = -4
 
   @_cardTypes =
     0: {direction: 2, position: 0, name: "u-turn"}
@@ -32,7 +33,7 @@ class @CardLogic
     18, # step 2
     9   # step 3
   ]
-  
+
   @discardCards: (game, player) ->
     deck = game.getDeck()
 
@@ -57,7 +58,7 @@ class @CardLogic
         $set:
           handCards: [],
           chosenCards: chosenCards
-      
+
     console.log "Returned cards, new total: "+deck.cards.length
     deck.cards = _.shuffle(deck.cards)
     Deck.upsert({gameId: game._id}, deck)
@@ -86,10 +87,11 @@ class @CardLogic
     else
       approvedCards = verifySubmittedCards(player)
 
-      Players.update(player._id, {$set: {
-        submitted: true,
-        optionalInstantPowerDown: false,
-      }})
+      Players.update player._id,
+        $set:
+          submitted: true,
+          optionalInstantPowerDown: false,
+          cards: approvedCards
 
     playerCnt = Players.find({gameId: player.gameId, lives: {$gt: 0}}).count()
     readyPlayerCnt = Players.find({gameId: player.gameId, submitted: true, lives: {$gt: 0}}).count()
@@ -109,7 +111,7 @@ class @CardLogic
             # if nothing happened the system to should auto-submit random cards..
             if Players.find({gameId: player.gameId, submitted: true}).count() == 1
               unsubmittedPlayer = Players.findOne({gameId: player.gameId, submitted: false})
-              CardLogic.submitCards(unsubmittedPlayer, [])
+              CardLogic.submitCards(unsubmittedPlayer)
               console.log("Player " + unsubmittedPlayer.name + " did not respond, submitting random cards")
           , 2500
 
@@ -122,7 +124,7 @@ class @CardLogic
     submittedCards = player.getChosenCards()
     for card, i in player.notLockedCards()
       found = false
-      if card
+      if card >= 0
         for j in [0..availableCards.length-1]
           if card == availableCards[j]
             availableCards.splice(j, 1)
@@ -133,14 +135,20 @@ class @CardLogic
       else
         console.log("Not enough cards submitted")
 
-      if !card || !found
+      if card<0 || !found
         # grab card from hand
         cardIdFromHand = availableCards.splice(_.random(0, availableCards.length-1), 1)[0]
         console.log("Handing out random card", cardIdFromHand)
         submittedCards[i] = cardIdFromHand
+        player.cards[i] = CardLogic.RANDOM
 
-    player.updateHandCards(availableCards)
-    return submittedCards
+    Cards.update({playerId: player._id}, $set:
+      handCards: availableCards
+      chosenCards: submittedCards
+    )
+    player.cards
+
+
 
   @cardType:  (cardId, playerCnt) ->
     deck = if playerCnt <= 8 then @_8_deck else @_12_deck
