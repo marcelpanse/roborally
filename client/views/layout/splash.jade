@@ -1,8 +1,22 @@
 template(name="splash")
   h1 RoboRally Online!
-  p 
-    | Welcome! To start or join a game first 
+  br
+  p
+    | Welcome! If you are familiar with the game, just
     a.login(href="#") sign in or register
+    | and jump right in the chaos!
+  br
+  p.small
+    | Otherwise, if you want to know what the rules are and how the game works, check out this video.
+
+  iframe(width="680", height="375", src="https://www.youtube.com/embed/0l8Y-L5IZLE?rel=0&amp;showinfo=0", frameborder="0", allowfullscreen)
+
+  br
+  br
+  p.small
+    | Or download the
+    a(href="/roborally-manual.pdf", target="_blank") game rules PDF
+    | if you like reading.
 
 template(name="loading")
   p Loading..
