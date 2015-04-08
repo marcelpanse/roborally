@@ -31,6 +31,13 @@ template(name="cards")
       else
         each chosenCards
           +card
+    if hasOptionCards
+      .option-cards
+        h6
+          | Option cards
+        each optionCards
+          .option-card(title=desc)
+            name
     if showPlayButton
       if poweredDown
         a.btn.btn-warning.powerBtn #{ownPowerStateName}
@@ -66,6 +73,8 @@ template(name="playerStatus")
       else
         .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
+    each optionCards
+      if optionChoice
   div.small
     each cardsHtml
       +card

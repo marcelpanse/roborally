@@ -146,6 +146,19 @@ Template.cards.helpers({
   },
   nextCheckpoint: function() {
     return this.visited_checkpoints+1;
+  },
+  hasOptionCards: function() {
+    return (Object.keys(this.optionCards).length > 0);
+  },
+  optionCards: function() {
+    var r = [];
+    Object.keys(this.optionCards).forEach(function(optionKey) {
+      r.push({
+        name: optionKey,
+        desc: CardLogic.getOptionDesc(optionKey)
+      });
+    });
+    return r;
   }
 });
 
@@ -209,12 +222,13 @@ Template.playerStatus.helpers({
 
 Template.card.events({
   'click .available': function(e) {
+    $(e.currentTarget).css("opacity", "0.3");
     var player = getPlayer();
     console.log('Chosen count: ', getChosenCnt());
     if (!player.submitted && getChosenCnt() < 5 && $(e.currentTarget).css("opacity") == 1) {
+      
       chooseCard(player.gameId, this.cardId, getSlotIndex());
       console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
-      $(e.currentTarget).css("opacity", "0.3");
 
       if (player.isPoweredDown())
         Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
@@ -222,7 +236,8 @@ Template.card.events({
             return alert(error.reason);
           $(".playBtn").toggleClass("disabled", !allowSubmit());
         });
-    }
+    } else
+      $(e.currentTarget).css("opacity", "0.3");
   },
   'click .played': function(e) {
     var player = getPlayer();

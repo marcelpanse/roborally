@@ -58,6 +58,8 @@ game =
     return {
       gameId: this._id,
       cards: [0..deckSize-1]
+      optionCards: _.shuffle([0..CardLogic._option_deck.length-1])
+      discardedOptionCards: []
     }
   startAnnounce: () ->
     Games.update this._id,

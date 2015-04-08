@@ -1,6 +1,8 @@
 
 class @Board
-  constructor: (min_player=2, max_player=8, width=12, height=16) ->
+  constructor: (name, min_player=2, max_player=8, width=12, height=16) ->
+    @name = name
+    @title = toTitleCase(name)
     @tiles = create2DArray(height)
     @startpoints=[]
     @checkpoints=[]
@@ -273,6 +275,11 @@ class @Board
         opp_word[dir]
       when 'object'
         {x: -dir.x, y: -dir.y}
+
+  toTitleCase = (str) ->
+    str.replace('_',' ').replace /\w\S*/g, (txt) ->
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+
 
   long_dir = {r:'right',     l:'left',   u:'up', d:'down', \
               right:'right', left:'left',up:'up',down:'down'  }

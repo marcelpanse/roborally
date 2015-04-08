@@ -70,6 +70,7 @@ Meteor.methods({
         optionalInstantPowerDown: false,
         position: {x: -1, y: -1},
         chosenCardsCnt: 0,
+        optionCards: {},
         cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
       });
       Cards.insert({

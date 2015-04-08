@@ -16,6 +16,9 @@ var player = {
     var c = Cards.findOne({playerId: this._id});
     return c ? c.chosenCards : [];
   },
+  hasOptionCard: function(optionName) {
+    return this.optionCards[optionName];
+  },
   updateHandCards: function(cards) {
     Cards.upsert({playerId: this._id}, {$set:{handCards:cards}});
   },
@@ -130,21 +133,48 @@ var player = {
     return !this.isPoweredDown() && !this.needsRespawn && this.lives > 0;
   },
   addDamage: function(inc) {
-    this.damage += inc;
-    if (this.isPoweredDown() && this.lockedCnt() > 0) {
-      // powered down robot has no cards so we have to draw from deck to get locked cards
-      var deck = this.game().getDeck();
-      var chosenCards = this.getChosenCards();
-      for (var i=0;i<this.lockedCnt();i++) {
-        this.cards[this.notLockedCnt()+i] = deck.cards.shift();
-        chosenCards = this.cards[this.notLockedCnt()+i];
+    if (this.hasOptionCard('ablative_coat')) {
+      if (!this.ablativeCoat)
+        this.ablativeCoat = 0;
+      this.ablativeCoat++;
+      if (this.ablativeCoat == 3)  {
+        this.ablativeCoat = null;
+        this.discardOptionCard('ablative_coat');
       }
-      Deck.update(deck._id, deck);
-      Players.update( this._id, this);
-      Cards.update( {playerId: this._id}, { $set: {
-            chosenCards: chosenCards
-          }});
+      Players.update( this._id, {$set: {
+        ablativeCoat: this.ablativeCoat,
+        optionCards: this.optionCards
+      }});
+    } else {
+      this.damage += inc;
+      if (this.isPoweredDown() && this.lockedCnt() > 0) {
+        // powered down robot has no cards so we have to draw from deck to get locked cards
+        var deck = this.game().getDeck();
+        var chosenCards = this.getChosenCards();
+        for (var i=0;i<this.lockedCnt();i++) {
+          this.cards[this.notLockedCnt()+i] = deck.cards.shift();
+          chosenCards = this.cards[this.notLockedCnt()+i];
+        }
+        Deck.update(deck._id, deck);
+        Players.update( this._id, this);
+        Cards.update( {playerId: this._id}, { $set: {
+              chosenCards: chosenCards
+            }});
+      }
     }
+  },
+  drawOptionCard: function() {
+    var gameId = this.game()._id;
+    var optionCards = Deck.findOne({gameId: gameId}).optionCards;
+    var optionId = optionCards.pop();
+    this.optionCards[CardLogic.getOptionName(optionId)] = true;
+    Deck.update({gameId: game._id}, {$set: {optionCards: optionCards}});
+  },
+  discardOptionCard: function(name) {
+    delete optionCards.name;
+    var discarded = Deck.findOne({gameId: gameId}).discardedOptionCards;
+    discarded.push(CardLogic.getOptionId(name));
+    Deck.update({gameId: game._id}, {$set: {discardedOptionCards: discarded}});
   }
 };
 

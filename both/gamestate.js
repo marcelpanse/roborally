@@ -13,6 +13,7 @@ GameState = {
     MOVE_BOTS: "move bots",
     MOVE_BOARD: "move board",
     LASERS: "lasers",
+    LASER_OPTIONS: "laser options",
     CHECKPOINTS: "checkpoints",
     REPAIRS: "repairs"
   },
@@ -70,7 +71,9 @@ GameState = {
       dealCards = player.lives > 0;
       player.playedCardsCnt = 0;
       player.submitted = false;
-
+      if (player.hasOptionCard('circuit_breaker') && player.damage >= 3)
+        player.powerState = GameLogic.DOWN;
+      
       if (player.powerState === GameLogic.OFF) {
         // player was powered down last turn
         // -> can choose to stay powered down this turn
@@ -237,8 +240,9 @@ GameState = {
 
   function playLasers(game) {
     var players = game.playersOnBoard();
+    game.setPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
     Meteor.wrapAsync(GameLogic.executeLasers)(players);
-    game.nextPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
+    game.nextPlayPhase();
   }
 
   function playCheckpoints(game) {
@@ -263,18 +267,13 @@ GameState = {
   function checkCheckpoints(player,game) {
     var tile = player.tile();
 
-    if (tile.checkpoint) {
+    if (tile.checkpoint || tile.repair) {
       player.updateStartPosition();
-      if (tile.checkpoint === player.visited_checkpoints+1) {
+      if (tile.checkpoint && tile.checkpoint === player.visited_checkpoints+1) {
         player.visited_checkpoints++;
       }
       Players.update(player._id, player);
-      return true;
-    } else if (tile.repair) {
-      player.updateStartPosition();
-      Players.update(player._id, player);
-    }
-    return false;
+    } 
   }
 
   function checkIfWeHaveAWinner(game) {
