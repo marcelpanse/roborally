@@ -209,26 +209,42 @@ Template.playerStatus.helpers({
 
 Template.card.events({
   'click .available': function(e) {
-    var player = getPlayer();
-    console.log('Chosen count: ', getChosenCnt());
-    if (!player.submitted && getChosenCnt() < 5 && $(e.currentTarget).css("opacity") == 1) {
-      chooseCard(player.gameId, this.cardId, getSlotIndex());
-      console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
+    var currentSlot = getSlotIndex();
+    if ($(e.currentTarget).css("opacity") == 1 && isEmptySlot(currentSlot)) {
       $(e.currentTarget).css("opacity", "0.3");
+      Session.set("selectedSlot", getNextEmptySlotIndex(currentSlot));
 
-      if (player.isPoweredDown())
-        Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
-          if (error)
-            return alert(error.reason);
-          $(".playBtn").toggleClass("disabled", !allowSubmit());
-        });
+      var player = getPlayer();
+      console.log('Chosen count: ', getChosenCnt());
+      if (!player.submitted) {
+        chooseCard(player.gameId, this.cardId, currentSlot);
+        setEmptySlot(currentSlot, false);
+        console.log("choose card ",this.cardId,' for slot ', getSlotIndex());
+
+        if (player.isPoweredDown())
+          Meteor.call('togglePowerDown', player.gameId, function(error, powerState) {
+            if (error)
+              return alert(error.reason);
+            $(".playBtn").toggleClass("disabled", !allowSubmit());
+          });
+      } else {
+        $(e.currentTarget).css("opacity", "1");
+        Session.set("selectedSlot", currentSlot);
+      }
     }
+
   },
   'click .played': function(e) {
-    var player = getPlayer();
-    if (!player.submitted && this.class.indexOf("locked") == -1) {
-      unchooseCard(player.gameId, this.slot);
-      $('.available.' + this.cardId).css("opacity", "1");
+    if (!isEmptySlot(this.slot) && this.class.indexOf("locked") == -1) {
+      setEmptySlot(this.slot, true);
+      var player = getPlayer();
+      if (!player.submitted) {
+        unchooseCard(player.gameId, this.slot);
+        $('.available.' + this.cardId).css("opacity", "1");
+        Session.set("selectedSlot", this.slot);
+      } else {
+        setEmptySlot(this.slot, false);
+      }
     }
   },
   'click .empty': function(e) {
@@ -263,11 +279,6 @@ function getPlayer() {
 }
 
 function chooseCard(gameId, card, slot) {
-  var emptySlots = getEmptySlots();
-  emptySlots[slot] = false;
-  Session.set("emptySlots",emptySlots);
-  Session.set("selectedSlot", getNextEmptySlotIndex());
-
   Meteor.call('selectCard', gameId, card, slot, function(error, chosenCards) {
     if (error)
       return alert(error.reason);
@@ -276,10 +287,6 @@ function chooseCard(gameId, card, slot) {
 }
 
 function unchooseCard(gameId, slot) {
-  Session.set("selectedSlot", slot);
-  var emptySlots = getEmptySlots();
-  emptySlots[slot] = true;
-  Session.set("emptySlots",emptySlots);
   Meteor.call('deselectCard', gameId, slot, function(error, chosenCards) {
     if (error)
       return alert(error.reason);
@@ -320,11 +327,21 @@ function getEmptySlots() {
   return Session.get("emptySlots");
 }
 
-function getNextEmptySlotIndex() {
+function isEmptySlot(index) {
+  return getEmptySlots()[index];
+}
+
+function setEmptySlot(index, value) {
+  var slots = getEmptySlots();
+  slots[index] = value;
+  Session.set("emptySlots", slots);
+}
+
+function getNextEmptySlotIndex(currentSlot) {
   var emptySlots = getEmptySlots();
-  for (var j=0;j<emptySlots.length;j++)
-    if (emptySlots[j])
-      return j;
+  for (var j=currentSlot+1;j<currentSlot+GameLogic.CARD_SLOTS;j++)
+    if (emptySlots[j%GameLogic.CARD_SLOTS])
+      return j%GameLogic.CARD_SLOTS;
   return  0;
 }
 

@@ -197,7 +197,7 @@ GameState = {
       var card = {
         cardId: player.getChosenCards()[player.playedCardsCnt]
       };
-      if (card.cardId) {
+      if (card.cardId >= 0) {
         Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
         game.cardsToPlay.push(card);
