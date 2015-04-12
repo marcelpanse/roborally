@@ -1,4 +1,29 @@
 Meteor.startup(function () {
+  var everyHour = new Cron(function() {
+    //runs every hours and builds the highscores list
+    console.log("Building highscore lists");
+
+    //TODO: later we can make this into a proper ELO calculation..
+    var mostPlayed = Games.aggregate([
+      {$match: {winner: {$ne: "Nobody"}}},
+      {$group: {_id: "$winner", count: {$sum: 1}}},
+      {$limit: 10},
+      {$sort: {count: -1}}
+    ]);
+
+    var mostWon = Players.aggregate([
+      {$group: {_id: "$name", count: {$sum: 1}}},
+      {$limit: 10},
+      {$sort: {count: -1}}
+    ]);
+
+    Highscores.remove({}); //clear highscores
+
+    addToHighscores(mostPlayed, 'mostPlayed');
+    addToHighscores(mostWon, 'mostWon');
+
+  }, {minute: 0}); //every 0 minute of every hour.
+
   var everyMinute = new Cron(function() {
     //runs every minute and cleans up abandoned games.
     var openGames = Games.find({started: false}).fetch();
@@ -69,3 +94,14 @@ Meteor.startup(function () {
 
   }, {});
 });
+
+function addToHighscores(arr, type) {
+  _(arr).each(function (x, i) {
+    Highscores.insert({
+      type: type,
+      name: x._id,
+      value: x.count,
+      rank: i+1
+    });
+  });
+}
