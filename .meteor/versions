@@ -48,6 +48,8 @@ lookback:tooltips@0.2.1
 marcelpanse:jquery-titlealert@0.0.1
 meteor@1.1.6
 meteor-platform@1.2.2
+meteorhacks:aggregate@1.2.1
+meteorhacks:collection-utils@1.2.0
 meteorhacks:inject-initial@1.0.2
 meteorhacks:kadira@2.20.1
 meteorhacks:meteorx@1.3.1

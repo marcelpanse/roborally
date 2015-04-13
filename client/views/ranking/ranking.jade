@@ -1,0 +1,16 @@
+template(name="ranking")
+  div.chat.well
+    unless currentUser
+      +splash
+    else
+      .highscores
+        h2 Most games played
+        hr.star-well
+        each this.mostPlayed
+          p #{rank}. #{name} (#{value})
+        br
+        h2 Most games won
+        hr.star-well
+        each this.mostWon
+          p #{rank}. #{name} (#{value})
+        br
