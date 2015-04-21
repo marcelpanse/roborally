@@ -100,10 +100,10 @@ Meteor.methods({
     if (game.started) {
       var players = Players.find({gameId: game._id}).fetch();
       if (players.length === 1) {
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name, stopped: new Date().getTime()}});
       } else if (players.length === 0) {
         console.log("Nobody left in the game.");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
       }
     }
     game.chat(author + ' left the game');

@@ -4,23 +4,23 @@ Meteor.startup(function () {
     console.log("Building highscore lists");
 
     //TODO: later we can make this into a proper ELO calculation..
-    var mostPlayed = Games.aggregate([
+    var mostWon = Games.aggregate([
       {$match: {winner: {$ne: "Nobody"}}},
       {$group: {_id: "$winner", count: {$sum: 1}}},
-      {$limit: 10},
-      {$sort: {count: -1}}
+      {$sort: {count: -1}},
+      {$limit: 10}
     ]);
 
-    var mostWon = Players.aggregate([
+    var mostPlayed = Players.aggregate([
       {$group: {_id: "$name", count: {$sum: 1}}},
-      {$limit: 10},
-      {$sort: {count: -1}}
+      {$sort: {count: -1}},
+      {$limit: 10}
     ]);
 
     Highscores.remove({}); //clear highscores
 
-    addToHighscores(mostPlayed, 'mostPlayed');
     addToHighscores(mostWon, 'mostWon');
+    addToHighscores(mostPlayed, 'mostPlayed');
 
   }, {minute: 0}); //every 0 minute of every hour.
 
@@ -78,9 +78,9 @@ Meteor.startup(function () {
           console.log("all players checked, players online: ", playersOnline);
           Meteor.clearInterval(handle);
           if (playersOnline === 0) {
-            Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+            Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
           } else if (playersOnline == 1 && game.min_player > 1) {
-            Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
+            Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name, stopped: new Date().getTime()}});
           }
           //else do nothing, game still in progress..
         }
