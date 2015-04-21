@@ -79,7 +79,7 @@ class @CardLogic
     Deck.update(deck._id, deck)
 
   @submitCards: (player) ->
-    if (player.isPoweredDown())
+    if player.isPoweredDown()
       Players.update player._id,
         $set:
           submitted: true
@@ -99,10 +99,11 @@ class @CardLogic
       Games.update(player.gameId, {$set: {timer: -1}})
       GameState.nextGamePhase(player.gameId)
     else if readyPlayerCnt == playerCnt-1
-      @startTimer(player.game())
+      @startTimer player.game()
+      GameAI.play player.gameId
 
   @startTimer: (game) ->
-        # start timer
+    # start timer
     Games.update(game._id, {$set: {timer: 1}})
     Meteor.setTimeout ->
       if Games.findOne(game._id).timer == 1

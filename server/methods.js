@@ -144,6 +144,35 @@ Meteor.methods({
       player.start = start;
       Players.update(player._id, player);
     }
+
+    //add AI player, remove later
+    var start = game.board().startpoints[players.length];
+    var playerId = Players.insert({
+      gameId: gameId,
+      userId: -1,
+      name: 'AI',
+      lives: 3,
+      damage: 0,
+      visited_checkpoints: 0,
+      needsRespawn: false,
+      powerState: GameLogic.ON,
+      optionalInstantPowerDown: false,
+      position: {x: start.x, y: start.y},
+      direction: start.direction,
+      robotId: players.length,
+      start: start,
+      chosenCardsCnt: 0,
+      cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
+    });
+    Cards.insert({
+      gameId: gameId,
+      playerId: playerId,
+      userId: -1,
+      chosenCards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; }),
+      handCards: []
+    });
+    //end AI player add
+
     game.chat('Game started');
     GameState.nextGamePhase(gameId);
   },
@@ -211,5 +240,5 @@ Meteor.methods({
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     for (i=0;i<player.notLockedCnt();i++)
       player.unchooseCard(i);
-  },
+  }
 });

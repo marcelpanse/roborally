@@ -49,7 +49,7 @@ Meteor.startup(function () {
       var nrOfPlayersChecked = 0;
 
       players.forEach(function(player) {
-        if (!Meteor.users.findOne(player.userId).status.online) {
+        if (player.userId != -1 && !Meteor.users.findOne(player.userId).status.online) { //-1 == AI player
           //wait couple of seconds and re-check before deleting the game, to make sure it wasn't a refresh or temporary.
           console.log("Found disconnected player, waiting couple of seconds: " + game._id);
           Meteor.setTimeout(function() {
