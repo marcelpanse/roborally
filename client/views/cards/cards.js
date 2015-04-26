@@ -204,6 +204,9 @@ Template.playerStatus.helpers({
   },
   nextCheckpoint: function() {
     return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
+  },
+  showSubmitted: function() {
+    return this.submitted && this.game().gamePhase == GameState.PHASE.PROGRAM;
   }
 });
 
