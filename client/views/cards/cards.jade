@@ -67,9 +67,6 @@ template(name="playerStatus")
         .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
   div.small
-    if showSubmitted
-      .label.label-primary
-        | submitted
     each cardsHtml
       +card
 
