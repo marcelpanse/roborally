@@ -267,7 +267,7 @@ GameLogic = {
 
   function checkRespawnsAndUpdateDb(player, callback) {
     console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
-    if (!player.needsRespawn && (!player.isOnBoard() || player.isOnVoid() || player.damage > 9 )) {
+    if (!player.isOnBoard() || player.isOnVoid() || player.damage > 9) {
       player.damage = 2;
       player.lives--;
       player.needsRespawn=true;
