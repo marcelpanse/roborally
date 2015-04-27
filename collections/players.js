@@ -121,7 +121,7 @@ var player = {
     if (this.lockedCnt() == GameLogic.CARD_SLOTS)
       return [];
     else
-      return this.getChosenCards().slice(0, this.notLockedCnt());
+      return this.getChosenCards().slice(0, Math.max(this.getChosenCards.length, this.notLockedCnt()));
   },
   playedCards: function() {
     return this.getChosenCards().slice(0,this.playedCardsCnt);
