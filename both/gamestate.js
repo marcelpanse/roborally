@@ -298,7 +298,7 @@ GameState = {
       }
 
       if (player.visited_checkpoints === board.checkpoints.length) {
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name, stopped: new Date().getTime()}});
         messages.push("Player " + player.name + " won the game!!");
         ended = true;
         break;
@@ -307,11 +307,11 @@ GameState = {
 
     if (livingPlayers === 0) {
       messages.push("All robots are dead");
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
       ended = true;
     } else if (livingPlayers === 1 && players.length > 1) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name, stopped: new Date().getTime()}});
       ended = true;
     }
     messages.forEach(function(msg) {
@@ -319,7 +319,6 @@ GameState = {
     });
     return ended;
   }
-
 
   // respawn phases
   scope.nextRespawnPhase = function(gameId) {

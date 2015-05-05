@@ -28,6 +28,8 @@ Template.cards.helpers({
   },
   timer: function() {
     if (this.game.timer === 1 && timerHandle === null) {
+      $.titleAlert("Hurry up! 30 seconds left!", { duration: 2000 });
+
       console.log("starting timer");
       Session.set("timeLeft", GameLogic.TIMER);
       timerHandle = Meteor.setInterval(function() {
