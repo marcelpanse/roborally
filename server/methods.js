@@ -155,7 +155,7 @@ Meteor.methods({
 
     if (!player.submitted) {
       CardLogic.submitCards(player);
-      player.chat('submitted cards');
+      console.log(player.name + ' submitted cards');
     } else {
       console.log("Player already submitted his cards.");
     }
