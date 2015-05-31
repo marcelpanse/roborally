@@ -172,7 +172,7 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerWithDir(player, Number(direction));
-    player.chat('chose direction', direction);
+    player.chat('reentered the race', direction);
     GameState.nextGamePhase(game);
   },
   togglePowerDown: function(gameId) {

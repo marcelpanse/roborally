@@ -23,9 +23,10 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 1000;
-  var _ANNOUNCE_NEXT_PHASE = 1500;
-  var _ANNOUNCE_NEXT_CARD = 3000;
+  var _NEXT_PHASE_DELAY = 500;
+  var _ANNOUNCE_NEXT_PHASE = 1000;
+  var _ANNOUNCE_CARD_TIME = 2000;
+  var _EXECUTE_CARD_TIME = 2000;
 
   // game phases:
 
@@ -158,7 +159,8 @@ GameState = {
           announce(game, playLasers);
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
-          announce(game, playCheckpoints);
+          playCheckpoints(game);
+          //announce(game, playCheckpoints);
           break;
         case GameState.PLAY_PHASE.REPAIRS:
           announce(game, playRepairs);
@@ -209,22 +211,36 @@ GameState = {
     Games.update(game._id, {$set: {
       cardsToPlay: game.cardsToPlay
     }});
-    playMoveBot(game);
+    if (game.cardsToPlay.length > 0)
+      playMoveBot(game);
+    else
+      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBot(game) {
-    if (game.cardsToPlay.length > 0) {
-      Meteor.setTimeout(function() {
-        var card = game.cardsToPlay.shift();
-        Games.update(game._id, {$set: {
+    var card = game.cardsToPlay.shift();
+    Games.update(game._id, {$set: {
+          announceCard: card,
           cardsToPlay: game.cardsToPlay
         }});
-        var player = Players.findOne(card.playerId);
-        Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
-        playMoveBot(game);
-      }, _ANNOUNCE_NEXT_CARD);
-    } else
-      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+    var player = Players.findOne(card.playerId);
+    Meteor.setTimeout(function() {
+      Games.update(game._id, {$set: {
+          announceCard: null,
+        }});
+      Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
+      if (game.cardsToPlay.length > 0) {
+        Meteor.setTimeout(function() {
+          playMoveBot(game);
+        }, _EXECUTE_CARD_TIME);
+      } else
+        Meteor.setTimeout(function() {
+          Games.update(game._id, {$set: {
+              announceCard: null,
+            }});
+          game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+        }, _EXECUTE_CARD_TIME);
+    }, _ANNOUNCE_CARD_TIME);
   }
 
   function playMoveBoard(game) {

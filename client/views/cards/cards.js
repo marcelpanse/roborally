@@ -207,9 +207,17 @@ Template.playerStatus.helpers({
   nextCheckpoint: function() {
     return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
   },
-  showSubmitted: function() {
+  showSubmittedLabel: function() {
     return this.submitted && this.game().gamePhase == GameState.PHASE.PROGRAM;
+  },
+  showPoweredDownLabel: function() {
+    return this.powerState == GameLogic.OFF &&
+           (this.game().gamePhase != GameState.PHASE.PROGRAM || this.submitted);
+  },
+  powerDownPlayed: function() {
+    return (this.powerState == GameLogic.DOWN);
   }
+
 });
 
 Template.card.events({

@@ -54,7 +54,6 @@ template(name="playerStatus")
     | #{playerName}:
     each lives
       span.glyphicon(class=this, data-tooltip-direction="top" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
-    = power
     br
     span.small(style="color: #fff")
       | #{dmgPercentage}% damaged
@@ -67,11 +66,18 @@ template(name="playerStatus")
         .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
   div.small
-    if showSubmitted
+    if showSubmittedLabel
       .label.label-primary
         | submitted
+    else if showPoweredDownLabel
+      .label.label-primary
+        | powered down
     each cardsHtml
       +card
+    if powerDownPlayed
+      .card(class="powerdown powerdown" data-tooltip="Power down played. Robot will skip the next turn.")
+        span.glyphicon.glyphicon-off
+
 
 template(name="card")
   if emptyCard

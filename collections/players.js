@@ -111,12 +111,6 @@ var player = {
   notLockedCnt: function() {
     return  GameLogic.CARD_SLOTS - this.lockedCnt();
   },
-  lockedCards: function() {
-    if (this.lockedCnt() > 0)
-      return this.submittedCards().slice(this.notLockedCnt(), this.lockedCnt());
-    else
-      return [];
-  },
   notLockedCards: function() {
     if (this.lockedCnt() == GameLogic.CARD_SLOTS)
       return [];
@@ -137,7 +131,7 @@ var player = {
       var chosenCards = this.getChosenCards();
       for (var i=0;i<this.lockedCnt();i++) {
         this.cards[this.notLockedCnt()+i] = deck.cards.shift();
-        chosenCards = this.cards[this.notLockedCnt()+i];
+        chosenCards[this.notLockedCnt()+i] = this.cards[this.notLockedCnt()+i];
       }
       Deck.update(deck._id, deck);
       Players.update( this._id, this);
