@@ -3,7 +3,8 @@ Meteor.publish('games', function() {
 });
 
 Meteor.publish('chat', function(gameId) {
-  return Chat.find({ gameId: gameId });
+  var size = Math.max(0, Chat.find({gameId: gameId}).count() - 100);
+  return Chat.find({ gameId: gameId }, {skip: size});
 });
 
 Meteor.publish("onlineUsers", function() {
@@ -16,4 +17,8 @@ Meteor.publish("players", function(gameId) {
 
 Meteor.publish("cards", function(gameId) {
   return Cards.find({ gameId: gameId, userId: this.userId });
+});
+
+Meteor.publish("highscores", function() {
+  return Highscores.find();
 });

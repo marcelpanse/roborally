@@ -25,7 +25,8 @@ template(name="applicationLayout")
             span.icon-bar
             span.icon-bar
             span.icon-bar
-          a.navbar-brand(href='/') RoboRally
+          a.navbar-brand(href="{{pathFor 'home.page'}}") RoboRally
+          .fb-like(data-href="https://www.facebook.com/roborallyonline", data-layout="button_count", data-action="like", data-show-faces="true", data-share="true")
         // Collect the nav links, forms, and other content for toggling
         #bs-example-navbar-collapse-1.collapse.navbar-collapse
           ul.nav.navbar-nav.navbar-right
@@ -33,6 +34,8 @@ template(name="applicationLayout")
               a(href='/')
             li.page-scroll
               a(href="{{pathFor 'gamelist.page'}}") Games
+            li.page-scroll
+              a(href="{{pathFor 'ranking.page'}}") Ranking
             li.page-scroll
               +loginButtons
     header
@@ -45,6 +48,7 @@ template(name="applicationLayout")
             +yield("rightPanel2")
             +yield("rightPanel3")
     // Footer
+    #fb-root
     footer.text-center
       .footer-below
         .container
@@ -52,7 +56,10 @@ template(name="applicationLayout")
             .col-lg-12
               +usersPill
               h6.pull-right.small
-                i.fa.fa-question-circle
-                a(href="https://github.com/marcelpanse/roborally/issues")
-                  | github code &amp; bug tracking
+                i.fa.fa-youtube-play
+                a(href="https://youtu.be/0l8Y-L5IZLE", target="_blank")
+                  | tutorial video
+                i.fa.fa-book(style="padding-left: 10px")
+                a(href="/roborally-manual.pdf", target="_blank")
+                  | game rules PDF
   +tooltips

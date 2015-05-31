@@ -114,17 +114,11 @@ var player = {
   notLockedCnt: function() {
     return  GameLogic.CARD_SLOTS - this.lockedCnt();
   },
-  lockedCards: function() {
-    if (this.lockedCnt() > 0)
-      return this.submittedCards().slice(this.notLockedCnt(), this.lockedCnt());
-    else
-      return [];
-  },
   notLockedCards: function() {
     if (this.lockedCnt() == GameLogic.CARD_SLOTS)
       return [];
     else
-      return this.getChosenCards().slice(0, this.notLockedCnt());
+      return this.getChosenCards().slice(0, Math.max(this.getChosenCards.length, this.notLockedCnt()));
   },
   playedCards: function() {
     return this.getChosenCards().slice(0,this.playedCardsCnt);
@@ -133,7 +127,7 @@ var player = {
     return !this.isPoweredDown() && !this.needsRespawn && this.lives > 0;
   },
   addDamage: function(inc) {
-    if (this.hasOptionCard('ablative_coat')) {
+    this.damage += inc;
       if (!this.ablativeCoat)
         this.ablativeCoat = 0;
       this.ablativeCoat++;

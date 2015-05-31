@@ -39,12 +39,16 @@ Template.chat.events({
 
 Template.chat.rendered = function() {
   Chat.find().observe({added: function() {
-    console.log('added');
     var $chat     = $('.chat'),
         $printer  = $('.messages', $chat),
         printerH  = $printer.innerHeight();
     if ($printer && $printer[0]) {
       $printer.stop().animate( {scrollTop: $printer[0].scrollHeight - printerH  }, 100);
     }
+    $.titleAlert("New chat message!", {
+      interval: 1000,
+      stopOnFocus: true,
+      stopOnMouseMove: true
+    });
   }});
 };

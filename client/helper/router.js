@@ -15,11 +15,7 @@ Router.route('/', {
   layoutTemplate: 'home',
   action: function() {
     mixpanel.track("Viewed home Page");
-    if (Meteor.isCordova) {
-      Router.go('gamelist.page');
-    } else {
-      this.next();
-    }
+    this.render();
   }
 });
 
@@ -38,6 +34,33 @@ Router.route('/online', {
     this.render('gameItemPostForm', {to: 'rightPanel'});
     this.render('chat', {
       to: 'rightPanel2',
+      data: function() {
+        return {messages: Chat.find(), gameId: "global"};
+      }
+    });
+  }
+});
+
+Router.route('/ranking', {
+  name: 'ranking.page',
+  loadingTemplate: 'loading',
+
+  waitOn: function() {
+    return [Meteor.subscribe('highscores'), Meteor.subscribe('chat', "global")];
+  },
+
+  action: function() {
+    mixpanel.track("Viewed ranking list Page");
+    this.render('ranking', {
+      data: function() {
+        return {
+          mostPlayed: Highscores.find({type: 'mostPlayed'}),
+          mostWon: Highscores.find({type: 'mostWon'})
+        };
+      }
+    });
+    this.render('chat', {
+      to: 'rightPanel',
       data: function() {
         return {messages: Chat.find(), gameId: "global"};
       }

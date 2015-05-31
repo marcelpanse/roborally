@@ -101,23 +101,25 @@ class @CardLogic
       Games.update(player.gameId, {$set: {timer: -1}})
       GameState.nextGamePhase(player.gameId)
     else if readyPlayerCnt == playerCnt-1
-      # start timer
-      Games.update(player.gameId, {$set: {timer: 1}})
-      Meteor.setTimeout ->
-        if Games.findOne(player.gameId).timer == 1
-          console.log("time up! setting timer to 0")
-          Games.update(player.gameId, {$set: {timer: 0}})
+      @startTimer(player.game())
 
-          # wait for player to auto-submit selected cards..
-          Meteor.setTimeout ->
-            # if nothing happened the system to should auto-submit random cards..
-            if Players.find({gameId: player.gameId, submitted: true}).count() == 1
-              unsubmittedPlayer = Players.findOne({gameId: player.gameId, submitted: false})
-              CardLogic.submitCards(unsubmittedPlayer)
-              console.log("Player " + unsubmittedPlayer.name + " did not respond, submitting random cards")
-          , 2500
+  @startTimer: (game) ->
+        # start timer
+    Games.update(game._id, {$set: {timer: 1}})
+    Meteor.setTimeout ->
+      if Games.findOne(game._id).timer == 1
+        console.log("time up! setting timer to 0")
+        Games.update(game._id, {$set: {timer: 0}})
 
-      , GameLogic.TIMER * 1000
+        # wait for player to auto-submit selected cards..
+        Meteor.setTimeout ->
+          # if nothing happened the system to should auto-submit random cards..
+          if Players.find({gameId: game._id, submitted: true}).count() == 1
+            unsubmittedPlayer = Players.findOne({gameId: game._id, submitted: false})
+            CardLogic.submitCards(unsubmittedPlayer)
+            console.log("Player " + unsubmittedPlayer.name + " did not respond, submitting random cards")
+        , 2500
+    , GameLogic.TIMER * 1000
 
   verifySubmittedCards = (player) ->
     # check if all played cards are available from original hand...

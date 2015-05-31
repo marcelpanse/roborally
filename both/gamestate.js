@@ -24,9 +24,10 @@ GameState = {
 };
 
 (function (scope) {
-  var _NEXT_PHASE_DELAY = 1000;
-  var _ANNOUNCE_NEXT_PHASE = 1500;
-  var _ANNOUNCE_NEXT_CARD = 3000;
+  var _NEXT_PHASE_DELAY = 500;
+  var _ANNOUNCE_NEXT_PHASE = 1000;
+  var _ANNOUNCE_CARD_TIME = 2000;
+  var _EXECUTE_CARD_TIME = 2000;
 
   // game phases:
 
@@ -81,7 +82,7 @@ GameState = {
       } else if (player.powerState == GameLogic.DOWN) {
         // player announced power down last turn
         player.powerState = GameLogic.OFF;
-        if (!players.optionalInstantPowerDown) {
+        if (!player.optionalInstantPowerDown) {
           player.submitted = true;
           player.damage = 0;
           dealCards = false;
@@ -97,6 +98,8 @@ GameState = {
     var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
       game.nextGamePhase();
+    else if  (notPoweredDownCnt === 1)
+      CardLogic.startTimer(game);
   }
 
   function playProgramCardsSubmitted(game) {
@@ -159,7 +162,8 @@ GameState = {
           announce(game, playLasers);
           break;
         case GameState.PLAY_PHASE.CHECKPOINTS:
-          announce(game, playCheckpoints);
+          playCheckpoints(game);
+          //announce(game, playCheckpoints);
           break;
         case GameState.PLAY_PHASE.REPAIRS:
           announce(game, playRepairs);
@@ -200,7 +204,7 @@ GameState = {
       var card = {
         cardId: player.getChosenCards()[player.playedCardsCnt]
       };
-      if (card.cardId) {
+      if (card.cardId >= 0) {
         Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
         game.cardsToPlay.push(card);
@@ -210,22 +214,36 @@ GameState = {
     Games.update(game._id, {$set: {
       cardsToPlay: game.cardsToPlay
     }});
-    playMoveBot(game);
+    if (game.cardsToPlay.length > 0)
+      playMoveBot(game);
+    else
+      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
   }
 
   function playMoveBot(game) {
-    if (game.cardsToPlay.length > 0) {
-      Meteor.setTimeout(function() {
-        var card = game.cardsToPlay.shift();
-        Games.update(game._id, {$set: {
+    var card = game.cardsToPlay.shift();
+    Games.update(game._id, {$set: {
+          announceCard: card,
           cardsToPlay: game.cardsToPlay
         }});
-        var player = Players.findOne(card.playerId);
-        Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
-        playMoveBot(game);
-      }, _ANNOUNCE_NEXT_CARD);
-    } else
-      game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+    var player = Players.findOne(card.playerId);
+    Meteor.setTimeout(function() {
+      Games.update(game._id, {$set: {
+          announceCard: null,
+        }});
+      Meteor.wrapAsync(GameLogic.playCard)(player, card.cardId);
+      if (game.cardsToPlay.length > 0) {
+        Meteor.setTimeout(function() {
+          playMoveBot(game);
+        }, _EXECUTE_CARD_TIME);
+      } else
+        Meteor.setTimeout(function() {
+          Games.update(game._id, {$set: {
+              announceCard: null,
+            }});
+          game.nextPlayPhase(GameState.PLAY_PHASE.MOVE_BOARD);
+        }, _EXECUTE_CARD_TIME);
+    }, _ANNOUNCE_CARD_TIME);
   }
 
   function playMoveBoard(game) {
@@ -295,7 +313,7 @@ GameState = {
       }
 
       if (player.visited_checkpoints === board.checkpoints.length) {
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: player.name, stopped: new Date().getTime()}});
         messages.push("Player " + player.name + " won the game!!");
         ended = true;
         break;
@@ -304,11 +322,11 @@ GameState = {
 
     if (livingPlayers === 0) {
       messages.push("All robots are dead");
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
       ended = true;
     } else if (livingPlayers === 1 && players.length > 1) {
       messages.push("Player " + lastManStanding.name + " won the game!!");
-      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name}});
+      Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: lastManStanding.name, stopped: new Date().getTime()}});
       ended = true;
     }
     messages.forEach(function(msg) {
@@ -316,7 +334,6 @@ GameState = {
     });
     return ended;
   }
-
 
   // respawn phases
   scope.nextRespawnPhase = function(gameId) {

@@ -101,10 +101,10 @@ Meteor.methods({
     if (game.started) {
       var players = Players.find({gameId: game._id}).fetch();
       if (players.length === 1) {
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: players[0].name, stopped: new Date().getTime()}});
       } else if (players.length === 0) {
         console.log("Nobody left in the game.");
-        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody"}});
+        Games.update(game._id, {$set: {gamePhase: GameState.PHASE.ENDED, winner: "Nobody", stopped: new Date().getTime()}});
       }
     }
     game.chat(author + ' left the game');
@@ -156,7 +156,7 @@ Meteor.methods({
 
     if (!player.submitted) {
       CardLogic.submitCards(player);
-      player.chat('submitted cards');
+      console.log(player.name + ' submitted cards');
     } else {
       console.log("Player already submitted his cards.");
     }
@@ -173,7 +173,7 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerWithDir(player, Number(direction));
-    player.chat('chose direction', direction);
+    player.chat('reentered the race', direction);
     GameState.nextGamePhase(game);
   },
   togglePowerDown: function(gameId) {

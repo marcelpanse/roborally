@@ -222,21 +222,25 @@ Template.board.helpers({
     });
     return pUIData;
   },
+  announceMove: function() {
+    var game = this.game;
+    return (game.playPhase === GameState.PLAY_PHASE.MOVE_BOTS && game.announceCard);
+  },
   cardPlaying: function() {
     var game = this.game;
-    if (game.playPhase === GameState.PLAY_PHASE.MOVE_BOTS && game.cardsToPlay.length > 0) {
-      var cardId = game.cardsToPlay[0].cardId;
-      var player = Players.findOne(game.cardsToPlay[0].playerId);
+      var cardId = game.announceCard.cardId;
+      var player = Players.findOne(game.announceCard.playerId);
       return {
-        class: 'played',
+        class: 'played announce-move',
         priority: CardLogic.priority(cardId),
         type: CardLogic.cardType(cardId, game.playerCnt()).name,
         playerName: player.name,
+        position: cssPosition(player.position.x, player.position.y,25,25),
         robotId: player.robotId.toString()
       };
-    }
-    return false;
-  }
+
+  },
+
 });
 
 function animatePosition(element, x, y) {
@@ -354,6 +358,17 @@ Template.board.events({
   }
 });
 
+// Template.board.rendered = function() {
+//   $('.animated')[0]._uihooks = {
+//     insertElement: function(node, next) {
+//       $(node).addClass('off').insertBefore(next);
+//       Tracker.afterFlush(function() {
+//         $(node).removeClass('off');
+//       });
+//     }
+//   };
+// };
+
 Template.share.helpers({
   shareData: function() {
     return {
@@ -361,6 +376,6 @@ Template.share.helpers({
       author: 'roborally.com',
       description: 'desc',
       url: 'http://www.roborally.com'
-    }
+    };
   }
 });
