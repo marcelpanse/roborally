@@ -150,13 +150,13 @@ Template.cards.helpers({
     return this.visited_checkpoints+1;
   },
   hasOptionCards: function() {
-    return (Object.keys(this.optionCards).length > 0);
+    return (Object.keys(getPlayer().optionCards).length > 0);
   },
-  optionCards: function() {
+  activeOptionCards: function() {
     var r = [];
-    Object.keys(this.optionCards).forEach(function(optionKey) {
+    Object.keys(getPlayer().optionCards).forEach(function(optionKey) {
       r.push({
-        name: optionKey,
+        name: CardLogic.getOptionTitle(optionKey),
         desc: CardLogic.getOptionDesc(optionKey)
       });
     });
@@ -229,8 +229,20 @@ Template.playerStatus.helpers({
   },
   powerDownPlayed: function() {
     return (this.powerState == GameLogic.DOWN);
+  },
+  hasOptionCards: function() {
+    return (Object.keys(this.optionCards).length > 0);
+  },
+  activeOptionCards: function() {
+    var r = [];
+    Object.keys(this.optionCards).forEach(function(optionKey) {
+      r.push({
+        name: CardLogic.getOptionTitle(optionKey),
+        desc: CardLogic.getOptionDesc(optionKey)
+      });
+    });
+    return r;
   }
-
 });
 
 Template.card.events({

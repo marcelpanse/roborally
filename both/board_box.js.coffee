@@ -1,10 +1,18 @@
 class @BoardBox
-  @CATALOG = [ 'default', 'risky_exchange', 'checkmate', 'dizzy_dash',
+  @CATALOG = [ 'default', 
+               # beginner courses
+               'risky_exchange', 'checkmate', 'dizzy_dash',
                'island_hop', 'chop_shop_challenge', 'twister', 'bloodbath_chess',
-               'around_the_world','death_trap', 'pilgrimage',
-               'whirlwind_tour','option_world',
-               'island_king' ,'crowd_chess', 'robot_stew', 'oddest_sea']
-               #moving_targets'
+               'around_the_world', 'death_trap', 'pilgrimage',
+               # expert courses
+               'vault_assault', 'whirlwind_tour', 'lost_bearings', 'robot_stew',
+               'oddest_sea', 'against_the_grain', 'island_king', 
+               # with special rules
+               'tricksy', #moving_targets',
+               'set_to_kill', 'factory_rejects', 'option_world', 'tight_collar', 
+               'ball_lightning',  'flag_fry', 'crowd_chess' 
+             ]
+               
   @BEGINNER_COURSE_CNT = 11
   @cache = []
   @test_board_id = @CATALOG.length
@@ -210,3 +218,91 @@ class @BoardBox
       board.addCheckpoint(9,7)
       board.addCheckpoint(2,10)
       return board
+    vault_assault: () ->
+      board = new Board('vault_assault',2,4)
+      board.length = 'short'
+      board.addRallyArea('vault',0,0,270)
+      board.addStartArea('roller')
+      board.addCheckpoint(6,3)
+      board.addCheckpoint(4,11)
+      board.addCheckpoint(8,5)
+      return board
+    lost_bearings: () ->
+      board = new Board('lost_bearings',2,4)
+      board.length = 'medium'
+      board.addRallyArea 'cross',0,0,180
+      board.addStartArea 'simple'
+      board.addCheckpoint 1,2
+      board.addCheckpoint 10,9
+      board.addCheckpoint 2,8
+      return board
+    against_the_grain: () ->
+      board = new Board('against_the_grain',2,4,12,28)
+      board.length = 'medium'
+      board.addRallyArea 'chop_shop'
+      board.addRallyArea 'chess',0,12,90
+      board.addStartArea 'simple',0,24
+      board.addCheckpoint 10,9
+      board.addCheckpoint 3,3
+      board.addCheckpoint 5,17
+      return board
+    tricksy: () ->
+      board = new Board('tricksy',2,4)
+      board.length = 'long'
+      board.addRallyArea 'cross'
+      board.addStartArea 'roller'
+      board.addCheckpoint 9, 1
+      board.addCheckpoint 0, 1
+      board.addCheckpoint 8, 11
+      board.addCheckpoint 3, 7
+      return board
+    set_to_kill: () ->
+      board = new Board('set_to_kill',5,8)
+      board.length = 'medium'
+      board.addRallyArea 'exchange',0,0,180
+      board.addStartArea 'roller'
+      board.addCheckpoint 5,0
+      board.addCheckpoint 2,11
+      board.addCheckpoint 10,9
+      board.addCheckpoint 2,4
+      return board
+    factory_rejects: () ->
+      board = new Board('factory_rejects',5,8)
+      board.length = 'short'
+      board.addRallyArea 'chop_shop', 0,0,180
+      board.addStartArea 'roller'
+      board.addCheckpoint 7,1
+      board.addCheckpoint 4,11
+      board.addCheckpoint 2,4
+      return board
+    tight_collar: () ->
+      board = new Board('tight_collar',2,8,12,28)
+      board.length = 'medium'
+      board.addRallyArea 'cross', 0,0,180
+      board.addRallyArea 'chop_shop',0,12,90
+      board.addStartArea 'simple',0,24
+      board.addCheckpoint 4,2
+      board.addCheckpoint 9,19
+      return board
+    ball_lightning: () ->
+      board = new Board('ball_lightning',2,8,)
+      board.length = 'short'
+      board.addRallyArea 'spin_zone', 0,0,90
+      board.addStartArea 'simple'
+      board.addCheckpoint 7,5
+      board.addCheckpoint 2,2
+      board.addCheckpoint 5,9
+      board.addCheckpoint 10,0
+      return board
+    flag_fry: () ->
+      board = new Board('flag_fry',2,8)
+      board.length = 'short'
+      board.addRallyArea 'cross', 0,0, 180
+      board.addStartArea 'simple'
+      board.addCheckpoint 3,3
+      board.addCheckpoint 9,3
+      board.addCheckpoint 3,10
+      return board
+
+
+

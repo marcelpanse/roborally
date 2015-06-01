@@ -126,7 +126,7 @@ class @Board
       step = to_step(i)
       nx = x+step.x
       ny = y+step.y
-      if @onBoard(nx, ny) && @tile(nx, ny).type == Tile.VOID
+      if @onBoard(@col(nx,ny), @row(nx,ny)) && @tile(nx, ny).type == Tile.VOID
         @tile(nx, ny).updateVoidType(@absolute_dir(opp_dir(i)))
         @tile(x,y).updateVoidType(@absolute_dir(i))
 
@@ -277,7 +277,7 @@ class @Board
         {x: -dir.x, y: -dir.y}
 
   toTitleCase = (str) ->
-    str.replace('_',' ').replace /\w\S*/g, (txt) ->
+    str.replace(/_/g,' ').replace /\w\S*/g, (txt) ->
       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
 
 

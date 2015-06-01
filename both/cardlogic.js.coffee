@@ -156,13 +156,17 @@ class @CardLogic
   @getOptionName: (index) ->
     @_option_deck[index][0]
 
+  @getOptionTitle: (name) ->
+    name.replace('/_/g',' ').replace /\w\S*/g, (txt) ->
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+
   @getOptionId: (name) ->
     for option, id in @_option_deck
       if option[0] == name
         return id
 
   @getOptionDesc: (name) ->
-    return @_option_deck[getOptionId(name)][1]
+    return @_option_deck[@getOptionId(name)][1]
 
   @cardType:  (cardId, playerCnt) ->
     deck = if playerCnt <= 8 then @_8_deck else @_12_deck

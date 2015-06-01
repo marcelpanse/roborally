@@ -128,6 +128,7 @@ var player = {
   },
   addDamage: function(inc) {
     this.damage += inc;
+    if (this.hasOptionCard('ablative_coat')) {
       if (!this.ablativeCoat)
         this.ablativeCoat = 0;
       this.ablativeCoat++;
@@ -147,7 +148,7 @@ var player = {
         var chosenCards = this.getChosenCards();
         for (var i=0;i<this.lockedCnt();i++) {
           this.cards[this.notLockedCnt()+i] = deck.cards.shift();
-          chosenCards = this.cards[this.notLockedCnt()+i];
+          chosenCards[this.notLockedCnt()+i] = this.cards[this.notLockedCnt()+i];
         }
         Deck.update(deck._id, deck);
         Players.update( this._id, this);
@@ -162,13 +163,14 @@ var player = {
     var optionCards = Deck.findOne({gameId: gameId}).optionCards;
     var optionId = optionCards.pop();
     this.optionCards[CardLogic.getOptionName(optionId)] = true;
-    Deck.update({gameId: game._id}, {$set: {optionCards: optionCards}});
+    Deck.update({gameId: gameId}, {$set: {optionCards: optionCards}});
   },
   discardOptionCard: function(name) {
+    var gameId = this.game()._id;
     delete optionCards.name;
     var discarded = Deck.findOne({gameId: gameId}).discardedOptionCards;
     discarded.push(CardLogic.getOptionId(name));
-    Deck.update({gameId: game._id}, {$set: {discardedOptionCards: discarded}});
+    Deck.update({gameId: gameId}, {$set: {discardedOptionCards: discarded}});
   }
 };
 

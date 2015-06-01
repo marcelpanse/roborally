@@ -35,9 +35,9 @@ template(name="cards")
       .option-cards
         h6
           | Option cards
-        each optionCards
+        each activeOptionCards
           .option-card(title=desc)
-            name
+            = name
     if showPlayButton
       if poweredDown
         a.btn.btn-warning.powerBtn #{ownPowerStateName}
@@ -72,20 +72,25 @@ template(name="playerStatus")
       else
         .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
-    each optionCards
-      if optionChoice
   div.small
-    if showSubmittedLabel
-      .label.label-primary
-        | submitted
-    else if showPoweredDownLabel
+    if showPoweredDownLabel
       .label.label-primary
         | powered down
+    else if showSubmittedLabel
+      .label.label-primary
+        | submitted
     each cardsHtml
       +card
     if powerDownPlayed
       .card(class="powerdown powerdown" data-tooltip="Power down played. Robot will skip the next turn.")
         span.glyphicon.glyphicon-off
+  if hasOptionCards
+    .option-cards
+      h6
+        | Option cards
+      each activeOptionCards
+        .option-card(title=desc)
+          = name
 
 
 template(name="card")
