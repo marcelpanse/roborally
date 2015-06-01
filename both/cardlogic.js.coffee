@@ -187,10 +187,10 @@ class @CardLogic
     [ 'high-power_laser', "Your robot's main laser can shoot through one wall or robot to get to a target robot. If you shoot through a robot, that robot also receives full damage. You may use this Option with Fire Control and/or Double-Barreled Laser."]
     [ 'double-barreled_laser', "Whenever your robot fires its main laser, it fires two shots instead of one. You may use this Option with Fire Control and/or High-Power Laser."]
     [ 'ramming_gear', "Whenever your robot pushes or bumps into another robot, that robot receives 10% damage."]
+    [ 'mechanical_arm', "Your robot can touch a flag or repair site from 1 space away (diagonally or orthogonally), as long as there isn't a wall."]
     [ 'ablative_coat', "Absorbs the next 30% damage your robot receives."]
     ####### choose to use
     # 'recompile'
-    [ 'mechanical_arm', "Your robot can touch a flag or repair site from 1 space away (diagonally or orthogonally), as long as there isn't a wall."]
     #[ 'power-down_shield', ""
     # 'abort_switch'
     ###### additional move options

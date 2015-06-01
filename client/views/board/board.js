@@ -358,17 +358,6 @@ Template.board.events({
   }
 });
 
-// Template.board.rendered = function() {
-//   $('.animated')[0]._uihooks = {
-//     insertElement: function(node, next) {
-//       $(node).addClass('off').insertBefore(next);
-//       Tracker.afterFlush(function() {
-//         $(node).removeClass('off');
-//       });
-//     }
-//   };
-// };
-
 Template.share.helpers({
   shareData: function() {
     return {
