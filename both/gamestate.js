@@ -82,7 +82,7 @@ GameState = {
       } else if (player.powerState == GameLogic.DOWN) {
         // player announced power down last turn
         player.powerState = GameLogic.OFF;
-        if (!player.optionalInstantPowerDown) {
+        if (!players.optionalInstantPowerDown) {
           player.submitted = true;
           player.damage = 0;
           dealCards = false;
@@ -98,8 +98,6 @@ GameState = {
     var notPoweredDownCnt = Players.find({gameId: game._id, submitted: false}).count();
     if (notPoweredDownCnt === 0)
       game.nextGamePhase();
-    else if  (notPoweredDownCnt === 1)
-      CardLogic.startTimer(game);
   }
 
   function playProgramCardsSubmitted(game) {
