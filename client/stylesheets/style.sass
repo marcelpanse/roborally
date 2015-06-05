@@ -143,6 +143,7 @@ a.white
   .active
     background-color: #67A50A
 
+
 .board-thumbnail
   +board($preview-tile-size, 9px)
 
@@ -225,3 +226,20 @@ h5.player-status
   padding-right: 60px
   h2
     text-align: center
+
+
+@keyframes fadeInAndOut
+  0%, 50%, 100%
+    transition-timing-function: cubic-bezier(0, 1, 1, 0)
+
+  0%
+    opacity: 0
+  50%
+    opacity: 1
+    transform: scale(50, 50)
+  100%
+    opacity: 0
+    transform: scale(100, 100)
+
+.fadeInAndOut
+  animation: fadeInAndOut 1.75s both

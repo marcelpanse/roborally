@@ -31,6 +31,13 @@ template(name="cards")
       else
         each chosenCards
           +card
+    if hasOptionCards
+      .option-cards
+        h6
+          | Option cards
+        each activeOptionCards
+          .option-card(title=desc)
+            = name
     if showPlayButton
       if poweredDown
         a.btn.btn-warning.powerBtn #{ownPowerStateName}
@@ -54,7 +61,6 @@ template(name="playerStatus")
     | #{playerName}:
     each lives
       span.glyphicon(class=this, data-tooltip-direction="top" data-tooltip="You lose a live when falling off the board, into a hole or when receiving your 10th damage. At 0 lives you will lose the game.")
-    = power
     br
     span.small(style="color: #fff")
       | #{dmgPercentage}% damaged
@@ -67,8 +73,25 @@ template(name="playerStatus")
         .checkpoint(data-tooltip-direction="bottom" data-tooltip="#{this.name}'s next checkpoint")
           = nextCheckpoint
   div.small
+    if showPoweredDownLabel
+      .label.label-primary
+        | powered down
+    else if showSubmittedLabel
+      .label.label-primary
+        | submitted
     each cardsHtml
       +card
+    if powerDownPlayed
+      .card(class="powerdown powerdown" data-tooltip="Power down played. Robot will skip the next turn.")
+        span.glyphicon.glyphicon-off
+  if hasOptionCards
+    .option-cards
+      h6
+        | Option cards
+      each activeOptionCards
+        .option-card(title=desc)
+          = name
+
 
 template(name="card")
   if emptyCard

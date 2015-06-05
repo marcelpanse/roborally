@@ -1,6 +1,8 @@
 
 class @Board
-  constructor: (min_player=2, max_player=8, width=12, height=16) ->
+  constructor: (name, min_player=2, max_player=8, width=12, height=16) ->
+    @name = name
+    @title = toTitleCase(name)
     @tiles = create2DArray(height)
     @startpoints=[]
     @checkpoints=[]
@@ -124,7 +126,7 @@ class @Board
       step = to_step(i)
       nx = x+step.x
       ny = y+step.y
-      if @onBoard(nx, ny) && @tile(nx, ny).type == Tile.VOID
+      if @onBoard(@col(nx,ny), @row(nx,ny)) && @tile(nx, ny).type == Tile.VOID
         @tile(nx, ny).updateVoidType(@absolute_dir(opp_dir(i)))
         @tile(x,y).updateVoidType(@absolute_dir(i))
 
@@ -273,6 +275,11 @@ class @Board
         opp_word[dir]
       when 'object'
         {x: -dir.x, y: -dir.y}
+
+  toTitleCase = (str) ->
+    str.replace(/_/g,' ').replace /\w\S*/g, (txt) ->
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+
 
   long_dir = {r:'right',     l:'left',   u:'up', d:'down', \
               right:'right', left:'left',up:'up',down:'down'  }
