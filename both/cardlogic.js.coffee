@@ -157,7 +157,7 @@ class @CardLogic
     @_option_deck[index][0]
 
   @getOptionTitle: (name) ->
-    name.replace('/_/g',' ').replace /\w\S*/g, (txt) ->
+    name.replace(/_/g,' ').replace /\w\S*/g, (txt) ->
       txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
 
   @getOptionId: (name) ->
