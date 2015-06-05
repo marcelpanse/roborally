@@ -148,6 +148,19 @@ Template.cards.helpers({
   },
   nextCheckpoint: function() {
     return this.visited_checkpoints+1;
+  },
+  hasOptionCards: function() {
+    return (Object.keys(getPlayer().optionCards).length > 0);
+  },
+  activeOptionCards: function() {
+    var r = [];
+    Object.keys(getPlayer().optionCards).forEach(function(optionKey) {
+      r.push({
+        name: CardLogic.getOptionTitle(optionKey),
+        desc: CardLogic.getOptionDesc(optionKey)
+      });
+    });
+    return r;
   }
 });
 
@@ -207,8 +220,28 @@ Template.playerStatus.helpers({
   nextCheckpoint: function() {
     return Math.min(this.board().checkpoints.length, this.visited_checkpoints+1);
   },
-  showSubmitted: function() {
+  showSubmittedLabel: function() {
     return this.submitted && this.game().gamePhase == GameState.PHASE.PROGRAM;
+  },
+  showPoweredDownLabel: function() {
+    return this.powerState == GameLogic.OFF &&
+           (this.game().gamePhase != GameState.PHASE.PROGRAM || this.submitted);
+  },
+  powerDownPlayed: function() {
+    return (this.powerState == GameLogic.DOWN);
+  },
+  hasOptionCards: function() {
+    return (Object.keys(this.optionCards).length > 0);
+  },
+  activeOptionCards: function() {
+    var r = [];
+    Object.keys(this.optionCards).forEach(function(optionKey) {
+      r.push({
+        name: CardLogic.getOptionTitle(optionKey),
+        desc: CardLogic.getOptionDesc(optionKey)
+      });
+    });
+    return r;
   }
 });
 

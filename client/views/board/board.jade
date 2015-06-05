@@ -41,13 +41,9 @@ template(name="board")
       .laser(class=laser_class, style=shot)
     each selectOptions
       div(class=select_class, style=position, data-x=x, data-y=y, data-dir=dir, data-tooltip-direction="n" data-tooltip=title)
-    if cardPlaying
-      .well.announce
-        with cardPlaying
-          h5
-            img(class="robot-icon", src="/robots/robot_#{robotId}.png")
-            = playerName
-          .card(style="width: 74%; height:80%;", class="#{type} #{class}")
+    if announceMove
+      with cardPlaying
+        .card(style=position, class="fadeInAndOut #{type} #{class}")
 
 
 template(name="share")

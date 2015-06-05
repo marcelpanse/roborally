@@ -100,14 +100,25 @@ GameLogic = {
         checkRespawnsAndUpdateDb(player);
       }
       if (!player.isPoweredDown() && !player.needsRespawn) {
-        victims.push(scope.shootRobotLaser(players, player));
+        victims = scope.shootRobotLaser(players, player, victims);
+        if (player.hasOptionCard('rear-firing_laser')) {
+          player.rotate(2);
+          victims = scope.shootRobotLaser(players, player, victims);
+          player.rotate(2);
+        }
+        if (player.hasOptionCard('mini_howitzer') || 
+            player.hasOptionCard('fire_control')  ||
+            player.hasOptionCard('radio_control') ||
+            (player.hasOptionCard('scrambler') && player.game().playPhaseCount < 5) ||
+            player.hasOptionCard('tractor_beam')  ||
+            player.hasOptionCard('pressor_beam') ) {
+          player.game().setPlayPhase(GameState.PLAY_PHASE.LASER_OPTIONS);
+        }
       }
     });
     victims.forEach(function(victim) {
-      if (victim) {
-        victim.addDamage(1);
-        checkRespawnsAndUpdateDb(victim);
-      }
+      victim.addDamage(1);
+      checkRespawnsAndUpdateDb(victim);
     });
     callback();
   };
@@ -117,13 +128,15 @@ GameLogic = {
       if (player.tile().repair) {
         if (player.damage > 0)
           player.damage--;
+        if (player.tile().option)
+          player.drawOptionCard();
         Players.update(player._id, player);
       }
     });
     callback();
   };
 
-  scope.shootRobotLaser = function(players, player) {
+  scope.shootRobotLaser = function(players, player, victims) {
     var step = {x:0, y:0};
     var board = player.board();
     switch (player.direction) {
@@ -143,7 +156,10 @@ GameLogic = {
     var x = player.position.x;
     var y = player.position.y;
     var shotDistance = 0;
-    while (board.onBoard(x+step.x,y+step.y) && board.canMove(x, y, step) ) {
+    var highPower = player.hasOptionCard('high-power_laser');
+    while (board.onBoard(x+step.x,y+step.y) && (board.canMove(x, y, step) || highPower) ) {
+      if (highPower && !board.canMove(x,y,step))
+        highPower = false;
       x += step.x;
       y += step.y;
       shotDistance++;
@@ -152,11 +168,16 @@ GameLogic = {
         debug_info = 'Shot: (' + player.position.x +','+player.position.y+') -> ('+x+','+y+')';
         victim.chat('was shot by '+ player.name +', Total damage: '+ (victim.damage+1), debug_info);
         Players.update(player._id,{$set: {shotDistance:shotDistance}});
-        return victim;
+        victims.push(victim);
+        if (player.hasOptionCard('double-barreled_laser'))
+          victims.push(victim);
+        if (!highPower)
+          return victims;
+        highPower = false;
       }
     }
     Players.update(player._id,{$set: {shotDistance:shotDistance}});
-    return false;
+    return victims;
   };
 
   function executeStep(players, player, direction) {   // direction = 1 for step forward, -1 for step backwards
@@ -188,6 +209,8 @@ GameLogic = {
         var pushedPlayer = isPlayerOnTile(players, p.position.x + step.x, p.position.y + step.y);
         if (pushedPlayer !== null) {
           console.log("trying to push player "+pushedPlayer.name);
+          if (p.hasOptionCard('ramming_gear')) 
+            pushedPlayer.addDamage(1);
           makeMove=tryToMovePlayer(players, pushedPlayer, step);
         }
         if(makeMove) {
@@ -268,10 +291,15 @@ GameLogic = {
   function checkRespawnsAndUpdateDb(player, callback) {
     console.log(player.name+" Player.position "+player.position.x+","+player.position.y+" "+player.isOnBoard()+"|"+player.isOnVoid());
     if (!player.needsRespawn && (!player.isOnBoard() || player.isOnVoid() || player.damage > 9 )) {
-      player.damage = 2;
+      if (player.hasOptionCard('superior_archive'))
+        player.damage = 0;
+      else
+        player.damage = 2;
+
       player.lives--;
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
+      player.optionCards = {};
       Players.update(player._id, player);
       if (player.lives > 0) {
         var game = player.game();

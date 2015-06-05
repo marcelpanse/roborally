@@ -70,6 +70,7 @@ Meteor.methods({
         optionalInstantPowerDown: false,
         position: {x: -1, y: -1},
         chosenCardsCnt: 0,
+        optionCards: {},
         cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
       });
       Cards.insert({
@@ -172,7 +173,7 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerWithDir(player, Number(direction));
-    player.chat('chose direction', direction);
+    player.chat('reentered the race', direction);
     GameState.nextGamePhase(game);
   },
   togglePowerDown: function(gameId) {

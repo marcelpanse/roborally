@@ -69,8 +69,10 @@ class @CardLogic
 
     #for every damage you get a card less
     nrOfNewCards = (@_MAX_NUMBER_OF_CARDS - player.damage)
+    if player.hasOptionCard('extra_memory')
+      nrOfNewCards++
     #grab card from deck, so it can't be handed out twice
-    handCards.push deck.cards.shift() for i in [1..nrOfNewCards]
+    handCards.push deck.cards.pop() for i in [1..nrOfNewCards]
     console.log('handCards ' + handCards.length)
 
     Cards.update {playerId: player._id},
@@ -151,6 +153,20 @@ class @CardLogic
     player.cards
 
 
+  @getOptionName: (index) ->
+    @_option_deck[index][0]
+
+  @getOptionTitle: (name) ->
+    name.replace('/_/g',' ').replace /\w\S*/g, (txt) ->
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+
+  @getOptionId: (name) ->
+    for option, id in @_option_deck
+      if option[0] == name
+        return id
+
+  @getOptionDesc: (name) ->
+    return @_option_deck[@getOptionId(name)][1]
 
   @cardType:  (cardId, playerCnt) ->
     deck = if playerCnt <= 8 then @_8_deck else @_12_deck
@@ -162,3 +178,37 @@ class @CardLogic
 
   @priority: (index) ->
     (index+1)*10
+
+  @_option_deck = [
+    [ 'superior_archive',  "When reentering play after beeing destroyed, your robot doesn't receive the normal 20% damage" ]
+    [ 'circuit_breaker',   "If you have 30% or more damage at the end of your turn, your robot will begin the next turn powered down" ]
+    [ 'rear-firing_laser', "Your robot has a rear-firing laser in addition to its main laser. This laser follows all the same rules as the main laser" ]
+    [ 'extra_memory', "You receive one extra Program card each turn."]
+    [ 'high-power_laser', "Your robot's main laser can shoot through one wall or robot to get to a target robot. If you shoot through a robot, that robot also receives full damage. You may use this Option with Fire Control and/or Double-Barreled Laser."]
+    [ 'double-barreled_laser', "Whenever your robot fires its main laser, it fires two shots instead of one. You may use this Option with Fire Control and/or High-Power Laser."]
+    [ 'ramming_gear', "Whenever your robot pushes or bumps into another robot, that robot receives 10% damage."]
+    [ 'mechanical_arm', "Your robot can touch a flag or repair site from 1 space away (diagonally or orthogonally), as long as there isn't a wall."]
+    [ 'ablative_coat', "Absorbs the next 30% damage your robot receives."]
+    ####### choose to use
+    # 'recompile'
+    #[ 'power-down_shield', ""
+    # 'abort_switch'
+    ###### additional move options
+    # 'fourth_gear'
+    # 'reverse_gear'
+    # 'crab_legs'
+    # 'brakes'
+    ######## register options
+    # 'dual_processor'
+    # 'conditional_program'
+    # 'flywheel'
+    ######## alternative laser
+    # 'mini_howitzer'
+    # 'fire_control'
+    # 'radio_control'
+    [ 'scrambler',    "Whenever you could fire your main laser at a robot, you may instead fire the Scrambler. This replaces the target's robots's next programmed card with the top Program card from the deck. You can't use this Option on the fifth register phase."]
+    [ 'tractor_beam', "Whenever you could fire your main laser at a robot that isn't in an adjacent space, you may instead fire the Tractor Beam. This moves the target robot 1 space toward your robot."]
+    [ 'pressor_beam', "Whenever you could fire your main laser at a robot, you may instead fire the Pressor Beam. This moves the target robot 1 space away from your robot."]
+    ##### activate before submit
+    # 'gyroscopic_stabilizer'
+  ]
