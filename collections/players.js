@@ -127,7 +127,6 @@ var player = {
     return !this.isPoweredDown() && !this.needsRespawn && this.lives > 0;
   },
   addDamage: function(inc) {
-    this.damage += inc;
     if (this.hasOptionCard('ablative_coat')) {
       if (!this.ablativeCoat)
         this.ablativeCoat = 0;
