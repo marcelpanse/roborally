@@ -204,9 +204,9 @@ class @CardLogic
     # 'mini_howitzer'
     # 'fire_control'
     # 'radio_control'
-    [ 'scrambler',    "Whenever you could fire your main laser at a robot, you may instead fire the Scrambler. This replaces the target's robots's next programmed card with the top Program card from the deck. You can't use this Option on the fifth register phase."]
-    [ 'tractor_beam', "Whenever you could fire your main laser at a robot that isn't in an adjacent space, you may instead fire the Tractor Beam. This moves the target robot 1 space toward your robot."]
-    [ 'pressor_beam', "Whenever you could fire your main laser at a robot, you may instead fire the Pressor Beam. This moves the target robot 1 space away from your robot."]
+    # [ 'scrambler',    "Whenever you could fire your main laser at a robot, you may instead fire the Scrambler. This replaces the target's robots's next programmed card with the top Program card from the deck. You can't use this Option on the fifth register phase."]
+    # [ 'tractor_beam', "Whenever you could fire your main laser at a robot that isn't in an adjacent space, you may instead fire the Tractor Beam. This moves the target robot 1 space toward your robot."]
+    # [ 'pressor_beam', "Whenever you could fire your main laser at a robot, you may instead fire the Pressor Beam. This moves the target robot 1 space away from your robot."]
     ##### activate before submit
     # 'gyroscopic_stabilizer'
   ]
