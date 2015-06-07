@@ -112,7 +112,8 @@ GameLogic = {
             (player.hasOptionCard('scrambler') && player.game().playPhaseCount < 5) ||
             player.hasOptionCard('tractor_beam')  ||
             player.hasOptionCard('pressor_beam') ) {
-          player.game().setPlayPhase(GameState.PLAY_PHASE.LASER_OPTIONS);
+          //todo: there is no game state laser options yet..?
+          //player.game().setPlayPhase(GameState.PLAY_PHASE.LASER_OPTIONS);
         }
       }
     });
