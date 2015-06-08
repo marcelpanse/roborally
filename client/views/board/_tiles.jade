@@ -4,14 +4,3 @@ template(name="_tiles")
       span.tile(style="background-image: url('#{this.path}'); {{rotate direction}}" data-tooltip-direction="w" data-tooltip= description)
         each items
           img.board-item(src= path, style="position: absolute; {{rotate direction}}" data-tooltip-direction="s" data-tooltip= description)
-        if this.finish
-          div(src='/finish.png', data-tooltip-direction="s" data-tooltip="Make sure to hit the checkpoints before finishing here and win the game!")
-            img.board-item(src='/finish.png')        
-        if this.checkpoint
-          .checkpoint(class="{{visited_checkpoint this.checkpoint}}", data-tooltip-direction="s" data-tooltip="This is checkpoint no.#{this.checkpoint}.")
-            = this.checkpoint
-
-        if ../../show_start
-          if this.start
-            if leq this.start ../../show_start
-              img.board-item(src='/start.png', data-tooltip-direction="s" data-tooltip="Spawnpoint, you will respawn here if you die.")

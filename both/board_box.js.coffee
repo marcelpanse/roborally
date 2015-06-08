@@ -8,9 +8,9 @@ class @BoardBox
                'vault_assault', 'whirlwind_tour', 'lost_bearings', 'robot_stew',
                'oddest_sea', 'against_the_grain', 'island_king', 
                # with special rules
-               'tricksy', #moving_targets',
+               'tricksy', 'moving_targets',
                'set_to_kill', 'factory_rejects', 'option_world', 'tight_collar', 
-               'ball_lightning',  'flag_fry', 'crowd_chess' 
+               'ball_lightning',  'flag_fry', 'crowd_chess', 'marathon_madness'
              ]
                
   @BEGINNER_COURSE_CNT = 11
@@ -67,9 +67,10 @@ class @BoardBox
       board.addCheckpoint(9, 1)
       board.addCheckpoint(5, 8)
       board.addCheckpoint(2, 0)
+      board.addSpecialRule(Board.SPECIAL_RULE.OPTION_WORLD)
       return board
     moving_targets: () ->
-      board = new Board('moving_targets',2,8)
+      board = new Board('moving_targets',1,8)
       board.length = 'medium'
       board.addRallyArea('maelstrom')
       board.addStartArea('simple')
@@ -77,6 +78,7 @@ class @BoardBox
       board.addCheckpoint(10,11)
       board.addCheckpoint(11,5)
       board.addCheckpoint(0,6)
+      board.addSpecialRule(Board.SPECIAL_RULE.MOVING_TARGETS)
       return board
     checkmate: () ->
       board = new Board('checkmate',5,8)
@@ -255,6 +257,7 @@ class @BoardBox
       board.addCheckpoint 0, 1
       board.addCheckpoint 8, 11
       board.addCheckpoint 3, 7
+      board.addSpecialRule Board.SPECIAL_RULE.START_WITH_OPTION
       return board
     set_to_kill: () ->
       board = new Board('set_to_kill',5,8)
@@ -265,6 +268,7 @@ class @BoardBox
       board.addCheckpoint 2,11
       board.addCheckpoint 10,9
       board.addCheckpoint 2,4
+      board.addSpecialRule Board.SPECIAL_RULE.DOUBLED_LASERS
       return board
     factory_rejects: () ->
       board = new Board('factory_rejects',5,8)
@@ -274,6 +278,7 @@ class @BoardBox
       board.addCheckpoint 7,1
       board.addCheckpoint 4,11
       board.addCheckpoint 2,4
+      board.addSpecialRule Board.SPECIAL_RULE.INCURABLE_DAMAGE
       return board
     tight_collar: () ->
       board = new Board('tight_collar',2,8,12,28)
@@ -283,6 +288,7 @@ class @BoardBox
       board.addStartArea 'simple',0,24
       board.addCheckpoint 4,2
       board.addCheckpoint 9,19
+      board.addSpecialRule Board.SPECIAL_RULE.PROGRAM_60_SEC
       return board
     ball_lightning: () ->
       board = new Board('ball_lightning',2,8,)
@@ -293,6 +299,7 @@ class @BoardBox
       board.addCheckpoint 2,2
       board.addCheckpoint 5,9
       board.addCheckpoint 10,0
+      board.addSpecialRule Board.SPECIAL_RULE.PROGRAM_30_SEC
       return board
     flag_fry: () ->
       board = new Board('flag_fry',2,8)
@@ -302,6 +309,24 @@ class @BoardBox
       board.addCheckpoint 3,3
       board.addCheckpoint 9,3
       board.addCheckpoint 3,10
+      return board
+    marathon_madness: () ->
+      board = new Board('marathon_madness', 5,8,28,36)
+      board.length = 'long'
+      board.addRallyArea 'empty'
+      board.addRallyArea 'vault', 12,0, 180
+      board.addStartArea 'empty', 24,0,90
+      board.addRallyArea 'spin_zone', 0,12, 90
+      board.addRallyArea 'exchange', 12, 12, 180
+      board.addStartArea 'simple', 24, 12, 90
+      board.addRallyArea 'empty', 0, 24
+      board.addRallyArea 'maelstrom', 12, 24
+      board.addStartArea 'empty', 24, 24, 90
+      board.addCheckpoint 23, 30
+      board.addCheckpoint 15, 6
+      board.addCheckpoint 9, 21
+      board.addCheckpoint 23, 17
+      board.addSpecialRule Board.SPECIAL_RULE.START_WITH_OPTION
       return board
 
 

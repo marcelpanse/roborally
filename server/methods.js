@@ -71,6 +71,8 @@ Meteor.methods({
         position: {x: -1, y: -1},
         chosenCardsCnt: 0,
         optionCards: {},
+        optionStates: {},
+        victims: [],
         cards: Array.apply(null, new Array(GameLogic.CARD_SLOTS)).map(function (x, i) { return CardLogic.EMPTY; })
       });
       Cards.insert({
@@ -134,17 +136,7 @@ Meteor.methods({
     if (players.length > game.max_player) {
       throw new Meteor.Error(401, "Too many players.");
     }
-
-    for (var i in players) {
-      var start = game.board().startpoints[i];
-      var player = players[i];
-      player.position.x = start.x;
-      player.position.y = start.y;
-      player.direction = start.direction;
-      player.robotId = i;
-      player.start = start;
-      Players.update(player._id, player);
-    }
+    game.start();
     game.chat('Game started');
     GameState.nextGamePhase(gameId);
   },
@@ -175,6 +167,16 @@ Meteor.methods({
     GameLogic.respawnPlayerWithDir(player, Number(direction));
     player.chat('reentered the race', direction);
     GameState.nextGamePhase(game);
+  },
+  selectLaserOption: function(gameId, option) {
+    var game = Games.findOne(gameId);
+    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
+    Players.update(player._id, {$set:{
+      laserOption: option,
+      selectLaserOption: false
+    }});
+    if (!Players.findOne({gameId: gameId, selectLaserOption: true}))
+      GameLogic.executeLaserDamage(Players.find({gameId: gameId}));
   },
   togglePowerDown: function(gameId) {
      var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});

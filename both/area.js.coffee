@@ -102,6 +102,10 @@ class @Area
       @addStart 1,0, 'up'
       @addStart 2,0, 'up'
       @addStart 3,0, 'up'
+    empty: () ->
+      for x in [0..11]
+        for y in [0..3]
+          @setEmpty x,y
   @course:
     test: () ->
       @setVoid 1,1
@@ -118,7 +122,10 @@ class @Area
       @addWall 3,0, 'up'
       @addLaser 1,2, 'd', 2
       @addDoubleLaser 0,1, 'r', 1
-
+    empty: () ->
+      for x in [0..11]
+        for y in [0..11]
+          @setEmpty x,y
     cross: () ->
       @setVoid 9, 2
       @setVoid 1, 4

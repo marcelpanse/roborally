@@ -29,6 +29,8 @@ template(name="board")
     +_tiles(rows=tiles show_start=false)
 
     br
+    each game.checkpoints
+      +_checkpoint(checkpoint=this tileSize=50)
     each markers
       .marker(class=marker_class, style=position, data-tooltip-direction="n" data-tooltip="This is a respawn location")
         img(src= path, style=direction )

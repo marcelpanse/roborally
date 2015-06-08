@@ -1,3 +1,4 @@
+
 class @CardLogic
   @_MAX_NUMBER_OF_CARDS = 9
   @EMPTY   = -1
@@ -61,7 +62,7 @@ class @CardLogic
 
     console.log "Returned cards, new total: "+deck.cards.length
     deck.cards = _.shuffle(deck.cards)
-    Deck.upsert({gameId: game._id}, deck)
+    Deck.update({gameId: game._id}, deck)
 
   @dealCards: (game, player) ->
     deck = game.getDeck()
@@ -79,6 +80,10 @@ class @CardLogic
       $set:
         handCards: handCards
     Deck.update(deck._id, deck)
+    if game.board().specialRules[Board.SPECIAL_RULE.PROGRAM_30_SEC]
+      @startTimer(game, 30)
+    else if game.board().specialRules[Board.SPECIAL_RULE.PROGRAM_60_SEC]
+      @startTimer(game, 60)
 
   @submitCards: (player) ->
     if (player.isPoweredDown())
@@ -103,11 +108,12 @@ class @CardLogic
     else if readyPlayerCnt == playerCnt-1
       @startTimer(player.game())
 
-  @startTimer: (game) ->
+
+  @startTimer: (game, time=GameLogic.TIMER) ->
         # start timer
-    Games.update(game._id, {$set: {timer: 1}})
+    Games.update(game._id, {$set: {timer: time}})
     Meteor.setTimeout ->
-      if Games.findOne(game._id).timer == 1
+      if Games.findOne(game._id).timer == time
         console.log("time up! setting timer to 0")
         Games.update(game._id, {$set: {timer: 0}})
 
@@ -176,8 +182,11 @@ class @CardLogic
       if cardId < cnt
         return @_cardTypes[index]
 
-  @priority: (index) ->
-    (index+1)*10
+  @priority: (index, player) ->
+    if player? && player.radioControlledBy
+      (index+1)*10+5
+    else
+      (index+1)*10
 
   @_option_deck = [
     [ 'superior_archive',  "When reentering play after beeing destroyed, your robot doesn't receive the normal 20% damage" ]
@@ -203,9 +212,9 @@ class @CardLogic
     # 'conditional_program'
     # 'flywheel'
     ######## alternative laser
-    # 'mini_howitzer'
-    # 'fire_control'
-    # 'radio_control'
+    [ 'mini_howitzer', "Whenever you could fire your main laser at a robot, you may instead fire Mini Howitzer. This pushes the target robot 1 space away from your robot, and the target robot receives 10% damage. You may use this Option five times. "]
+    #[ 'fire_control', "Whenever you could fire your main laser at a robot, you may choose one of the target robot's registers and lock it or choose one of that player's Options and destroy it."]
+    [ 'radio_control', "Whenever you could fire your main laser at a robot, you may instead fire the Radio Control beam. This causes the target robot to execute your robot's program for the rest of the turn. In cases of card priority, the target robot moves immediately after your robot."]
     [ 'scrambler',    "Whenever you could fire your main laser at a robot, you may instead fire the Scrambler. This replaces the target's robots's next programmed card with the top Program card from the deck. You can't use this Option on the fifth register phase."]
     [ 'tractor_beam', "Whenever you could fire your main laser at a robot that isn't in an adjacent space, you may instead fire the Tractor Beam. This moves the target robot 1 space toward your robot."]
     [ 'pressor_beam', "Whenever you could fire your main laser at a robot, you may instead fire the Pressor Beam. This moves the target robot 1 space away from your robot."]

@@ -69,6 +69,17 @@ a.white
     width: $tile
     height: $tile
 
+  .extra-board-element
+    position: absolute
+    &.start
+      width: $preview-tile-size*3/4
+      height: $preview-tile-size*3/4
+      border: 1px solid black
+      border-radius: $preview-tile-size*3/8
+      color: black
+      font-size: $preview-tile-size/2
+      font-weight: bold
+
   div.checkpoint
     font-size: $tile/3.12
     background-color: #336699
@@ -164,6 +175,10 @@ span.players
   float: left
 span.length
   float: right
+
+.special-rules
+  clear: both
+  text-align: left
 
 img#robot
   width: $tile-size

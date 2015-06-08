@@ -26,12 +26,15 @@ Template.cards.helpers({
   showPlayButton: function() {
     return !getPlayer().submitted;
   },
+  showPowerDownButton: function() {
+    return !this.game.no_powerdown;
+  },
   timer: function() {
-    if (this.game.timer === 1 && timerHandle === null) {
+    if (this.game.timer > 0 && timerHandle === null) {
       $.titleAlert("Hurry up! 30 seconds left!", { duration: 2000 });
 
       console.log("starting timer");
-      Session.set("timeLeft", GameLogic.TIMER);
+      Session.set("timeLeft", this.game.timer);
       timerHandle = Meteor.setInterval(function() {
         Session.set("timeLeft", Math.max(0, Session.get("timeLeft") - 1));
       }, 1000);
@@ -84,6 +87,12 @@ Template.cards.helpers({
             return "Moving board elements";
           case GameState.PLAY_PHASE.LASERS:
             return "Shooting lasers";
+          case GameState.PLAY_PHASE.LASER_OPTIONS:
+            if (getPlayer().selectLaserOption)
+              return "Choose laser option";
+            else
+              return "Waiting for laser choices";
+            break;
           case GameState.PLAY_PHASE.CHECKPOINTS:
             return "Checkpoints";
           case GameState.PLAY_PHASE.REPAIRS:
@@ -96,13 +105,13 @@ Template.cards.helpers({
             if (this.game.respawnUserId === Meteor.userId())
               return "Choose position";
             else
-              return "Waiting for destroyed bots to reenter";
+              return "Waiting for destroyed robots to reenter";
             break;
           case GameState.RESPAWN_PHASE.CHOOSE_DIRECTION:
             if (this.game.respawnUserId === Meteor.userId())
               return "Choose direction";
             else
-              return "Waiting for destroyed bots to reenter";
+              return "Waiting for destroyed robots to reenter";
         }
         break;
     }
@@ -155,13 +164,24 @@ Template.cards.helpers({
   activeOptionCards: function() {
     var r = [];
     Object.keys(getPlayer().optionCards).forEach(function(optionKey) {
+      var css_class = '';
+      if (this.game.playPhase == GameState.PLAY_PHASE.LASER_OPTIONS && ['mini_howitzer', 'fire_control', 'radio_control','tractor_beam','pressor_beam'].indexOf(optionKey) >= 0 ||
+         (optionKey == 'scrambler' && this.game.playPhaseCount < 5)) {
+        css_class = 'laserOptionBtn btn btn-default';
+      }
       r.push({
+        key: optionKey,
         name: CardLogic.getOptionTitle(optionKey),
-        desc: CardLogic.getOptionDesc(optionKey)
+        desc: CardLogic.getOptionDesc(optionKey),
+        css_class: css_class
       });
     });
     return r;
+  },
+  showStandardLaserOption: function(){
+    return this.getPlayer().selectLaserOption;
   }
+
 });
 
 Template.card.helpers({
@@ -235,10 +255,19 @@ Template.playerStatus.helpers({
   },
   activeOptionCards: function() {
     var r = [];
-    Object.keys(this.optionCards).forEach(function(optionKey) {
+    Object.keys(getPlayer().optionCards).forEach(function(optionKey) {
+      var css_class = '';
+      if (this.userId === Meteor.userId()) {
+        if (this.game.playPhase == GameState.PLAY_PHASE.LASER_OPTIONS && ['mini_howitzer', 'fire_control', 'radio_control','tractor_beam','pressor_beam'].indexOf(optionKey) >= 0 ||
+            (optionKey == 'scrambler' && this.game.playPhaseCount < 5)) {
+          css_class = 'laserOptionBtn btn btn-default';
+        }
+      }
       r.push({
+        key: optionKey,
         name: CardLogic.getOptionTitle(optionKey),
-        desc: CardLogic.getOptionDesc(optionKey)
+        desc: CardLogic.getOptionDesc(optionKey),
+        css_class: css_class
       });
     });
     return r;
@@ -309,7 +338,14 @@ Template.cards.events({
       }
       $(".playBtn").toggleClass("disabled", !allowSubmit());
     });
+  },
+  'click .laserOptionBtn': function(e) {
+    Meteor.call('selectLaserOption', this.game._id, $(e).data('option'),  function(error) {
+      if (error)
+        return alert(error.reason);
+    });
   }
+
 });
 
 function getPlayer() {

@@ -12,7 +12,7 @@ Template.board.helpers({
       }
     }
   },
-
+  
   robots: function() {
     var r = [];
     this.players.forEach(function(player) {

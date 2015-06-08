@@ -1,5 +1,42 @@
 
 class @Board
+  @SPECIAL_RULE = {
+    MOVING_TARGETS: 0
+    DOUBLED_LASERS: 1
+    PROGRAM_30_SEC: 2
+    PROGRAM_60_SEC: 3
+    START_WITH_OPTION: 4
+    OPTION_WORLD: 5
+    INCURALBE_DAMAGED: 6
+  }
+  @SPECIAL_RULE_NAME = [
+    'Moving targets',
+    'Doubled robot lasers',
+    'Program phase limited to 30 seconds',
+    'Program phase limited to 60 seconds',
+    'Start with one Option card',
+    'Option world',
+    'No power down'
+  ]
+  @SPECIAL_RULE_DESC = [
+    'During each register phase, the flags are moved by conveyor belts
+     the same way that robots are.
+     Flags that fall into a pit appear back on the board in their starting locations.
+     Any Archive markers on those flags remain intact.',
+    "All robot laser fire is doubled, including lasers added with Option cards.
+     For exmaple, the Rear-Firing Laser fires two shots instead of one, 
+     and the Double-Barreled Laser would increase that to four. Laser replacement Options
+     such as Pressor Beam and Radio Control still don't deal any damage.",
+    "Players have only thirty seconds to program their robots each turn.",
+    "Player have one minute to program their robots each turn.",
+    "At the beginning of the game each player gets one Option card."
+    "Robots that end the turn on a single-wrench space or a flag draw one
+     Option card instead of repairing damage. Robots that end the turn on a
+     crossed wrench/hammer space draw two Option cards instead of repairing damage
+     and drawing one Option card."
+    "All robots start the game with 20% damage and don't have the ability to power down."
+
+  ]
   constructor: (name, min_player=2, max_player=8, width=12, height=16) ->
     @name = name
     @title = toTitleCase(name)
@@ -10,6 +47,7 @@ class @Board
     @max_player = max_player
     @height = height
     @width = width
+    @specialRules = {}
 
     for y in [0..@height-1]
       for x in [0..@width-1]
@@ -57,12 +95,15 @@ class @Board
     cnt = @checkpoints.length
     if cnt > 0
       last_cp = @checkpoints[cnt-1]
+      last_cp.finish = false
       @tile(last_cp.x,last_cp.y).finish = false
 
     cnt += 1
-    @checkpoints.push({x:x,y:y,number:cnt})
-    @tile(x,y).addCheckpoint(cnt)
+    @checkpoints.push({x:x,y:y,number:cnt, finish: true})
     console.log("Checkpoint #{cnt} located at #{x},#{y}")
+
+  addSpecialRule: (rule) ->
+    @specialRules[rule] = true
 
   @to_dir: (val) ->
     switch typeof val
@@ -129,6 +170,9 @@ class @Board
       if @onBoard(@col(nx,ny), @row(nx,ny)) && @tile(nx, ny).type == Tile.VOID
         @tile(nx, ny).updateVoidType(@absolute_dir(opp_dir(i)))
         @tile(x,y).updateVoidType(@absolute_dir(i))
+
+  setEmpty: (x,y) ->
+    @tile(x,y).setType Tile.LIMBO
 
   setRoller: (x, y, route, speed=1) ->
     cur_dir = route.charAt(0)
@@ -212,6 +256,7 @@ class @Board
     @startpoints.push
       x: Number(@col(x,y)),
       y: Number(@row(x,y)),
+      number: @startpoints.length+1
       direction: @absolute_dir(direction)
 
     @tile(x,y).addStart(@startpoints.length)
