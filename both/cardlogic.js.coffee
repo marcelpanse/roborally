@@ -106,7 +106,7 @@ class @CardLogic
       Games.update(player.gameId, {$set: {timer: -1}})
       GameState.nextGamePhase(player.gameId)
     else if readyPlayerCnt == playerCnt-1
-      @startTimer(player.game())
+      # start timer
 
 
   @startTimer: (game, time=GameLogic.TIMER) ->

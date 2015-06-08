@@ -6,7 +6,7 @@
       "username": "ubuntu",
       // "password": "password"
       // or pem file (ssh based authentication)
-      "pem": "~/.ssh/roborally-keypair.pem"
+      "pem": "/Users/marcel/Dropbox/keys/roborally-keypair.pem"
     }
   ],
 
@@ -25,7 +25,7 @@
   "appName": "roborally",
 
   // Location of app (local directory)
-  "app": "/vagrant/roborally",
+  "app": "../",
 
   // Configure environment
   "env": {
