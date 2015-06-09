@@ -5,9 +5,9 @@ template(name="chat")
     div.messages
       each this.messages
         if author
-          div #{author}: #{message}
+          div [{{timeToStr submitted}}] #{author}: #{message}
         else
-          div.system #{message}
+          div.system [{{timeToStr submitted}}] #{message}
           
 
   form.form-inline(role="form")
