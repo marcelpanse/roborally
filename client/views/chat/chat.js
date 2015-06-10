@@ -1,7 +1,13 @@
 Template.chat.helpers({
   inGame: function() {
     return Players.findOne({gameId: this.gameId, userId: Meteor.userId(), robotId: {$ne:null}});
+  },
+  
+  timeToStr: function(time)
+  {	  
+	return moment(new Date(time)).format("L LT");
   }
+  
 });
 
 Template.chat.events({
