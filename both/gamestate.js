@@ -202,13 +202,23 @@ GameState = {
       var card = {
         cardId: player.getChosenCards()[player.playedCardsCnt]
       };
+      if (player.optionStates.radioControlledBy) {
+        controller = Players.finOne(player.optionsStates.radioControlledBy);
+        card.cardId = controller.getChosenCards()[player.playedCardCnt];
+      }
+      if (player.optionStates.scrambledRegister == game.playPhaseCount) {
+        card.cardId = deck.cards.pop();
+        player.chooseCard(cardId, player.playedCardCnt);
+      }
+
       if (card.cardId >= 0) {
         Players.update(player._id, {$inc: {playedCardsCnt: 1}});
         card.playerId = player._id;
+        card.priority = CardLogic.priority(card.cardId, player);
         game.cardsToPlay.push(card);
       }
     });
-    game.cardsToPlay = _.sortBy(game.cardsToPlay, 'cardId').reverse();  // cardId has same order as card priority
+    game.cardsToPlay = _.sortBy(game.cardsToPlay, 'priority').reverse();  // cardId has same order as card priority
     Games.update(game._id, {$set: {
       cardsToPlay: game.cardsToPlay
     }});
@@ -256,9 +266,7 @@ GameState = {
 
   function playLasers(game) {
     var players = game.playersOnBoard();
-    game.setPlayPhase(GameState.PLAY_PHASE.CHECKPOINTS);
     Meteor.wrapAsync(GameLogic.executeLasers)(players);
-    game.nextPlayPhase();
   }
 
   function playCheckpoints(game) {
@@ -280,18 +288,6 @@ GameState = {
     game.nextGamePhase();
   }
 
-  function checkCheckpoints(player,game) {
-    var tile = player.tile();
-
-    if (tile.checkpoint || tile.repair) {
-      player.updateStartPosition();
-      if (tile.checkpoint && tile.checkpoint === player.visited_checkpoints+1) {
-        player.visited_checkpoints++;
-      }
-      Players.update(player._id, player);
-    } 
-  }
-
   function checkIfWeHaveAWinner(game) {
     var players = Players.find({gameId: game._id}).fetch();
     var board = game.board();
@@ -302,7 +298,7 @@ GameState = {
 
     for (var i in players) {
       var player = players[i];
-      checkCheckpoints(player,game);
+      GameLogic.checkCheckpoints(player,game);
       if (player.lives > 0) {
         livingPlayers++;
         lastManStanding = player;

@@ -11,6 +11,35 @@ game =
       if (player.position.x == x && player.position.y == y)
         found = player
     return found;
+  start: () ->
+    Deck.insert(@newDeck())
+    checkpoints = []
+    for cp in @board().checkpoints
+      checkpoints.push(cp)
+    checkpoints[checkpoints.length-1].finish = true
+    Games.update this._id,
+      $set:
+        checkpoints: checkpoints
+    for player, i in @players()
+      start = @board().startpoints[i]
+      player.position.x = start.x
+      player.position.y = start.y
+      player.direction = start.direction
+      player.robotId = i
+      player.start = start
+      
+      if @board().specialRules[Board.SPECIAL_RULE.START_WITH_OPTION]
+        player.drawOptionCard()
+      if @board().specialRules[Board.SPECIAL_RULE.INCURABLE_DAMAGED]
+        player.damage = 2
+        Games.update this._id,
+          $set:
+            no_powerdown: true
+      player.optionCards['scrambler'] = true # just for testing. remove me!
+      player.save()
+
+
+
   chat: (msg, debug_info) ->
     Chat.insert
       gameId: this._id,
@@ -90,11 +119,11 @@ game =
 
 
 
-@Games = new Meteor.Collection('games',
+@Games = new Meteor.Collection 'games',
   transform: (doc) ->
     newInstance = Object.create(game)
-    return  _.extend(newInstance, doc)
-)
+    _.extend(newInstance, doc)
+
 
 Games.allow
   insert: (userId, doc) ->

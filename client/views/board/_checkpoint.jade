@@ -1,0 +1,9 @@
+template(name="_checkpoint")
+  with checkpoint
+    if finish
+      .extra-board-element(src='/finish.png', style="{{position ../tileSize}}", data-tooltip-direction="s" data-tooltip="Make sure to hit the checkpoints before finishing here and win the game!")
+        img.board-item(src='/finish.png')         
+    .checkpoint(class="{{visited number}}", style="{{position ../tileSize}}", data-tooltip-direction="s" data-tooltip="This is checkpoint #{number}. If you end your hand on a checkpoint, one damage will be repaired.")
+      = number
+
+

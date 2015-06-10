@@ -1,6 +1,23 @@
 template(name="thumbnail")
   h4  #{board.title}
   div.pointer(id=board.name, class="board-thumbnail {{extra_class}}", style="width: {{width}}px; height: {{height}}px;")
-    +_tiles(rows=board.tiles show_start=board.max_player)
+    +_tiles(rows=board.tiles)
+    each board.checkpoints
+      +_checkpoint(checkpoint=this tileSize=24)
+    each board.startpoints.slice 0 board.max_player
+      +_startpoint(startpoint=this tileSize=24)
   span.players Players: #{board.min_player} - #{board.max_player}
   span.length Length: #{board.length}
+  if hasSpecialRules
+    div.special-rules
+      | Special rules:
+      each specialRules
+        span(title=desc)
+          = name
+
+
+template(name="_startpoint")
+  with startpoint
+    .extra-board-element.start(src='/start.png', style="{{position ../tileSize}}" data-tooltip-direction="s" data-tooltip="Spawnpoint, you will respawn here if you die.")
+      = number
+
