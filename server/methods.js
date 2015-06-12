@@ -27,10 +27,28 @@ Meteor.methods({
     });
     var board_id = BoardBox.getBoardId(game.name);
     if (board_id >= 0)
-      game.boardId=board_id;
+	{
+		game.boardId=board_id;
+	}
+	
+	var board = Boards.findOne({board_id: board_id});
+	
+	if(board == null)
+    {
+        board = Boards.findOne({name: "default"});
+        if(board == null)
+        {
+            board = BoardBox.getBoard(0);
+            board.board_id = 0;
+            Boards.insert(board);
+        }
+    }
+	else
+		board_id = board.board_id;
+      
 
-    game.min_player = BoardBox.getBoard(board_id).min_player;
-    game.max_player = BoardBox.getBoard(board_id).max_player;
+    game.min_player = board.min_player;
+    game.max_player = board.max_player;
     var gameId = Games.insert(game);
 
     Chat.insert({
@@ -115,13 +133,26 @@ Meteor.methods({
     var game = Games.findOne(gameId);
     if (!game)
       throw new Meteor.Error(401, "Game id not found!");
+  
+  
+	var board_id = -1;
+	var board = Boards.findOne({name: boardName});
+	
+	if(board == null)
+	{
+		board_id = BoardBox.getBoardId(boardName);
+		if (board_id < 0)
+		  throw new Meteor.Error(401, "Board " + boardName + " not found!" );
+	  
+		board = BoardBox.getBoard(board_id);
+		board.board_id = board_id;
+		Boards.insert(board);
+	}
+	else
+		board_id = board.board_id;
 
-    var board_id = BoardBox.getBoardId(boardName);
-    if (board_id < 0)
-      throw new Meteor.Error(401, "Board " + boardName + " not found!" );
-
-    var min = BoardBox.getBoard(board_id).min_player;
-    var max = BoardBox.getBoard(board_id).max_player;
+    var min = board.min_player;
+    var max = board.max_player;
     Games.update(game._id, {$set: {boardId: board_id, min_player: min, max_player: max}});
 
     var author = getUsername(user);
@@ -167,6 +198,8 @@ Meteor.methods({
     var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
     GameLogic.respawnPlayerAtPos(player, Number(x), Number(y));
     player.chat('chose position',  '(' +x+ ',' +y+ ')');
+    
+    
     game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
   },
   selectRespawnDirection: function(gameId, direction) {

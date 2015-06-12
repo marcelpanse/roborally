@@ -17,7 +17,7 @@ class @BoardBox
   @cache = []
   @test_board_id = @CATALOG.length
 
-  @getBoard: (boardId) ->
+  @getBoard: (boardId) ->  
     if !boardId? || boardId < 0 || boardId >= @CATALOG.length
       if boardId == @test_board_id
         return @getTestBoard()
@@ -44,6 +44,7 @@ class @BoardBox
   @boards:
     default: () ->
       board = new Board('default',1)
+      board.board_type = "beginner"
       board.length = 'short'
       board.addRallyArea('cross')
       board.addStartArea('simple')
@@ -80,6 +81,7 @@ class @BoardBox
       return board
     checkmate: () ->
       board = new Board('checkmate',5,8)
+      board.board_type = "beginner"
       board.length = 'short'
       board.addRallyArea('chess')
       board.addStartArea('simple')
@@ -88,6 +90,7 @@ class @BoardBox
       return board
     bloodbath_chess: () ->
       board = new Board('bloodbath_chess',2,4)
+      board.board_type = "beginner"
       board.length = 'medium'
       board.addRallyArea('chess')
       board.addStartArea('simple')
@@ -98,6 +101,7 @@ class @BoardBox
       return board
     whirlwind_tour: () ->
       board = new Board('whirlwind_tour',5,8)
+      board.board_type = "expert"
       board.length = 'medium'
       board.addRallyArea('maelstrom')
       board.addStartArea('simple')
@@ -107,6 +111,7 @@ class @BoardBox
       return board
     oddest_sea: () ->
       board = new Board('oddest_sea',5,8,12,28)
+      board.board_type = "expert"
       board.length = 'long'
       board.addRallyArea('vault',0,0,180)
       board.addRallyArea('maelstrom',0,12)
@@ -118,6 +123,7 @@ class @BoardBox
       return board
     dizzy_dash: () ->
       board = new Board('dizzy_dash',2,8)
+      board.board_type = "beginner"
       board.length = 'short'
       board.addRallyArea('spin_zone')
       board.addStartArea('roller')
@@ -127,6 +133,7 @@ class @BoardBox
       return board
     twister: () ->
       board = new Board('twister',5,8)
+      board.board_type = "beginner"
       board.length = 'medium'
       board.addRallyArea('spin_zone')
       board.addStartArea('roller')
@@ -137,6 +144,7 @@ class @BoardBox
       return board
     island_hop: () ->
       board = new Board('island_hop',2,8)
+      board.board_type = "beginner"
       board.length = 'medium'
       board.addRallyArea('island')
       board.addStartArea('simple')
@@ -146,6 +154,7 @@ class @BoardBox
       return board
     death_trap: () ->
       board = new Board('death_trap',2,4)
+      board.board_type = "beginner"
       board.length = 'short'
       board.addRallyArea('island')
       board.addStartArea('simple')
@@ -155,6 +164,7 @@ class @BoardBox
       return board
     around_the_world: () ->
       board = new Board('around_the_world',5,8,12,28)
+      board.board_type = "beginner"
       board.length = 'long'
       board.addRallyArea('island',0,0,180)
       board.addRallyArea('spin_zone',0,12,90)
@@ -165,6 +175,7 @@ class @BoardBox
       return board
     island_king: () ->
       board = new Board('island_king',2,8)
+      board.board_type = "expert"
       board.length = 'short'
       board.addRallyArea('island',0,0,180)
       board.addStartArea('simple')
@@ -174,6 +185,7 @@ class @BoardBox
       return board
     risky_exchange: () ->
       board = new Board('risky_exchange',2,8)
+      board.board_type = "beginner"
       board.length = 'medium'
       board.addRallyArea 'exchange'
       board.addStartArea 'roller'
@@ -183,6 +195,7 @@ class @BoardBox
       return board
     chop_shop_challenge: () ->
       board = new Board('chop_shop_challenge',2,4)
+      board.board_type = "beginner"
       board.length = 'medium'
       board.addRallyArea('chop_shop',0,0,180)
       board.addStartArea('simple')
@@ -193,6 +206,7 @@ class @BoardBox
       return board
     pilgrimage: () ->
       board = new Board('pilgrimage',2,8,12,28)
+      board.board_type = "beginner"
       board.length = 'long'
       board.addRallyArea 'cross'
       board.addRallyArea 'exchange',0,12,180
@@ -211,6 +225,7 @@ class @BoardBox
       return board
     robot_stew: () ->
       board = new Board('robot_stew',2,4)
+      board.board_type = "expert"
       board.length = 'medium'
       board.addRallyArea('chop_shop')
       board.addStartArea('roller')
@@ -220,6 +235,7 @@ class @BoardBox
       return board
     vault_assault: () ->
       board = new Board('vault_assault',2,4)
+      board.board_type = "expert"
       board.length = 'short'
       board.addRallyArea('vault',0,0,270)
       board.addStartArea('roller')
@@ -229,6 +245,7 @@ class @BoardBox
       return board
     lost_bearings: () ->
       board = new Board('lost_bearings',2,4)
+      board.board_type = "expert"
       board.length = 'medium'
       board.addRallyArea 'cross',0,0,180
       board.addStartArea 'simple'
@@ -238,6 +255,7 @@ class @BoardBox
       return board
     against_the_grain: () ->
       board = new Board('against_the_grain',2,4,12,28)
+      board.board_type = "expert"
       board.length = 'medium'
       board.addRallyArea 'chop_shop'
       board.addRallyArea 'chess',0,12,90
