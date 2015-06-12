@@ -10,6 +10,7 @@ class @Board
     @max_player = max_player
     @height = height
     @width = width
+    @board_type = "beginner"
 
     for y in [0..@height-1]
       for x in [0..@width-1]

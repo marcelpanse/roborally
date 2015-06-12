@@ -358,6 +358,22 @@ Template.board.events({
   }
 });
 
+Template.optioncard.events({
+    'click .option-card': function(e)
+    {
+        var player = Players.findOne({_id: this.player_id});
+        var game = player.game();
+        console.log("Click: " + game.gamePhase + ", " + game.respawnPhase);
+        if(game.gamePhase == GameState.PHASE.RESPAWN && game.respawnPhase == GameState.RESPAWN_PHASE.CHOOSE_OPTION_CARD)
+        {
+            Meteor.call("selectOptionCard", game._id, $(e.target).html(), function(error){
+                if(error)
+                    alert(error.reason);
+            });
+        }
+    }
+});
+
 Template.share.helpers({
   shareData: function() {
     return {
