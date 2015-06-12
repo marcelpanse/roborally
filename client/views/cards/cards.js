@@ -103,11 +103,6 @@ Template.cards.helpers({
               return "Choose direction";
             else
               return "Waiting for destroyed bots to reenter";
-          case GameState.RESPAWN_PHASE.CHOOSE_OPTION_CARD:
-            if(this.game.respawnUserId === Meteor.userId())
-                return "Choose Option card to discard";
-            else
-                return "Waiting for destroyed bots to reenter";
         }
         break;
     }
@@ -240,12 +235,10 @@ Template.playerStatus.helpers({
   },
   activeOptionCards: function() {
     var r = [];
-    var player = getPlayer();
     Object.keys(this.optionCards).forEach(function(optionKey) {
       r.push({
         name: CardLogic.getOptionTitle(optionKey),
-        desc: CardLogic.getOptionDesc(optionKey),
-        player_id: player._id
+        desc: CardLogic.getOptionDesc(optionKey)
       });
     });
     return r;

@@ -209,18 +209,6 @@ Meteor.methods({
     player.chat('reentered the race', direction);
     GameState.nextGamePhase(game);
   },
-  selectOptionCard: function(gameId, optionCard)
-  {
-    console.log("Discarding something...");
-    var game = Games.findOne(gameId);
-    var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
-    player.discardOptionCard(optionCard);
-    Players.update(player._id, player);
-    console.log("Discarding " + optionCard);
-    player.chat('chose to discard ' + optionCard, '');
-    GameLogic.respawnPlayerAtPos(player,player.start.x,player.start.y);
-    game.nextRespawnPhase(GameState.RESPAWN_PHASE.CHOOSE_DIRECTION);
-  },
   togglePowerDown: function(gameId) {
      var player = Players.findOne({gameId: gameId, userId: Meteor.userId()});
      return player.togglePowerDown();

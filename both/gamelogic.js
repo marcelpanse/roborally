@@ -300,7 +300,7 @@ GameLogic = {
       player.lives--;
       player.needsRespawn=true;
       player.optionalInstantPowerDown=true;
-      //player.optionCards = {};
+      player.optionCards = {};
       Players.update(player._id, player);
       if (player.lives > 0) {
         var game = player.game();

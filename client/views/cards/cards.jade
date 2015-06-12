@@ -36,7 +36,8 @@ template(name="cards")
         h6
           | Option cards
         each activeOptionCards
-          +optioncard
+          .option-card(title=desc)
+            = name
     if showPlayButton
       if poweredDown
         a.btn.btn-warning.powerBtn #{ownPowerStateName}
@@ -88,11 +89,9 @@ template(name="playerStatus")
       h6
         | Option cards
       each activeOptionCards
-        +optioncard
+        .option-card(title=desc)
+          = name
 
-template(name='optioncard')
-  .option-card(title=desc)
-    = name
 
 template(name="card")
   if emptyCard

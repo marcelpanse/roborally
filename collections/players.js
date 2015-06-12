@@ -165,24 +165,8 @@ var player = {
     Deck.update({gameId: gameId}, {$set: {optionCards: optionCards}});
   },
   discardOptionCard: function(name) {
-    name = name.toLowerCase();
     var gameId = this.game()._id;
-    console.log("Deleting " + name);
-    
-    delete this.optionCards[name];
-    
-    /*var optionCards = {};
-    
-    for(var i in this.optionCards)
-    {
-        console.log(i);
-        if(i != name)
-            optionCards[i] = true;
-    }
-    
-    this.optionCards = optionCards;*/
-    
-    console.log(this.optionCards);
+    delete optionCards.name;
     var discarded = Deck.findOne({gameId: gameId}).discardedOptionCards;
     discarded.push(CardLogic.getOptionId(name));
     Deck.update({gameId: gameId}, {$set: {discardedOptionCards: discarded}});
