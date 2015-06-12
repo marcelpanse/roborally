@@ -19,7 +19,8 @@ GameState = {
   },
   RESPAWN_PHASE: {
     CHOOSE_POSITION: "choose position",
-    CHOOSE_DIRECTION: "choose direction"
+    CHOOSE_DIRECTION: "choose direction",
+    CHOOSE_OPTION_CARD: "choose option card to remove"
   }
 };
 
@@ -115,9 +116,28 @@ GameState = {
       var nextPhase;
       var x = player.start.x;
       var y = player.start.y;
-      if (game.isPlayerOnTile(x,y)) {
+      
+      var optioncard_cnt = 0;
+      for(var i in player.optionCards)
+      {
+        if(player.optionCards[i] == true)
+            optioncard_cnt++;
+      }
+      
+      if (game.isPlayerOnTile(x,y))
+      {
         nextPhase = GameState.RESPAWN_PHASE.CHOOSE_POSITION;
-      } else {
+      }
+      
+      if(optioncard_cnt > 1 && !game.isPlayerOnTile(x, y))
+      {
+        console.log("GameState check");
+        nextPhase = GameState.RESPAWN_PHASE.CHOOSE_OPTION_CARD;
+      }
+      else
+      {
+        player.optionCards = {};
+        Players.update(player._id, player);
         GameLogic.respawnPlayerAtPos(player,x,y);
         nextPhase = GameState.RESPAWN_PHASE.CHOOSE_DIRECTION;
       }
@@ -344,10 +364,31 @@ GameState = {
         case GameState.RESPAWN_PHASE.CHOOSE_DIRECTION:
           prepareChooseRespawnDirection(game);
           break;
+        case GameState.RESPAWN_PHASE.CHOOSE_OPTION_CARD:
+          prepareChooseOptionCard(game);
+        break;
       }
     }, _NEXT_PHASE_DELAY);
   };
 
+  function prepareChooseOptionCard(game)
+  {
+    var player = Players.findOne(game.respawnPlayerId);
+    var selectOptions = [];
+    var x = player.start.x;
+    var y = player.start.y;
+    for (var dx = -1; dx<=1; ++dx) {
+      for (var dy = -1; dy<=1; dy++)  {
+        if (!game.isPlayerOnTile(x+dx,y+dy) && game.board().getTile(x+dx,y+dy).type !== Tile.VOID) {
+          selectOptions.push({x:x+dx, y:y+dy});
+        }
+      }
+    }
+    Games.update(game._id, {$set: {
+      selectOptions: selectOptions,
+      respawnUserId: player.userId
+    }});
+  }
 
   function prepareChooseRespawnPosition(game) {
     var player = Players.findOne(game.respawnPlayerId);
